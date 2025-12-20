@@ -5,11 +5,16 @@ class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.tileSize = 32;
-        this.mapWidth = 400;
-        this.mapHeight = 400;
 
-        // Camera for scrolling
+        // Isometric tile dimensions (2:1 ratio)
+        this.tileWidth = 64;  // Width of diamond
+        this.tileHeight = 32; // Height of diamond
+        this.tileSize = 32;   // Keep for compatibility with some calculations
+
+        this.mapWidth = 250;
+        this.mapHeight = 250;
+
+        // Camera for scrolling (in world coordinates)
         this.camera = { x: 0, y: 0 };
 
         // Game state - Initialize with defaults
@@ -79,6 +84,44 @@ class Game {
 
         // Start time progression
         this.startTimeCycle();
+    }
+
+    // ===== ISOMETRIC PROJECTION UTILITIES =====
+    // Convert world coordinates (grid x, y) to isometric screen coordinates
+    worldToScreen(worldX, worldY, height = 0) {
+        const isoX = (worldX - worldY) * (this.tileWidth / 2);
+        const isoY = (worldX + worldY) * (this.tileHeight / 2) - height;
+        return { x: isoX, y: isoY };
+    }
+
+    // Convert world position to screen, accounting for camera
+    worldToScreenWithCamera(worldX, worldY, height = 0) {
+        const world = this.worldToScreen(worldX, worldY, height);
+        const camera = this.worldToScreen(this.camera.x, this.camera.y, 0);
+        return {
+            x: world.x - camera.x + this.canvas.width / 2,
+            y: world.y - camera.y + this.canvas.height / 2
+        };
+    }
+
+    // Draw an isometric tile (diamond shape)
+    drawIsometricTile(screenX, screenY, color, borderColor = 'rgba(0, 0, 0, 0.1)') {
+        const hw = this.tileWidth / 2;  // half width
+        const hh = this.tileHeight / 2; // half height
+
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        this.ctx.moveTo(screenX, screenY - hh);           // Top
+        this.ctx.lineTo(screenX + hw, screenY);           // Right
+        this.ctx.lineTo(screenX, screenY + hh);           // Bottom
+        this.ctx.lineTo(screenX - hw, screenY);           // Left
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Border
+        this.ctx.strokeStyle = borderColor;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
     }
 
     // ===== MAP INITIALIZATION =====
@@ -2109,15 +2152,14 @@ class Game {
             }
         }
 
-        // Update camera
-        const canvasTilesX = this.canvas.width / this.tileSize;
-        const canvasTilesY = this.canvas.height / this.tileSize;
+        // Update camera - center on player
+        this.camera.x = this.player.x;
+        this.camera.y = this.player.y;
 
-        this.camera.x = this.player.x - canvasTilesX / 2;
-        this.camera.y = this.player.y - canvasTilesY / 2;
-
-        this.camera.x = Math.max(0, Math.min(this.getCurrentMapWidth() - canvasTilesX, this.camera.x));
-        this.camera.y = Math.max(0, Math.min(this.getCurrentMapHeight() - canvasTilesY, this.camera.y));
+        // Clamp camera to map bounds (with some padding)
+        const padding = 10;
+        this.camera.x = Math.max(padding, Math.min(this.getCurrentMapWidth() - padding, this.camera.x));
+        this.camera.y = Math.max(padding, Math.min(this.getCurrentMapHeight() - padding, this.camera.y));
 
         // Update NPCs
         this.updateNPCs();
@@ -2149,192 +2191,342 @@ class Game {
 
     // ===== RENDERING =====
     render() {
-        // Clear canvas
-        this.ctx.fillStyle = this.getSeasonalGrassColor();
+        // Clear canvas with sky color
+        this.ctx.fillStyle = '#87CEEB';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const currentMapData = this.getCurrentMapData();
-        const startX = Math.floor(this.camera.x);
-        const startY = Math.floor(this.camera.y);
-        const endX = Math.min(this.getCurrentMapWidth(), Math.ceil(this.camera.x + this.canvas.width / this.tileSize));
-        const endY = Math.min(this.getCurrentMapHeight(), Math.ceil(this.camera.y + this.canvas.height / this.tileSize));
 
-        // Render tiles
+        // Calculate visible tile range (generous bounds for isometric)
+        const viewRange = 25;
+        const startX = Math.max(0, Math.floor(this.camera.x - viewRange));
+        const startY = Math.max(0, Math.floor(this.camera.y - viewRange));
+        const endX = Math.min(this.getCurrentMapWidth(), Math.ceil(this.camera.x + viewRange));
+        const endY = Math.min(this.getCurrentMapHeight(), Math.ceil(this.camera.y + viewRange));
+
+        // Render tiles (isometric diamonds)
         for (let y = startY; y < endY; y++) {
             for (let x = startX; x < endX; x++) {
+                if (!currentMapData[y] || currentMapData[y][x] === undefined) continue;
+
                 const tile = currentMapData[y][x];
-                const screenX = (x - this.camera.x) * this.tileSize;
-                const screenY = (y - this.camera.y) * this.tileSize;
+                const screen = this.worldToScreenWithCamera(x, y, 0);
+
+                let color;
+                let height = 0;
 
                 switch (tile) {
                     case 0: // Grass
-                        this.ctx.fillStyle = this.getSeasonalGrassColor();
+                        color = this.getSeasonalGrassColor();
                         break;
                     case 1: // Dirt
-                        this.ctx.fillStyle = '#8b7355';
+                        color = '#8b7355';
                         break;
                     case 2: // Water
-                        this.ctx.fillStyle = '#4fc3f7';
+                        color = '#4fc3f7';
+                        height = -5; // Water slightly lower
                         break;
                     case 3: // Road
-                        this.ctx.fillStyle = '#757575';
+                        color = '#757575';
+                        height = -2; // Roads slightly recessed
                         break;
                     case 4: // Farmland
-                        this.ctx.fillStyle = '#6b4423';
+                        color = '#6b4423';
                         break;
-                    case 6: // Building
-                        this.ctx.fillStyle = '#d4a373';
+                    case 6: // Building (will be drawn separately)
+                        color = '#d4a373';
                         break;
                     case 7: // Floor
-                        this.ctx.fillStyle = '#f5deb3';
+                        color = '#f5deb3';
                         break;
                     case 8: // Rails
-                        this.ctx.fillStyle = '#424242';
+                        color = '#424242';
                         break;
                     case 9: // Flowers
-                        this.ctx.fillStyle = this.getSeasonalFlowerColor();
+                        color = this.getSeasonalFlowerColor();
                         break;
+                    default:
+                        color = this.getSeasonalGrassColor();
                 }
 
-                this.ctx.fillRect(screenX, screenY, this.tileSize, this.tileSize);
-
-                // Tile border
-                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-                this.ctx.strokeRect(screenX, screenY, this.tileSize, this.tileSize);
+                // Adjust screen position for height
+                const finalScreen = this.worldToScreenWithCamera(x, y, height);
+                this.drawIsometricTile(finalScreen.x, finalScreen.y, color);
             }
         }
 
-        // Render trees (only on overworld)
+        // Collect all entities for depth sorting
+        const entities = [];
+
+        // Add trees (only on overworld)
         if (this.currentMap === 'overworld') {
             this.trees.forEach(tree => {
                 if (tree.x >= startX && tree.x < endX && tree.y >= startY && tree.y < endY) {
-                    const screenX = (tree.x - this.camera.x) * this.tileSize;
-                    const screenY = (tree.y - this.camera.y) * this.tileSize;
-
-                    // Tree trunk
-                    this.ctx.fillStyle = '#6b4423';
-                    this.ctx.fillRect(screenX + 12, screenY + 16, 8, 12);
-
-                    // Tree foliage
-                    const treeColors = this.getSeasonalTreeColors();
-                    this.ctx.fillStyle = treeColors[tree.type % treeColors.length];
-                    this.ctx.beginPath();
-                    this.ctx.arc(screenX + 16, screenY + 14, 12, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    this.ctx.beginPath();
-                    this.ctx.arc(screenX + 12, screenY + 10, 10, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    this.ctx.beginPath();
-                    this.ctx.arc(screenX + 20, screenY + 10, 10, 0, Math.PI * 2);
-                    this.ctx.fill();
+                    entities.push({ type: 'tree', data: tree, sortY: tree.y, sortX: tree.x });
                 }
             });
 
-            // Render buildings
+            // Add buildings
             this.buildings.forEach(building => {
                 if (building.x < endX && building.x + building.width > startX &&
                     building.y < endY && building.y + building.height > startY) {
-                    const screenX = (building.x - this.camera.x) * this.tileSize;
-                    const screenY = (building.y - this.camera.y) * this.tileSize;
-                    const width = building.width * this.tileSize;
-                    const height = building.height * this.tileSize;
-
-                    // Building background with color
-                    this.ctx.fillStyle = building.color || '#d4a373';
-                    this.ctx.fillRect(screenX, screenY, width, height);
-
-                    // Building outline
-                    this.ctx.strokeStyle = '#8B4513';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.strokeRect(screenX, screenY, width, height);
-
-                    // Emoji
-                    this.ctx.font = '24px Arial';
-                    this.ctx.fillText(building.emoji, screenX + 5, screenY + 25);
-
-                    // Name
-                    this.ctx.font = '10px Arial';
-                    this.ctx.fillStyle = '#000';
-                    this.ctx.fillText(building.name, screenX + 2, screenY - 3);
+                    // Sort by bottom of building
+                    entities.push({
+                        type: 'building',
+                        data: building,
+                        sortY: building.y + building.height,
+                        sortX: building.x
+                    });
                 }
             });
 
-            // Render NPCs
+            // Add NPCs
             this.npcs.forEach(npc => {
                 if (npc.x >= startX && npc.x < endX && npc.y >= startY && npc.y < endY) {
-                    const screenX = (npc.x - this.camera.x) * this.tileSize;
-                    const screenY = (npc.y - this.camera.y) * this.tileSize;
-
-                    // Shadow
-                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(screenX + this.tileSize / 2, screenY + this.tileSize - 2,
-                        this.tileSize / 3, this.tileSize / 7, 0, 0, Math.PI * 2);
-                    this.ctx.fill();
-
-                    // Emoji
-                    this.ctx.font = '20px Arial';
-                    this.ctx.fillText(npc.emoji, screenX + 6, screenY + 22);
-
-                    // Sick indicator
-                    if (npc.isSick) {
-                        this.ctx.font = '16px Arial';
-                        this.ctx.fillText('🤢', screenX + 16, screenY - 5);
-                    }
-
-                    // Name
-                    this.ctx.font = '8px Arial';
-                    this.ctx.fillStyle = '#000';
-                    this.ctx.fillText(npc.name, screenX, screenY - 2);
+                    entities.push({ type: 'npc', data: npc, sortY: npc.y, sortX: npc.x });
                 }
             });
         }
 
-        // Render player
-        const playerScreenX = (this.player.x - this.camera.x) * this.tileSize;
-        const playerScreenY = (this.player.y - this.camera.y) * this.tileSize;
+        // Add player
+        entities.push({ type: 'player', data: this.player, sortY: this.player.y, sortX: this.player.x });
+
+        // Sort entities by Y position (back to front), then by X
+        entities.sort((a, b) => {
+            if (Math.abs(a.sortY - b.sortY) < 0.01) {
+                return a.sortX - b.sortX;
+            }
+            return a.sortY - b.sortY;
+        });
+
+        // Render all entities in sorted order
+        entities.forEach(entity => {
+            if (entity.type === 'tree') {
+                this.renderIsometricTree(entity.data);
+            } else if (entity.type === 'building') {
+                this.renderIsometricBuilding(entity.data);
+            } else if (entity.type === 'npc') {
+                this.renderIsometricNPC(entity.data);
+            } else if (entity.type === 'player') {
+                this.renderIsometricPlayer(entity.data);
+            }
+        });
+
+        // Apply day/night overlay
+        this.applyDayNightOverlay();
+    }
+
+    // ===== ISOMETRIC ENTITY RENDERING =====
+    renderIsometricTree(tree) {
+        const treeHeight = 40; // Height of the tree in pixels
+        const screen = this.worldToScreenWithCamera(tree.x, tree.y, 0);
+
+        // Tree shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 5, 12, 6, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Tree trunk (vertical)
+        this.ctx.fillStyle = '#6b4423';
+        this.ctx.fillRect(screen.x - 4, screen.y - treeHeight, 8, treeHeight);
+
+        // Tree foliage (layered)
+        const treeColors = this.getSeasonalTreeColors();
+        const color = treeColors[tree.type % treeColors.length];
+        this.ctx.fillStyle = color;
+
+        // Bottom layer
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, screen.y - treeHeight + 10, 14, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Middle layer
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x - 6, screen.y - treeHeight, 12, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x + 6, screen.y - treeHeight, 12, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Top layer
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, screen.y - treeHeight - 8, 10, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+
+    renderIsometricBuilding(building) {
+        const buildingHeight = building.height * 20; // Height multiplier
+        const screen = this.worldToScreenWithCamera(building.x, building.y, 0);
+
+        // Building shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        const shadowWidth = building.width * this.tileWidth / 2;
+        const shadowHeight = building.height * this.tileHeight / 2;
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 10, shadowWidth * 0.8, shadowHeight * 0.5, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Draw building base (floor)
+        for (let by = 0; by < building.height; by++) {
+            for (let bx = 0; bx < building.width; bx++) {
+                const tileScreen = this.worldToScreenWithCamera(
+                    building.x + bx,
+                    building.y + by,
+                    0
+                );
+                this.drawIsometricTile(tileScreen.x, tileScreen.y, building.color || '#d4a373');
+            }
+        }
+
+        // Draw walls (vertical sides to create height)
+        const frontScreen = this.worldToScreenWithCamera(
+            building.x + building.width / 2,
+            building.y + building.height,
+            0
+        );
+
+        // Left wall
+        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 0.7);
+        this.ctx.beginPath();
+        this.ctx.moveTo(frontScreen.x - building.width * this.tileWidth / 4, frontScreen.y);
+        this.ctx.lineTo(frontScreen.x - building.width * this.tileWidth / 4, frontScreen.y - buildingHeight);
+        this.ctx.lineTo(frontScreen.x, frontScreen.y - buildingHeight - building.height * this.tileHeight / 4);
+        this.ctx.lineTo(frontScreen.x, frontScreen.y - building.height * this.tileHeight / 4);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#8B4513';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+        // Right wall
+        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 0.85);
+        this.ctx.beginPath();
+        this.ctx.moveTo(frontScreen.x, frontScreen.y - building.height * this.tileHeight / 4);
+        this.ctx.lineTo(frontScreen.x, frontScreen.y - buildingHeight - building.height * this.tileHeight / 4);
+        this.ctx.lineTo(frontScreen.x + building.width * this.tileWidth / 4, frontScreen.y - buildingHeight);
+        this.ctx.lineTo(frontScreen.x + building.width * this.tileWidth / 4, frontScreen.y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#8B4513';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+        // Roof (top of building)
+        const roofScreen = this.worldToScreenWithCamera(
+            building.x + building.width / 2,
+            building.y + building.height / 2,
+            buildingHeight
+        );
+        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 1.1);
+        this.ctx.beginPath();
+        this.ctx.moveTo(roofScreen.x, roofScreen.y - building.height * this.tileHeight / 2);
+        this.ctx.lineTo(roofScreen.x + building.width * this.tileWidth / 2, roofScreen.y);
+        this.ctx.lineTo(roofScreen.x, roofScreen.y + building.height * this.tileHeight / 2);
+        this.ctx.lineTo(roofScreen.x - building.width * this.tileWidth / 2, roofScreen.y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#8B4513';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+        // Emoji and name
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText(building.emoji, frontScreen.x - 12, frontScreen.y - buildingHeight / 2);
+        this.ctx.font = '10px Arial';
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillText(building.name, frontScreen.x - building.name.length * 2.5, frontScreen.y - buildingHeight - 10);
+    }
+
+    renderIsometricNPC(npc) {
+        const charHeight = 25;
+        const screen = this.worldToScreenWithCamera(npc.x, npc.y, 0);
 
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.beginPath();
-        this.ctx.ellipse(playerScreenX + this.tileSize / 2, playerScreenY + this.tileSize - 4,
-            this.tileSize / 3, this.tileSize / 6, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(screen.x, screen.y + 3, 10, 5, 0, 0, Math.PI * 2);
         this.ctx.fill();
 
-        // Player character (or car)
-        if (this.player.inCar && this.player.carType) {
-            this.ctx.font = '28px Arial';
-            this.ctx.fillText(this.player.carType.emoji, playerScreenX + 2, playerScreenY + 26);
-        } else {
-            this.ctx.fillStyle = '#ff6b6b';
-            this.ctx.beginPath();
-            this.ctx.arc(playerScreenX + this.tileSize / 2, playerScreenY + this.tileSize / 2,
-                this.tileSize / 2.5, 0, Math.PI * 2);
-            this.ctx.fill();
+        // Character (simple 3D-ish representation)
+        // Body
+        this.ctx.fillStyle = '#4a9eff';
+        this.ctx.fillRect(screen.x - 6, screen.y - charHeight, 12, 15);
 
-            // Face
-            this.ctx.fillStyle = '#fff';
-            this.ctx.beginPath();
-            this.ctx.arc(playerScreenX + this.tileSize / 2 - 5, playerScreenY + this.tileSize / 2 - 3, 2, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.beginPath();
-            this.ctx.arc(playerScreenX + this.tileSize / 2 + 5, playerScreenY + this.tileSize / 2 - 3, 2, 0, Math.PI * 2);
-            this.ctx.fill();
+        // Head
+        this.ctx.fillStyle = '#ffdbac';
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, screen.y - charHeight - 8, 8, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Emoji overlay
+        this.ctx.font = '20px Arial';
+        this.ctx.fillText(npc.emoji, screen.x - 10, screen.y - charHeight + 8);
+
+        // Sick indicator
+        if (npc.isSick) {
+            this.ctx.font = '16px Arial';
+            this.ctx.fillText('🤢', screen.x + 8, screen.y - charHeight - 10);
         }
 
         // Name
-        this.ctx.font = '10px Arial';
+        this.ctx.font = '8px Arial';
         this.ctx.fillStyle = '#000';
-        this.ctx.fillText('You', playerScreenX + 8, playerScreenY - 2);
+        this.ctx.fillText(npc.name, screen.x - npc.name.length * 2, screen.y - charHeight - 18);
+    }
 
-        // Render mini-map and location indicator
-        if (this.currentMap === 'overworld') {
-            this.renderMiniMap();
-            this.renderLocationIndicator();
+    renderIsometricPlayer(player) {
+        const charHeight = 28;
+        const screen = this.worldToScreenWithCamera(player.x, player.y, 0);
+
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 3, 12, 6, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        if (player.inCar && player.carType) {
+            // Car rendering
+            this.ctx.font = '32px Arial';
+            this.ctx.fillText(player.carType.emoji, screen.x - 16, screen.y - 5);
+        } else {
+            // Character body
+            this.ctx.fillStyle = '#ff6b6b';
+            this.ctx.fillRect(screen.x - 7, screen.y - charHeight, 14, 18);
+
+            // Character head
+            this.ctx.fillStyle = '#ff6b6b';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - charHeight - 9, 9, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Face (eyes)
+            this.ctx.fillStyle = '#fff';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x - 4, screen.y - charHeight - 11, 2, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x + 4, screen.y - charHeight - 11, 2, 0, Math.PI * 2);
+            this.ctx.fill();
         }
 
-        // Apply day/night overlay
-        this.applyDayNightOverlay();
+        // Name label
+        this.ctx.font = '10px Arial';
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillText('You', screen.x - 10, screen.y - charHeight - 20);
+    }
+
+    // Helper function to darken/lighten colors
+    darkenColor(color, factor) {
+        // Simple color darkening (works with hex colors)
+        if (color.startsWith('#')) {
+            const num = parseInt(color.slice(1), 16);
+            const r = Math.min(255, Math.floor((num >> 16) * factor));
+            const g = Math.min(255, Math.floor(((num >> 8) & 0x00FF) * factor));
+            const b = Math.min(255, Math.floor((num & 0x0000FF) * factor));
+            return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+        }
+        return color;
     }
 
     // ===== MINI-MAP =====
