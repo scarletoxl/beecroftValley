@@ -6,8 +6,8 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.tileSize = 32;
-        this.mapWidth = 60;  // Much larger map!
-        this.mapHeight = 50;
+        this.mapWidth = 250;  // Massive map for realistic Beecroft!
+        this.mapHeight = 250;
 
         // Camera for scrolling
         this.camera = {
@@ -17,8 +17,8 @@ class Game {
 
         // Game state
         this.player = {
-            x: 30,  // Start near station
-            y: 25,
+            x: 125,  // Start near station (center of map)
+            y: 125,
             speed: 1,
             energy: 100,
             gold: 100,
@@ -54,30 +54,47 @@ class Game {
             }
         }
 
-        // Beecroft Road (main north-south road)
+        // Beecroft Road (main north-south road through entire map)
         for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 28; x <= 30; x++) {
+            for (let x = 123; x <= 127; x++) {
                 this.map[y][x] = 3; // Road
             }
         }
 
         // Hannah Street (east-west shopping strip)
-        for (let x = 20; x < 45; x++) {
-            for (let y = 23; y <= 25; y++) {
+        for (let x = 60; x < 180; x++) {
+            for (let y = 128; y <= 132; y++) {
+                this.map[y][x] = 3; // Road
+            }
+        }
+
+        // Copeland Road (east-west, south of station)
+        for (let x = 50; x < 200; x++) {
+            for (let y = 145; y <= 148; y++) {
                 this.map[y][x] = 3; // Road
             }
         }
 
         // Wongala Crescent (curves near shopping area)
-        for (let x = 32; x < 42; x++) {
-            this.map[26][x] = 3;
-            this.map[27][x] = 3;
+        for (let x = 135; x < 175; x++) {
+            this.map[135][x] = 3;
+            this.map[136][x] = 3;
+        }
+
+        // Sutherland Road (runs southeast)
+        for (let i = 0; i < 60; i++) {
+            const x = 140 + i;
+            const y = 150 + Math.floor(i * 0.8);
+            if (x < this.mapWidth && y < this.mapHeight) {
+                this.map[y][x] = 3;
+                this.map[y][x + 1] = 3;
+            }
         }
 
         // Railway tracks (horizontal through middle)
-        for (let x = 15; x < 45; x++) {
-            this.map[20][x] = 8; // Rails
-            this.map[21][x] = 8;
+        for (let x = 30; x < 220; x++) {
+            this.map[115][x] = 8; // Rails
+            this.map[116][x] = 8;
         }
 
         // Add LOTS of trees (Beecroft is very leafy!)
@@ -88,20 +105,26 @@ class Game {
     }
 
     addTreeClusters() {
-        // Trees scattered throughout residential areas
+        // Trees scattered throughout residential areas - Beecroft is VERY leafy!
         const treeAreas = [
-            // Lane Cove National Park area (south)
-            { x: 5, y: 35, width: 20, height: 12, density: 0.7 },
+            // Lane Cove National Park area (southwest - large bushland)
+            { x: 10, y: 170, width: 90, height: 70, density: 0.8 },
             // Chilworth Reserve (north-east)
-            { x: 40, y: 5, width: 15, height: 10, density: 0.6 },
-            // Residential streets with lots of trees
-            { x: 10, y: 10, width: 15, height: 8, density: 0.4 },
-            { x: 35, y: 30, width: 20, height: 15, density: 0.5 },
-            // Fearnley Park
-            { x: 15, y: 30, width: 10, height: 8, density: 0.8 },
-            // Around schools
-            { x: 22, y: 12, width: 8, height: 6, density: 0.3 },
-            { x: 38, y: 18, width: 10, height: 5, density: 0.3 }
+            { x: 150, y: 20, width: 80, height: 60, density: 0.7 },
+            // Residential streets west of Beecroft Road
+            { x: 30, y: 40, width: 80, height: 60, density: 0.5 },
+            { x: 20, y: 110, width: 90, height: 50, density: 0.5 },
+            // Residential streets east of Beecroft Road
+            { x: 140, y: 50, width: 90, height: 50, density: 0.5 },
+            { x: 150, y: 140, width: 80, height: 40, density: 0.5 },
+            // Fearnley Park (west of shopping area)
+            { x: 70, y: 135, width: 35, height: 30, density: 0.8 },
+            // Around schools (heavily treed)
+            { x: 85, y: 60, width: 30, height: 25, density: 0.6 },
+            { x: 160, y: 100, width: 35, height: 30, density: 0.6 },
+            // Street trees along roads
+            { x: 110, y: 30, width: 50, height: 20, density: 0.3 },
+            { x: 130, y: 180, width: 40, height: 30, density: 0.4 }
         ];
 
         treeAreas.forEach(area => {
@@ -119,44 +142,53 @@ class Game {
 
     addParks() {
         // Railway Station Gardens (with playground)
-        for (let y = 17; y < 19; y++) {
-            for (let x = 25; x < 28; x++) {
+        for (let y = 108; y < 113; y++) {
+            for (let x = 115; x < 122; x++) {
                 this.map[y][x] = 9; // Flowers
             }
         }
 
-        // Village Green
-        for (let y = 26; y < 29; y++) {
-            for (let x = 22; x < 26; x++) {
+        // Village Green (near shopping area)
+        for (let y = 133; y < 140; y++) {
+            for (let x = 108; x < 118; x++) {
                 this.map[y][x] = 9; // Flowers
             }
         }
 
-        // Fearnley Park
-        for (let y = 33; y < 35; y++) {
-            for (let x = 17; x < 22; x++) {
+        // Fearnley Park (large western park)
+        for (let y = 138; y < 148; y++) {
+            for (let x = 75; x < 95; x++) {
                 this.map[y][x] = 9; // Flowers
             }
         }
     }
 
     initBuildings() {
-        // Real Beecroft buildings!
+        // Real Beecroft buildings with geographically accurate positions!
         this.buildings = [
-            { name: "Beecroft Railway Station", x: 29, y: 18, width: 4, height: 3, type: "station", emoji: "🚂" },
-            { name: "HerGP Medical Clinic", x: 22, y: 18, width: 3, height: 2, type: "clinic", emoji: "🏥" },
-            { name: "Beecroft Public School", x: 22, y: 10, width: 6, height: 5, type: "school", emoji: "🏫" },
-            { name: "Arden Anglican School", x: 26, y: 16, width: 5, height: 4, type: "school", emoji: "🏫" },
-            { name: "Beecroft Medical Centre", x: 29, y: 22, width: 3, height: 2, type: "clinic", emoji: "🏥" },
-            { name: "Beecroft General Practice", x: 33, y: 23, width: 3, height: 2, type: "clinic", emoji: "🏥" },
-            { name: "Beecroft Place (Woolworths)", x: 33, y: 26, width: 5, height: 4, type: "shop", emoji: "🏪" },
-            { name: "The Beehive Cafe", x: 26, y: 24, width: 2, height: 2, type: "cafe", emoji: "☕" },
-            { name: "Beecroft Club (Bowling)", x: 38, y: 28, width: 4, height: 3, type: "recreation", emoji: "🎳" },
-            { name: "Tennis Club", x: 42, y: 32, width: 4, height: 3, type: "recreation", emoji: "🎾" },
-            { name: "Railway Gardens Playground", x: 25, y: 17, width: 2, height: 2, type: "playground", emoji: "🎪" },
-            { name: "Roselea Public School", x: 40, y: 18, width: 5, height: 4, type: "school", emoji: "🏫" },
-            { name: "Your Farm House", x: 12, y: 12, width: 3, height: 3, type: "home", emoji: "🏡" },
-            { name: "Community Garden", x: 15, y: 24, width: 4, height: 3, type: "garden", emoji: "🌻" }
+            // Central area - Railway Station and surrounding
+            { name: "Beecroft Railway Station", x: 120, y: 117, width: 8, height: 6, type: "station", emoji: "🚂" },
+            { name: "HerGP Medical Clinic", x: 105, y: 118, width: 5, height: 4, type: "clinic", emoji: "🏥" },
+            { name: "Railway Gardens Playground", x: 115, y: 108, width: 4, height: 4, type: "playground", emoji: "🎪" },
+
+            // Shopping area (Hannah Street / Wongala area)
+            { name: "Beecroft Place (Woolworths)", x: 138, y: 133, width: 8, height: 6, type: "shop", emoji: "🏪" },
+            { name: "The Beehive Cafe", x: 120, y: 130, width: 4, height: 3, type: "cafe", emoji: "☕" },
+            { name: "Beecroft Medical Centre", x: 125, y: 128, width: 5, height: 3, type: "clinic", emoji: "🏥" },
+            { name: "Beecroft General Practice", x: 148, y: 130, width: 5, height: 3, type: "clinic", emoji: "🏥" },
+
+            // Schools (spread across suburb)
+            { name: "Beecroft Public School", x: 90, y: 65, width: 10, height: 8, type: "school", emoji: "🏫" },
+            { name: "Arden Anglican School", x: 108, y: 95, width: 9, height: 7, type: "school", emoji: "🏫" },
+            { name: "Roselea Public School", x: 165, y: 105, width: 10, height: 7, type: "school", emoji: "🏫" },
+
+            // Recreation facilities
+            { name: "Beecroft Club (Bowling)", x: 160, y: 155, width: 7, height: 5, type: "recreation", emoji: "🎳" },
+            { name: "Tennis Club", x: 175, y: 165, width: 6, height: 5, type: "recreation", emoji: "🎾" },
+
+            // Residential
+            { name: "Your Farm House", x: 50, y: 80, width: 5, height: 5, type: "home", emoji: "🏡" },
+            { name: "Community Garden", x: 78, y: 140, width: 6, height: 5, type: "garden", emoji: "🌻" }
         ];
 
         // Mark building tiles
@@ -172,23 +204,34 @@ class Game {
     }
 
     initNPCs() {
-        // Lots of friendly Beecroft residents!
+        // Lots of friendly Beecroft residents spread across the suburb!
         this.npcs = [
-            { name: "Mrs. Chen", x: 27, y: 24, emoji: "👵", role: "cafe owner", greeting: "Welcome to The Beehive! Best coffee in Beecroft!" },
-            { name: "Dr. Shin Li", x: 23, y: 19, emoji: "👩‍⚕️", role: "HerGP clinic owner", greeting: "Welcome to HerGP! We're here to care for you and your family. Stay well!" },
-            { name: "Dr. Patel", x: 30, y: 22, emoji: "👨‍⚕️", role: "doctor", greeting: "Stay healthy! Don't forget to rest." },
-            { name: "Sarah", x: 23, y: 11, emoji: "👩‍🏫", role: "teacher", greeting: "Education is the key to success!" },
-            { name: "Tom", x: 30, y: 19, emoji: "🧑‍💼", role: "station master", greeting: "All trains running on time today!" },
-            { name: "Emma", x: 34, y: 27, emoji: "👩", role: "shopkeeper", greeting: "Fresh produce just arrived!" },
-            { name: "Jack", x: 16, y: 25, emoji: "🧑‍🌾", role: "gardener", greeting: "Nothing beats growing your own veggies!" },
-            { name: "Lisa", x: 39, y: 29, emoji: "👱‍♀️", role: "bowls player", greeting: "Come join us for a game sometime!" },
-            { name: "Mike", x: 43, y: 33, emoji: "🧑", role: "tennis coach", greeting: "Want to improve your backhand?" },
-            { name: "Olivia", x: 26, y: 17, emoji: "👧", role: "playground kid", greeting: "This playground is so fun!" },
-            { name: "David", x: 41, y: 19, emoji: "👨‍🏫", role: "principal", greeting: "Welcome to our school community!" },
-            { name: "Grace", x: 20, y: 35, emoji: "👩", role: "park ranger", greeting: "Enjoying our beautiful bushland?" },
-            { name: "Ben", x: 15, y: 13, emoji: "🧑", role: "neighbor", greeting: "G'day neighbor! Lovely weather today!" },
-            { name: "Sophie", x: 35, y: 32, emoji: "👧", role: "local kid", greeting: "Want to play? I love this suburb!" },
-            { name: "James", x: 25, y: 28, emoji: "👨", role: "resident", greeting: "Beecroft is such a great place to live!" }
+            // Near cafe and shops
+            { name: "Mrs. Chen", x: 122, y: 131, emoji: "👵", role: "cafe owner", greeting: "Welcome to The Beehive! Best coffee in Beecroft!" },
+            { name: "Emma", x: 142, y: 136, emoji: "👩", role: "shopkeeper", greeting: "Fresh produce just arrived!" },
+
+            // Medical clinics
+            { name: "Dr. Shin Li", x: 107, y: 120, emoji: "👩‍⚕️", role: "HerGP clinic owner", greeting: "Welcome to HerGP! We're here to care for you and your family. Stay well!" },
+            { name: "Dr. Patel", x: 127, y: 129, emoji: "👨‍⚕️", role: "doctor", greeting: "Stay healthy! Don't forget to rest." },
+
+            // Railway station
+            { name: "Tom", x: 124, y: 120, emoji: "🧑‍💼", role: "station master", greeting: "All trains running on time today!" },
+
+            // Schools
+            { name: "Sarah", x: 95, y: 68, emoji: "👩‍🏫", role: "teacher", greeting: "Education is the key to success!" },
+            { name: "David", x: 169, y: 108, emoji: "👨‍🏫", role: "principal", greeting: "Welcome to our school community!" },
+
+            // Parks and recreation
+            { name: "Jack", x: 82, y: 142, emoji: "🧑‍🌾", role: "gardener", greeting: "Nothing beats growing your own veggies!" },
+            { name: "Lisa", x: 163, y: 157, emoji: "👱‍♀️", role: "bowls player", greeting: "Come join us for a game sometime!" },
+            { name: "Mike", x: 178, y: 167, emoji: "🧑", role: "tennis coach", greeting: "Want to improve your backhand?" },
+            { name: "Olivia", x: 117, y: 110, emoji: "👧", role: "playground kid", greeting: "This playground is so fun!" },
+
+            // Residential areas
+            { name: "Grace", x: 45, y: 195, emoji: "👩", role: "park ranger", greeting: "Enjoying our beautiful bushland?" },
+            { name: "Ben", x: 53, y: 83, emoji: "🧑", role: "neighbor", greeting: "G'day neighbor! Lovely weather today!" },
+            { name: "Sophie", x: 155, y: 145, emoji: "👧", role: "local kid", greeting: "Want to play? I love this suburb!" },
+            { name: "James", x: 110, y: 135, emoji: "👨", role: "resident", greeting: "Beecroft is such a great place to live!" }
         ];
     }
 
