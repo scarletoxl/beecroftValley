@@ -6,15 +6,15 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.tileSize = 32;
-        this.mapWidth = 250;
-        this.mapHeight = 250;
+        this.mapWidth = 400;
+        this.mapHeight = 400;
 
         // Camera for scrolling
         this.camera = { x: 0, y: 0 };
 
         // Game state - Initialize with defaults
         this.player = {
-            x: 125, y: 125,
+            x: 85, y: 135, // Start at farm house in western Beecroft
             speed: 1,
             energy: 100,
             maxEnergy: 100,
@@ -95,43 +95,101 @@ class Game {
             }
         }
 
-        // Roads
+        // Roads - Based on real Beecroft geography
+
+        // Beecroft Road - Main north-south arterial (4 tiles wide)
         for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 123; x <= 127; x++) {
+            for (let x = 198; x <= 201; x++) {
                 this.map[y][x] = 3;
             }
         }
 
-        for (let x = 60; x < 180; x++) {
-            for (let y = 128; y <= 132; y++) {
+        // Hannah Street - Main east-west shopping strip (4 tiles wide)
+        for (let x = 80; x < 320; x++) {
+            for (let y = 188; y <= 191; y++) {
                 this.map[y][x] = 3;
             }
         }
 
-        for (let x = 50; x < 200; x++) {
-            for (let y = 145; y <= 148; y++) {
+        // Chapman Avenue - East-west north of station (4 tiles wide)
+        for (let x = 100; x < 300; x++) {
+            for (let y = 173; y <= 176; y++) {
                 this.map[y][x] = 3;
             }
         }
 
-        for (let x = 135; x < 175; x++) {
-            this.map[135][x] = 3;
-            this.map[136][x] = 3;
+        // Copeland Road - East-west south of station (4 tiles wide)
+        for (let x = 120; x < 280; x++) {
+            for (let y = 213; y <= 216; y++) {
+                this.map[y][x] = 3;
+            }
         }
 
-        for (let i = 0; i < 60; i++) {
-            const x = 140 + i;
-            const y = 150 + Math.floor(i * 0.8);
+        // Wongala Crescent - Curved road through eastern shopping area (3 tiles wide)
+        for (let i = 0; i < 50; i++) {
+            const x = 220 + Math.floor(i * 0.6);
+            const y = 180 + Math.floor(Math.sin(i * 0.15) * 15);
             if (x < this.mapWidth && y < this.mapHeight) {
-                this.map[y][x] = 3;
-                this.map[y][x + 1] = 3;
+                for (let w = 0; w < 3; w++) {
+                    if (this.map[y] && this.map[y][x + w]) {
+                        this.map[y][x + w] = 3;
+                    }
+                }
             }
         }
 
-        // Railway tracks
-        for (let x = 30; x < 220; x++) {
-            this.map[115][x] = 8;
-            this.map[116][x] = 8;
+        // Sutherland Road - Diagonal southeast from station (3 tiles wide)
+        for (let i = 0; i < 80; i++) {
+            const x = 210 + Math.floor(i * 0.7);
+            const y = 200 + Math.floor(i * 0.5);
+            if (x < this.mapWidth && y < this.mapHeight) {
+                for (let w = 0; w < 3; w++) {
+                    if (this.map[y + w] && this.map[y + w][x]) {
+                        this.map[y + w][x] = 3;
+                    }
+                }
+            }
+        }
+
+        // Malton Road - East from station (3 tiles wide)
+        for (let x = 200; x < 260; x++) {
+            for (let y = 195; y <= 197; y++) {
+                this.map[y][x] = 3;
+            }
+        }
+
+        // Local streets network (2-3 tiles wide)
+        // Eastern residential streets
+        for (let x = 250; x < 320; x++) {
+            for (let y = 165; y <= 167; y++) {
+                this.map[y][x] = 3;
+            }
+        }
+
+        // Western residential streets
+        for (let x = 60; x < 180; x++) {
+            for (let y = 130; y <= 132; y++) {
+                this.map[y][x] = 3;
+            }
+        }
+
+        // North-south connector roads
+        for (let y = 130; y < 220; y++) {
+            for (let x = 150; x <= 152; x++) {
+                this.map[y][x] = 3;
+            }
+        }
+
+        for (let y = 160; y < 230; y++) {
+            for (let x = 250; x <= 252; x++) {
+                this.map[y][x] = 3;
+            }
+        }
+
+        // Railway tracks - East-west through station (2 tiles wide)
+        for (let x = 50; x < 350; x++) {
+            this.map[194][x] = 8;
+            this.map[195][x] = 8;
         }
 
         this.addTreeClusters();
@@ -140,17 +198,47 @@ class Game {
 
     addTreeClusters() {
         const treeAreas = [
-            { x: 10, y: 170, width: 90, height: 70, density: 0.8 },
-            { x: 150, y: 20, width: 80, height: 60, density: 0.7 },
-            { x: 30, y: 40, width: 80, height: 60, density: 0.5 },
-            { x: 20, y: 110, width: 90, height: 50, density: 0.5 },
-            { x: 140, y: 50, width: 90, height: 50, density: 0.5 },
-            { x: 150, y: 140, width: 80, height: 40, density: 0.5 },
-            { x: 70, y: 135, width: 35, height: 30, density: 0.8 },
-            { x: 85, y: 60, width: 30, height: 25, density: 0.6 },
-            { x: 160, y: 100, width: 35, height: 30, density: 0.6 },
-            { x: 110, y: 30, width: 50, height: 20, density: 0.3 },
-            { x: 130, y: 180, width: 40, height: 30, density: 0.4 }
+            // Western Beecroft - Dense Blue Gum forest areas
+            { x: 10, y: 240, width: 120, height: 90, density: 0.85 }, // SW forest
+            { x: 20, y: 140, width: 100, height: 80, density: 0.75 }, // W forest
+            { x: 15, y: 50, width: 110, height: 70, density: 0.7 }, // NW forest
+
+            // Fearnley Park area - Very dense
+            { x: 40, y: 160, width: 80, height: 50, density: 0.9 },
+
+            // Northern residential - Street trees
+            { x: 140, y: 20, width: 150, height: 60, density: 0.5 },
+            { x: 300, y: 40, width: 80, height: 80, density: 0.6 },
+
+            // Eastern residential areas - Medium density
+            { x: 260, y: 140, width: 100, height: 80, density: 0.6 },
+            { x: 280, y: 220, width: 90, height: 70, density: 0.65 },
+            { x: 320, y: 160, width: 60, height: 100, density: 0.5 },
+
+            // Southern areas
+            { x: 150, y: 260, width: 120, height: 80, density: 0.7 },
+            { x: 250, y: 280, width: 100, height: 80, density: 0.65 },
+            { x: 50, y: 330, width: 140, height: 50, density: 0.75 },
+
+            // Between roads - Street tree clusters
+            { x: 160, y: 140, width: 30, height: 25, density: 0.7 },
+            { x: 210, y: 155, width: 40, height: 30, density: 0.6 },
+            { x: 155, y: 200, width: 35, height: 35, density: 0.65 },
+
+            // Around schools - Leafy surroundings
+            { x: 165, y: 210, width: 45, height: 40, density: 0.7 }, // Near Beecroft Public
+            { x: 180, y: 150, width: 50, height: 35, density: 0.6 }, // Near Arden
+            { x: 265, y: 155, width: 45, height: 40, density: 0.65 }, // Near Roselea
+
+            // Central pockets between buildings
+            { x: 205, y: 170, width: 30, height: 25, density: 0.5 },
+            { x: 220, y: 200, width: 25, height: 30, density: 0.55 },
+
+            // Northeast corner
+            { x: 330, y: 80, width: 50, height: 90, density: 0.6 },
+
+            // Far western edge
+            { x: 5, y: 10, width: 40, height: 30, density: 0.7 }
         ];
 
         treeAreas.forEach(area => {
@@ -172,9 +260,24 @@ class Game {
 
     addParks() {
         const parks = [
-            { x: 115, y: 108, width: 7, height: 5 },
-            { x: 108, y: 133, width: 10, height: 7 },
-            { x: 75, y: 138, width: 20, height: 10 }
+            // Railway Gardens Playground - North of station
+            { x: 195, y: 185, width: 10, height: 8 },
+
+            // Village Green - West of shopping area
+            { x: 170, y: 185, width: 15, height: 12 },
+
+            // Fearnley Park - Western area, surrounded by Blue Gum forest
+            { x: 45, y: 165, width: 25, height: 18 },
+
+            // Chilworth Reserve - Northeast area
+            { x: 290, y: 150, width: 18, height: 12 },
+
+            // Booth Park - Southeast area
+            { x: 260, y: 250, width: 20, height: 15 },
+
+            // Small local parks scattered throughout
+            { x: 140, y: 145, width: 12, height: 8 },
+            { x: 225, y: 220, width: 10, height: 8 }
         ];
 
         parks.forEach(park => {
@@ -189,11 +292,11 @@ class Game {
     // ===== BUILDING INITIALIZATION =====
     initBuildings() {
         this.buildings = [
-            // Updated with different visual styles
+            // === CENTRAL STATION AREA (200, 195) ===
             {
                 name: "Beecroft Railway Station",
-                x: 120, y: 117,
-                width: 8, height: 6,
+                x: 196, y: 192,
+                width: 12, height: 8,
                 type: "station",
                 emoji: "🚂",
                 color: "#8B4513",
@@ -201,9 +304,68 @@ class Game {
                 canEnter: true
             },
             {
+                name: "Railway Gardens Playground",
+                x: 195, y: 185,
+                width: 8, height: 6,
+                type: "playground",
+                emoji: "🎪",
+                color: "#FFE082",
+                hasInterior: false
+            },
+
+            // === HANNAH ST & BEECROFT RD SHOPPING AREA ===
+            {
+                name: "Woolworths Beecroft",
+                x: 208, y: 182,
+                width: 10, height: 8,
+                type: "shop",
+                emoji: "🛒",
+                color: "#C8E6C9",
+                hasInterior: true,
+                canEnter: true,
+                isShop: true,
+                shopType: "grocery"
+            },
+            {
+                name: "Hannah's Beecroft",
+                x: 218, y: 182,
+                width: 6, height: 4,
+                type: "restaurant",
+                emoji: "🍽️",
+                color: "#FFCCBC",
+                hasInterior: true,
+                canEnter: true,
+                isRestaurant: true,
+                hasJobs: true
+            },
+            {
+                name: "The Beehive Cafe",
+                x: 203, y: 185,
+                width: 5, height: 4,
+                type: "cafe",
+                emoji: "☕",
+                color: "#FFF3E0",
+                hasInterior: true,
+                canEnter: true,
+                isRestaurant: true,
+                hasJobs: true,
+                owner: "Mrs. Chen"
+            },
+            {
+                name: "Beecroft Medical Centre",
+                x: 195, y: 192,
+                width: 6, height: 4,
+                type: "clinic",
+                emoji: "🏥",
+                color: "#E1F5FE",
+                hasInterior: true,
+                canEnter: true,
+                hasDoctor: true
+            },
+            {
                 name: "HerGP Medical Clinic",
-                x: 132, y: 18, // Across from station at x:29, y:18
-                width: 3, height: 2,
+                x: 193, y: 177,
+                width: 5, height: 4,
                 type: "clinic",
                 emoji: "👩‍⚕️",
                 color: "#E8F5E9",
@@ -213,65 +375,80 @@ class Game {
                 owner: "Dr. Shin Li"
             },
             {
-                name: "Railway Gardens Playground",
-                x: 115, y: 108,
-                width: 4, height: 4,
-                type: "playground",
-                emoji: "🎪",
-                color: "#FFE082",
-                hasInterior: false
+                name: "Beecroft Veterinary Clinic",
+                x: 215, y: 179,
+                width: 5, height: 4,
+                type: "vet",
+                emoji: "🐾",
+                color: "#E0F7FA",
+                hasInterior: true,
+                canEnter: true
             },
             {
-                name: "Beecroft Place (Woolworths)",
-                x: 138, y: 133,
-                width: 8, height: 6,
+                name: "Vintage Cellars Beecroft",
+                x: 197, y: 200,
+                width: 5, height: 4,
                 type: "shop",
-                emoji: "🏪",
-                color: "#C8E6C9",
-                hasInterior: true,
-                canEnter: true,
-                isShop: true,
-                shopType: "grocery"
-            },
-            {
-                name: "The Beehive Cafe",
-                x: 120, y: 130,
-                width: 4, height: 3,
-                type: "cafe",
-                emoji: "☕",
-                color: "#FFCCBC",
-                hasInterior: true,
-                canEnter: true,
-                isRestaurant: true,
-                hasJobs: true,
-                owner: "Mrs. Chen"
-            },
-            {
-                name: "Beecroft Medical Centre",
-                x: 125, y: 128,
-                width: 5, height: 3,
-                type: "clinic",
-                emoji: "🏥",
-                color: "#E1F5FE",
-                hasInterior: true,
-                canEnter: true,
-                hasDoctor: true
-            },
-            {
-                name: "Beecroft General Practice",
-                x: 148, y: 130,
-                width: 5, height: 3,
-                type: "clinic",
-                emoji: "🏥",
+                emoji: "🍷",
                 color: "#F3E5F5",
                 hasInterior: true,
                 canEnter: true,
-                hasDoctor: true
+                isShop: true,
+                shopType: "liquor"
             },
             {
-                name: "Beecroft Public School",
-                x: 90, y: 65,
-                width: 10, height: 8,
+                name: "Snap Fitness 24/7",
+                x: 210, y: 186,
+                width: 6, height: 5,
+                type: "gym",
+                emoji: "💪",
+                color: "#CFD8DC",
+                hasInterior: true,
+                canEnter: true,
+                hasJobs: true
+            },
+            {
+                name: "Beecroft Malaysian Restaurant",
+                x: 220, y: 186,
+                width: 5, height: 4,
+                type: "restaurant",
+                emoji: "🍜",
+                color: "#FFF9C4",
+                hasInterior: true,
+                canEnter: true,
+                isRestaurant: true
+            },
+
+            // === CHAPMAN AVENUE AREA ===
+            {
+                name: "Ross Tours",
+                x: 188, y: 170,
+                width: 5, height: 3,
+                type: "business",
+                emoji: "🚌",
+                color: "#E3F2FD",
+                hasInterior: true,
+                canEnter: true
+            },
+
+            // === MALTON ROAD AREA ===
+            {
+                name: "The Malton Hotel",
+                x: 230, y: 193,
+                width: 8, height: 6,
+                type: "pub",
+                emoji: "🍺",
+                color: "#D7CCC8",
+                hasInterior: true,
+                canEnter: true,
+                isRestaurant: true
+            },
+
+            // === SCHOOLS ===
+            {
+                name: "Beecroft Public School (Est. 1897)",
+                x: 178, y: 218,
+                width: 12, height: 10,
                 type: "school",
                 emoji: "🏫",
                 color: "#FFF9C4",
@@ -280,9 +457,20 @@ class Game {
                 hasJobs: true
             },
             {
+                name: "The Verandah Beecroft",
+                x: 175, y: 215,
+                width: 4, height: 3,
+                type: "cafe",
+                emoji: "☕",
+                color: "#FFCCBC",
+                hasInterior: true,
+                canEnter: true,
+                isRestaurant: true
+            },
+            {
                 name: "Arden Anglican School",
-                x: 108, y: 95,
-                width: 9, height: 7,
+                x: 192, y: 158,
+                width: 11, height: 9,
                 type: "school",
                 emoji: "🏫",
                 color: "#E0F2F1",
@@ -292,8 +480,8 @@ class Game {
             },
             {
                 name: "Roselea Public School",
-                x: 165, y: 105,
-                width: 10, height: 7,
+                x: 268, y: 168,
+                width: 12, height: 9,
                 type: "school",
                 emoji: "🏫",
                 color: "#FCE4EC",
@@ -301,10 +489,50 @@ class Game {
                 canEnter: true,
                 hasJobs: true
             },
+
+            // === PARKS & RECREATION ===
+            {
+                name: "Village Green",
+                x: 170, y: 185,
+                width: 8, height: 6,
+                type: "park",
+                emoji: "🌳",
+                color: "#F1F8E9",
+                hasInterior: false
+            },
+            {
+                name: "Fearnley Park",
+                x: 45, y: 165,
+                width: 10, height: 8,
+                type: "park",
+                emoji: "🌲",
+                color: "#E8F5E9",
+                hasInterior: false
+            },
+            {
+                name: "Chilworth Reserve",
+                x: 290, y: 150,
+                width: 9, height: 7,
+                type: "park",
+                emoji: "🏞️",
+                color: "#F1F8E9",
+                hasInterior: false
+            },
+            {
+                name: "Booth Park",
+                x: 260, y: 250,
+                width: 10, height: 8,
+                type: "park",
+                emoji: "⚽",
+                color: "#E8F5E9",
+                hasInterior: false
+            },
+
+            // === OTHER FACILITIES ===
             {
                 name: "Beecroft Club (Bowling)",
-                x: 160, y: 155,
-                width: 7, height: 5,
+                x: 245, y: 200,
+                width: 8, height: 6,
                 type: "recreation",
                 emoji: "🎳",
                 color: "#D1C4E9",
@@ -313,18 +541,20 @@ class Game {
             },
             {
                 name: "Tennis Club",
-                x: 175, y: 165,
-                width: 6, height: 5,
+                x: 255, y: 210,
+                width: 7, height: 6,
                 type: "recreation",
                 emoji: "🎾",
                 color: "#C5CAE9",
                 hasInterior: true,
                 canEnter: true
             },
+
+            // === RESIDENTIAL ===
             {
                 name: "Your Farm House",
-                x: 50, y: 80,
-                width: 5, height: 5,
+                x: 80, y: 130,
+                width: 6, height: 6,
                 type: "home",
                 emoji: "🏡",
                 color: "#FFEBEE",
@@ -334,17 +564,19 @@ class Game {
             },
             {
                 name: "Community Garden",
-                x: 78, y: 140,
-                width: 6, height: 5,
+                x: 120, y: 145,
+                width: 7, height: 6,
                 type: "garden",
                 emoji: "🌻",
                 color: "#F1F8E9",
                 hasInterior: false
             },
+
+            // === AUTO & SERVICES ===
             {
                 name: "Beecroft Auto Sales",
-                x: 155, y: 145,
-                width: 7, height: 5,
+                x: 235, y: 185,
+                width: 8, height: 6,
                 type: "cardealer",
                 emoji: "🚗",
                 color: "#B3E5FC",
@@ -369,8 +601,9 @@ class Game {
     // ===== NPC INITIALIZATION =====
     initNPCs() {
         this.npcs = [
+            // === CENTRAL SHOPPING AREA ===
             {
-                name: "Mrs. Chen", x: 122, y: 131, emoji: "👵",
+                name: "Mrs. Chen", x: 205, y: 187, emoji: "👵",
                 role: "cafe owner",
                 greeting: "Welcome to The Beehive! Best coffee in Beecroft!",
                 dialogues: [
@@ -388,13 +621,13 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 122,
-                baseY: 131
+                baseX: 205,
+                baseY: 187
             },
             {
-                name: "Emma", x: 142, y: 136, emoji: "👩",
+                name: "Emma", x: 212, y: 185, emoji: "👩",
                 role: "shopkeeper",
-                greeting: "Fresh produce just arrived!",
+                greeting: "Fresh produce just arrived at Woolworths!",
                 dialogues: [
                     "We stock the best local produce!",
                     "Check out our weekly specials!",
@@ -407,13 +640,97 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 142,
-                baseY: 136
+                baseX: 212,
+                baseY: 185
             },
             {
-                name: "Dr. Shin Li", x: 133, y: 19, emoji: "👩‍⚕️",
+                name: "Hannah", x: 220, y: 184, emoji: "👩‍🍳",
+                role: "restaurant owner",
+                greeting: "Welcome to Hannah's! Try our signature dishes!",
+                dialogues: [
+                    "We use only fresh local ingredients.",
+                    "Our menu changes seasonally.",
+                    "We're a Beecroft institution!",
+                    "Looking for experienced kitchen staff."
+                ],
+                offersJob: true,
+                jobType: "chef",
+                jobPay: 18,
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 220,
+                baseY: 184
+            },
+            {
+                name: "Marcus", x: 199, y: 202, emoji: "🍷",
+                role: "bottle shop owner",
+                greeting: "Welcome to Vintage Cellars! Best selection in town!",
+                dialogues: [
+                    "We have excellent Australian wines.",
+                    "Looking for something special?",
+                    "Try our craft beer selection.",
+                    "Wine tasting every Friday!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 199,
+                baseY: 202
+            },
+            {
+                name: "Jade", x: 212, y: 188, emoji: "💪",
+                role: "fitness trainer",
+                greeting: "Ready to get fit? Join Snap Fitness!",
+                dialogues: [
+                    "We're open 24/7 for your convenience!",
+                    "New to fitness? I can help!",
+                    "Personal training sessions available.",
+                    "Fitness is a lifestyle, not a phase."
+                ],
+                offersJob: true,
+                jobType: "trainer",
+                jobPay: 20,
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 212,
+                baseY: 188
+            },
+            {
+                name: "Wei", x: 222, y: 188, emoji: "👨‍🍳",
+                role: "restaurant chef",
+                greeting: "Best Malaysian food in Sydney! Come try!",
+                dialogues: [
+                    "Our laksa is legendary!",
+                    "Made with authentic Malaysian spices.",
+                    "Family recipes passed down generations.",
+                    "Spicy or mild, we do it all!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 222,
+                baseY: 188
+            },
+
+            // === MEDICAL FACILITIES ===
+            {
+                name: "Dr. Shin Li", x: 195, y: 179, emoji: "👩‍⚕️",
                 role: "HerGP clinic owner",
-                greeting: "Welcome to HerGP! We're here to care for you and your family. Stay well!",
+                greeting: "Welcome to HerGP! We're here to care for you and your family.",
                 dialogues: [
                     "Your health is our priority.",
                     "Don't forget your annual checkup!",
@@ -427,11 +744,11 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 133,
-                baseY: 19
+                baseX: 195,
+                baseY: 179
             },
             {
-                name: "Dr. Patel", x: 127, y: 129, emoji: "👨‍⚕️",
+                name: "Dr. Patel", x: 197, y: 194, emoji: "👨‍⚕️",
                 role: "doctor",
                 greeting: "Stay healthy! Don't forget to rest.",
                 dialogues: [
@@ -447,11 +764,33 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 127,
-                baseY: 129
+                baseX: 197,
+                baseY: 194
             },
             {
-                name: "Tom", x: 124, y: 120, emoji: "🧑‍💼",
+                name: "Dr. Emily", x: 217, y: 181, emoji: "👩‍⚕️",
+                role: "veterinarian",
+                greeting: "Bringing your furry friend for a checkup?",
+                dialogues: [
+                    "Pets are family too!",
+                    "Regular vet visits keep pets healthy.",
+                    "We treat all domestic animals.",
+                    "Emergency services available 24/7."
+                ],
+                isDoctor: true,
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 217,
+                baseY: 181
+            },
+
+            // === STATION AREA ===
+            {
+                name: "Tom", x: 200, y: 196, emoji: "🧑‍💼",
                 role: "station master",
                 greeting: "All trains running on time today!",
                 dialogues: [
@@ -466,18 +805,39 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 124,
-                baseY: 120
+                baseX: 200,
+                baseY: 196
             },
             {
-                name: "Sarah", x: 95, y: 68, emoji: "👩‍🏫",
+                name: "Olivia", x: 198, y: 187, emoji: "👧",
+                role: "playground kid",
+                greeting: "This playground is so fun!",
+                dialogues: [
+                    "Want to play on the train equipment?",
+                    "I love Railway Gardens!",
+                    "My friends come here every day!",
+                    "The train-themed slide is my favorite!"
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 198,
+                baseY: 187
+            },
+
+            // === SCHOOLS ===
+            {
+                name: "Sarah", x: 182, y: 222, emoji: "👩‍🏫",
                 role: "teacher",
                 greeting: "Education is the key to success!",
                 dialogues: [
-                    "Our students are wonderful!",
+                    "Beecroft Public since 1897!",
                     "Teaching is my passion.",
                     "We need more classroom assistants.",
-                    "Knowledge is power!"
+                    "Our students are wonderful!"
                 ],
                 offersJob: true,
                 jobType: "assistant",
@@ -488,16 +848,16 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 95,
-                baseY: 68
+                baseX: 182,
+                baseY: 222
             },
             {
-                name: "David", x: 169, y: 108, emoji: "👨‍🏫",
-                role: "principal",
-                greeting: "Welcome to our school community!",
+                name: "Principal Roberts", x: 184, y: 220, emoji: "👨‍🏫",
+                role: "school principal",
+                greeting: "Welcome to Beecroft Public School!",
                 dialogues: [
-                    "Excellence in education since 1900.",
-                    "Our school has great facilities.",
+                    "Excellence in education since 1897.",
+                    "Our heritage is our pride.",
                     "Community is important to us.",
                     "Proud to serve Beecroft families."
                 ],
@@ -507,18 +867,37 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 169,
-                baseY: 108
+                baseX: 184,
+                baseY: 220
             },
             {
-                name: "Jack", x: 82, y: 142, emoji: "🧑‍🌾",
-                role: "gardener",
-                greeting: "Nothing beats growing your own veggies!",
+                name: "David", x: 196, y: 162, emoji: "👨‍🏫",
+                role: "principal",
+                greeting: "Welcome to Arden Anglican School!",
                 dialogues: [
-                    "The soil here is excellent!",
-                    "Try composting your scraps.",
-                    "Spring is the best planting season.",
-                    "Community gardening brings people together."
+                    "Faith and learning together.",
+                    "Our school has great facilities.",
+                    "Building character and knowledge.",
+                    "A caring Christian community."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 196,
+                baseY: 162
+            },
+            {
+                name: "Ms. Thompson", x: 272, y: 172, emoji: "👩‍🏫",
+                role: "teacher",
+                greeting: "Roselea Public is a wonderful school!",
+                dialogues: [
+                    "We're in the heart of East Beecroft.",
+                    "Small school, big heart!",
+                    "Every child matters here.",
+                    "Join our school community!"
                 ],
                 canMarry: true,
                 isSick: false,
@@ -526,11 +905,53 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 82,
-                baseY: 142
+                baseX: 272,
+                baseY: 172
+            },
+
+            // === PUBS & RESTAURANTS ===
+            {
+                name: "Barry", x: 234, y: 196, emoji: "🍺",
+                role: "publican",
+                greeting: "Welcome to The Malton! Pull up a stool!",
+                dialogues: [
+                    "The Malton has been here since 1888!",
+                    "Best pub meals in Beecroft.",
+                    "Great spot to watch the footy.",
+                    "Cold beer, warm welcome!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 234,
+                baseY: 196
             },
             {
-                name: "Lisa", x: 163, y: 157, emoji: "👱‍♀️",
+                name: "Claire", x: 177, y: 217, emoji: "☕",
+                role: "cafe owner",
+                greeting: "Welcome to The Verandah! Relax and enjoy!",
+                dialogues: [
+                    "We're right near Beecroft Public School.",
+                    "Parents love our coffee!",
+                    "Fresh pastries daily.",
+                    "A quiet spot to unwind."
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 177,
+                baseY: 217
+            },
+
+            // === RECREATION ===
+            {
+                name: "Lisa", x: 248, y: 203, emoji: "👱‍♀️",
                 role: "bowls player",
                 greeting: "Come join us for a game sometime!",
                 dialogues: [
@@ -545,11 +966,11 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 163,
-                baseY: 157
+                baseX: 248,
+                baseY: 203
             },
             {
-                name: "Mike", x: 178, y: 167, emoji: "🧑",
+                name: "Mike", x: 258, y: 213, emoji: "🎾",
                 role: "tennis coach",
                 greeting: "Want to improve your backhand?",
                 dialogues: [
@@ -564,36 +985,19 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 178,
-                baseY: 167
+                baseX: 258,
+                baseY: 213
             },
+
+            // === PARKS & NATURE ===
             {
-                name: "Olivia", x: 117, y: 110, emoji: "👧",
-                role: "playground kid",
-                greeting: "This playground is so fun!",
-                dialogues: [
-                    "Want to play on the swings?",
-                    "I love this playground!",
-                    "My friends come here every day!",
-                    "The slide is my favorite!"
-                ],
-                canMarry: false,
-                isSick: false,
-                targetX: null,
-                targetY: null,
-                wanderTimer: 0,
-                standTimer: 0,
-                baseX: 117,
-                baseY: 110
-            },
-            {
-                name: "Grace", x: 45, y: 195, emoji: "👩",
+                name: "Grace", x: 50, y: 170, emoji: "👩",
                 role: "park ranger",
-                greeting: "Enjoying our beautiful bushland?",
+                greeting: "Enjoying Fearnley Park's beautiful bushland?",
                 dialogues: [
                     "Please stay on the trails!",
+                    "Blue Gums are precious.",
                     "Native wildlife lives here.",
-                    "The bush is precious.",
                     "Respect nature and it respects you."
                 ],
                 canMarry: true,
@@ -602,11 +1006,72 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 45,
-                baseY: 195
+                baseX: 50,
+                baseY: 170
             },
             {
-                name: "Ben", x: 53, y: 83, emoji: "🧑",
+                name: "Jack", x: 122, y: 148, emoji: "🧑‍🌾",
+                role: "gardener",
+                greeting: "Nothing beats growing your own veggies!",
+                dialogues: [
+                    "The soil here is excellent!",
+                    "Try composting your scraps.",
+                    "Spring is the best planting season.",
+                    "Community gardening brings people together."
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 122,
+                baseY: 148
+            },
+
+            // === SERVICES ===
+            {
+                name: "Ross", x: 190, y: 172, emoji: "🚌",
+                role: "tour operator",
+                greeting: "Ross Tours - we'll take you anywhere!",
+                dialogues: [
+                    "Family business for 40 years.",
+                    "Wine tours are our specialty.",
+                    "Group bookings welcome!",
+                    "See Australia in comfort!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 190,
+                baseY: 172
+            },
+            {
+                name: "Steve", x: 238, y: 188, emoji: "🚗",
+                role: "car salesman",
+                greeting: "Looking for a reliable car? We've got you covered!",
+                dialogues: [
+                    "Best deals in Sydney!",
+                    "Trade-ins welcome.",
+                    "Family cars our specialty.",
+                    "Drive away today!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 238,
+                baseY: 188
+            },
+
+            // === RESIDENTIAL ===
+            {
+                name: "Ben", x: 85, y: 135, emoji: "🧑",
                 role: "neighbor",
                 greeting: "G'day neighbor! Lovely weather today!",
                 dialogues: [
@@ -621,31 +1086,12 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 53,
-                baseY: 83
+                baseX: 85,
+                baseY: 135
             },
             {
-                name: "Sophie", x: 155, y: 145, emoji: "👧",
-                role: "local kid",
-                greeting: "Want to play? I love this suburb!",
-                dialogues: [
-                    "I know all the best spots!",
-                    "Let's explore together!",
-                    "Beecroft is the best!",
-                    "Do you like adventures?"
-                ],
-                canMarry: false,
-                isSick: false,
-                targetX: null,
-                targetY: null,
-                wanderTimer: 0,
-                standTimer: 0,
-                baseX: 155,
-                baseY: 145
-            },
-            {
-                name: "James", x: 110, y: 135, emoji: "👨",
-                role: "resident",
+                name: "James", x: 175, y: 190, emoji: "👨",
+                role: "local resident",
                 greeting: "Beecroft is such a great place to live!",
                 dialogues: [
                     "Been here for 30 years.",
@@ -659,8 +1105,122 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 110,
-                baseY: 135
+                baseX: 175,
+                baseY: 190
+            },
+            {
+                name: "Sophie", x: 265, y: 255, emoji: "👧",
+                role: "local kid",
+                greeting: "Want to play at Booth Park?",
+                dialogues: [
+                    "I know all the best spots!",
+                    "Let's explore together!",
+                    "Beecroft is the best!",
+                    "Do you like adventures?"
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 265,
+                baseY: 255
+            },
+            {
+                name: "Margaret", x: 295, y: 155, emoji: "👵",
+                role: "retired teacher",
+                greeting: "I walk through Chilworth Reserve every day!",
+                dialogues: [
+                    "Beecroft has changed so much.",
+                    "The trees keep us cool.",
+                    "I taught here for 40 years.",
+                    "Best suburb in Sydney!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 295,
+                baseY: 155
+            },
+            {
+                name: "Alex", x: 270, y: 170, emoji: "🧑",
+                role: "parent",
+                greeting: "Just picking up the kids from school!",
+                dialogues: [
+                    "Roselea Public is excellent.",
+                    "Great teachers here.",
+                    "Safe, friendly community.",
+                    "Perfect for families!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 270,
+                baseY: 170
+            },
+            {
+                name: "Lucy", x: 210, y: 195, emoji: "👩",
+                role: "commuter",
+                greeting: "Catching the train to work!",
+                dialogues: [
+                    "Quick commute to the city.",
+                    "Beecroft Station is so reliable.",
+                    "Love living here, working there.",
+                    "Best of both worlds!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 210,
+                baseY: 195
+            },
+            {
+                name: "Noah", x: 245, y: 185, emoji: "🧒",
+                role: "student",
+                greeting: "Just finished school!",
+                dialogues: [
+                    "I go to Arden.",
+                    "Love sports and study!",
+                    "Wanna kick a footy?",
+                    "Beecroft rocks!"
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 245,
+                baseY: 185
+            },
+            {
+                name: "Isabella", x: 172, y: 188, emoji: "👩",
+                role: "yoga instructor",
+                greeting: "Namaste! Join our classes at Village Green!",
+                dialogues: [
+                    "Yoga in the park is magical.",
+                    "Mind, body, spirit.",
+                    "Free classes Sunday mornings!",
+                    "Everyone is welcome!"
+                ],
+                canMarry: true,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 172,
+                baseY: 188
             }
         ];
 
@@ -1767,8 +2327,136 @@ class Game {
         this.ctx.fillStyle = '#000';
         this.ctx.fillText('You', playerScreenX + 8, playerScreenY - 2);
 
+        // Render mini-map and location indicator
+        if (this.currentMap === 'overworld') {
+            this.renderMiniMap();
+            this.renderLocationIndicator();
+        }
+
         // Apply day/night overlay
         this.applyDayNightOverlay();
+    }
+
+    // ===== MINI-MAP =====
+    renderMiniMap() {
+        const miniMapSize = 150;
+        const miniMapX = this.canvas.width - miniMapSize - 10;
+        const miniMapY = 10;
+        const scale = miniMapSize / this.mapWidth;
+
+        // Background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
+
+        // Border
+        this.ctx.strokeStyle = '#fff';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
+
+        // Draw major roads on mini-map
+        this.ctx.fillStyle = '#888';
+        // Beecroft Road (vertical)
+        this.ctx.fillRect(miniMapX + 198 * scale, miniMapY, 4 * scale, miniMapSize);
+        // Hannah Street (horizontal)
+        this.ctx.fillRect(miniMapX, miniMapY + 188 * scale, miniMapSize, 4 * scale);
+
+        // Draw player position
+        const playerMapX = miniMapX + this.player.x * scale;
+        const playerMapY = miniMapY + this.player.y * scale;
+        this.ctx.fillStyle = '#ff0000';
+        this.ctx.beginPath();
+        this.ctx.arc(playerMapX, playerMapY, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Draw major landmarks
+        this.ctx.fillStyle = '#00ff00';
+        this.buildings.forEach(building => {
+            if (building.type === 'station' || building.type === 'school') {
+                const bx = miniMapX + (building.x + building.width / 2) * scale;
+                const by = miniMapY + (building.y + building.height / 2) * scale;
+                this.ctx.fillRect(bx - 1, by - 1, 2, 2);
+            }
+        });
+
+        // Label
+        this.ctx.font = 'bold 10px Arial';
+        this.ctx.fillStyle = '#fff';
+        this.ctx.fillText('MAP', miniMapX + 5, miniMapY + 15);
+    }
+
+    renderLocationIndicator() {
+        // Find nearest building
+        let nearestBuilding = null;
+        let nearestDistance = Infinity;
+
+        this.buildings.forEach(building => {
+            const centerX = building.x + building.width / 2;
+            const centerY = building.y + building.height / 2;
+            const dx = this.player.x - centerX;
+            const dy = this.player.y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < nearestDistance && distance < 15) {
+                nearestDistance = distance;
+                nearestBuilding = building;
+            }
+        });
+
+        // Display location name
+        if (nearestBuilding) {
+            const boxWidth = 300;
+            const boxHeight = 40;
+            const boxX = (this.canvas.width - boxWidth) / 2;
+            const boxY = this.canvas.height - boxHeight - 10;
+
+            // Background
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            this.ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+            // Border
+            this.ctx.strokeStyle = '#ffd700';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+            // Text
+            this.ctx.font = 'bold 14px Arial';
+            this.ctx.fillStyle = '#fff';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(`📍 ${nearestBuilding.name}`, this.canvas.width / 2, boxY + 25);
+            this.ctx.textAlign = 'left';
+        } else {
+            // Show general area
+            let areaName = "Beecroft Valley";
+
+            // Determine area based on position
+            if (this.player.x < 150) {
+                areaName = "Western Beecroft";
+            } else if (this.player.x > 250) {
+                areaName = "Eastern Beecroft";
+            } else if (this.player.y < 180) {
+                areaName = "Northern Beecroft";
+            } else if (this.player.y > 210) {
+                areaName = "Southern Beecroft";
+            } else {
+                areaName = "Central Beecroft";
+            }
+
+            const boxWidth = 200;
+            const boxHeight = 30;
+            const boxX = (this.canvas.width - boxWidth) / 2;
+            const boxY = this.canvas.height - boxHeight - 10;
+
+            // Background
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            this.ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+            // Text
+            this.ctx.font = '12px Arial';
+            this.ctx.fillStyle = '#fff';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(areaName, this.canvas.width / 2, boxY + 19);
+            this.ctx.textAlign = 'left';
+        }
     }
 
     // ===== SEASONAL COLORS =====
