@@ -8,15 +8,18 @@ Beecroft Valley is inspired by games like Stardew Valley, bringing the peaceful 
 
 ## Features
 
-- 🗺️ **Realistic Beecroft Map** - Explore actual streets like Beecroft Road, Hannah Street, and Wongala Crescent
-- 🚂 **Real Landmarks** - Visit Beecroft Railway Station, schools, medical centres, cafes, and parks
-- 🌳 **Lots of Trees** - Experience Beecroft's famously leafy streets and bushland
-- 👥 **14 Friendly NPCs** - Meet locals including Mrs. Chen at The Beehive Cafe, Dr. Patel, teachers, and neighbors
-- 🏫 **Actual Schools** - Beecroft Public School (est. 1897), Arden Anglican School, Roselea Public School
-- 🏥 **Medical Services** - Beecroft Medical Centre and Beecroft General Practice
-- 🛒 **Shopping** - Beecroft Place with Woolworths, The Beehive Cafe (landmark since decades!)
-- 🎪 **Parks & Recreation** - Railway Station Gardens Playground, Fearnley Park, Village Green, Tennis Club, Beecroft Club
-- 🌲 **Natural Areas** - Lane Cove National Park, Chilworth Reserve, native eucalyptus trees
+- 🗺️ **Massive Realistic Map** - Explore a huge 400×400 tile map based on real Beecroft geography
+- 🛣️ **Authentic Road Network** - Navigate Beecroft Road, Hannah Street, Chapman Avenue, Copeland Road, Sutherland Road, Wongala Crescent, and more
+- 🚂 **Real Landmarks** - Visit 30+ actual Beecroft locations including railway station, schools, medical centres, cafes, restaurants, parks, and pubs
+- 🌳 **Very Leafy Suburb** - Experience Beecroft's famously dense tree coverage with 20+ forested areas and thousands of procedural trees
+- 👥 **31 Friendly NPCs** - Meet diverse locals including cafe owners, doctors, teachers, trainers, shop owners, and residents
+- 🏫 **Historic Schools** - Beecroft Public School (est. 1897), Arden Anglican School, Roselea Public School
+- 🏥 **Medical Services** - Beecroft Medical Centre, HerGP Medical Clinic, Beecroft Veterinary Clinic
+- 🛒 **Shopping & Dining** - Woolworths, Hannah's Restaurant, The Beehive Cafe, Malaysian Restaurant, The Malton Hotel, The Verandah, Vintage Cellars
+- 💪 **Recreation** - Snap Fitness 24/7, Tennis Club, Bowling Club, multiple parks with train-themed playgrounds
+- 🗺️ **Navigation Tools** - Built-in mini-map and location indicator to help you navigate the large map
+- 🚌 **Services** - Ross Tours, Beecroft Auto Sales, and more
+- 🌲 **Natural Areas** - Fearnley Park (Blue Gum forest), Chilworth Reserve, Booth Park, Village Green
 - 🎮 **Browser-based** - No installation required!
 
 ## Controls
@@ -28,33 +31,38 @@ Beecroft Valley is inspired by games like Stardew Valley, bringing the peaceful 
 
 ## Real Beecroft Locations
 
+### Central Shopping & Station Area
+- **Beecroft Railway Station** - Main transport hub with east-west platforms
+- **Woolworths Beecroft** - Northeast corner of Hannah St & Beecroft Rd
+- **Hannah's Beecroft** - Popular restaurant adjacent to Woolworths
+- **The Beehive Cafe** - Local landmark near station
+- **Beecroft Medical Centre** - South side of Hannah Street
+- **HerGP Medical Clinic** - Northwest of station, Chapman Avenue area
+- **Beecroft Veterinary Clinic** - East side near station
+- **Vintage Cellars Beecroft** - Bottle shop south of station on Beecroft Rd
+- **Snap Fitness 24/7** - Gym near Woolworths
+- **Beecroft Malaysian Restaurant** - Popular dining spot
+- **The Malton Hotel** - Historic pub (est. 1888) on Malton Road
+
 ### Schools
-- Beecroft Public School (established 1897)
-- Arden Anglican School (near station)
-- Roselea Public School
-- St. Gerard Majella Catholic Primary School
+- **Beecroft Public School** (est. 1897) - Southwest area near Copeland Rd
+- **Arden Anglican School** - North of station near Chapman Avenue
+- **Roselea Public School** - Northeast residential area
+- **The Verandah Beecroft** - Cafe near Beecroft Public School
 
-### Medical
-- Beecroft Medical Centre (97-99 Beecroft Rd)
-- Beecroft General Practice
+### Services & Recreation
+- **Ross Tours** - Chapman Avenue area, family business since the 1980s
+- **Beecroft Auto Sales** - Car dealership
+- **Beecroft Club** - Bowling club southeast of center
+- **Tennis Club** - Courts southeast area
 
-### Shopping & Dining
-- Beecroft Place (Woolworths)
-- The Beehive Cafe (local landmark)
-
-### Recreation
-- Beecroft Railway Station (on the Northern Line)
-- Railway Station Gardens Playground (train-themed, fenced)
-- Fearnley Park (surrounded by Blue Gum High Forest)
-- Village Green
-- Chilworth Reserve
-- Beecroft Club (Bowling)
-- Tennis Club
-
-### Natural Areas
-- Lane Cove National Park (upper section)
-- Native bushland with eucalyptus, banksias, and waratahs
-- Leafy residential streets
+### Parks & Natural Areas
+- **Railway Gardens Playground** - Train-themed playground north of station
+- **Village Green** - Park west of shopping area
+- **Fearnley Park** - Western area, surrounded by Blue Gum High Forest
+- **Chilworth Reserve** - Northeast area with walking trails
+- **Booth Park** - Southeast recreational area
+- **Dense tree coverage** - Throughout residential areas, Beecroft is one of Sydney's leafiest suburbs
 
 ## Getting Started
 
@@ -76,14 +84,28 @@ npm start
 
 ## Map Details
 
-The game features a **60×50 tile map** (1920×1600 pixels) with:
-- Beecroft Road running north-south
-- Hannah Street east-west shopping strip
-- Railway tracks with train station
-- 7 forested areas with hundreds of trees
-- 13+ buildings representing real locations
-- 3 parks with flowers
-- Community garden for farming
+The game features a **massive 400×400 tile map** (12,800×12,800 pixels) with:
+
+### Road Network
+- **Beecroft Road** - Main 4-lane north-south arterial running through the center
+- **Hannah Street** - Main 4-lane east-west shopping strip
+- **Chapman Avenue** - 4-lane east-west road north of station
+- **Copeland Road** - 4-lane east-west road south of station
+- **Wongala Crescent** - Curved road through eastern shopping area
+- **Sutherland Road** - Diagonal road southeast from station
+- **Malton Road** - East from station to The Malton Hotel
+- Multiple local residential streets
+
+### Features
+- **20+ forested areas** with thousands of procedurally generated trees
+- **30+ buildings** representing real Beecroft locations
+- **7 parks** with flowers and recreational areas
+- **Railway tracks** running east-west through the station
+- **Community garden** for farming
+- **Built-in mini-map** in top-right corner showing your position and major landmarks
+- **Location indicator** at bottom showing current area or nearest building
+- **Geographic accuracy** - Building and road positions match real Beecroft layout
+- **Optimized rendering** - Viewport culling ensures smooth performance on large map
 
 ## Development
 
