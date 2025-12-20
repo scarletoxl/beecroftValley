@@ -144,6 +144,7 @@ class Game {
         // Real Beecroft buildings!
         this.buildings = [
             { name: "Beecroft Railway Station", x: 29, y: 18, width: 4, height: 3, type: "station", emoji: "🚂" },
+            { name: "HerGP Medical Clinic", x: 22, y: 18, width: 3, height: 2, type: "clinic", emoji: "🏥" },
             { name: "Beecroft Public School", x: 22, y: 10, width: 6, height: 5, type: "school", emoji: "🏫" },
             { name: "Arden Anglican School", x: 26, y: 16, width: 5, height: 4, type: "school", emoji: "🏫" },
             { name: "Beecroft Medical Centre", x: 29, y: 22, width: 3, height: 2, type: "clinic", emoji: "🏥" },
@@ -174,6 +175,7 @@ class Game {
         // Lots of friendly Beecroft residents!
         this.npcs = [
             { name: "Mrs. Chen", x: 27, y: 24, emoji: "👵", role: "cafe owner", greeting: "Welcome to The Beehive! Best coffee in Beecroft!" },
+            { name: "Dr. Shin Li", x: 23, y: 19, emoji: "👩‍⚕️", role: "HerGP clinic owner", greeting: "Welcome to HerGP! We're here to care for you and your family. Stay well!" },
             { name: "Dr. Patel", x: 30, y: 22, emoji: "👨‍⚕️", role: "doctor", greeting: "Stay healthy! Don't forget to rest." },
             { name: "Sarah", x: 23, y: 11, emoji: "👩‍🏫", role: "teacher", greeting: "Education is the key to success!" },
             { name: "Tom", x: 30, y: 19, emoji: "🧑‍💼", role: "station master", greeting: "All trains running on time today!" },
