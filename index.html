@@ -31,8 +31,10 @@
                 <ul>
                     <li><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> Move</li>
                     <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Alt Move</li>
-                    <li><kbd>Space</kbd> Talk to People</li>
-                    <li><kbd>E</kbd> Use Tool</li>
+                    <li><kbd>Space</kbd> Talk/Enter/Exit</li>
+                    <li><kbd>E</kbd> Use Tool/Work</li>
+                    <li><kbd>I</kbd> Inventory</li>
+                    <li><kbd>C</kbd> Car (if owned)</li>
                 </ul>
 
                 <div id="toolbar">
@@ -49,15 +51,34 @@
                     <h3>Explore Beecroft!</h3>
                     <ul style="font-size: 0.85em; list-style: none; padding: 0;">
                         <li>🚂 Railway Station</li>
-                        <li>🏫 Schools</li>
+                        <li>🏫 Schools (Jobs!)</li>
                         <li>🏥 Medical Centres</li>
-                        <li>🏪 Woolworths</li>
-                        <li>☕ The Beehive Cafe</li>
-                        <li>🎪 Playground</li>
+                        <li>🏪 Woolworths (Shop)</li>
+                        <li>☕ The Beehive Cafe (Food)</li>
+                        <li>🚗 Auto Sales (Cars)</li>
                         <li>🌳 Parks & Trees</li>
                     </ul>
                 </div>
             </aside>
+
+            <!-- Mobile Touch Controls -->
+            <div id="mobile-controls">
+                <div class="joystick-container">
+                    <div class="joystick-base">
+                        <div class="joystick-stick"></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <div class="action-row">
+                        <div class="action-btn" data-action="inventory">📦</div>
+                        <div class="action-btn" data-action="car">🚗</div>
+                    </div>
+                    <div class="action-row">
+                        <div class="action-btn" data-action="action">💬</div>
+                        <div class="action-btn" data-action="tool">🔨</div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <footer>
@@ -65,6 +86,7 @@
         </footer>
     </div>
 
-    <script src="js/game.js" type="module"></script>
+    <script src="js/game.js"></script>
+    <script src="js/mobile-controls.js"></script>
 </body>
 </html>
