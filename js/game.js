@@ -73,17 +73,35 @@ class Game {
         this.keys = {};
         this.currentTool = 'hoe';
 
+        // Sprite system
+        this.spriteManager = new SpriteManager();
+        this.spriteGenerator = new ProceduralSpriteGenerator();
+        this.lastFrameTime = Date.now();
+        this.deltaTime = 0;
+
+        // Player animation state
+        this.player.direction = 'down';
+        this.player.isMoving = false;
+        this.player.sprite = null;
+
+        // Animals
+        this.animals = [];
+
         // Initialize game
         this.initMap();
         this.initNPCs();
         this.initBuildings();
         this.initInteriors();
+        this.initSprites();
+        this.initAnimals();
         this.createUI();
         this.setupEventListeners();
-        this.gameLoop();
 
-        // Start time progression
-        this.startTimeCycle();
+        // Start game loop after sprites load
+        this.spriteManager.waitForAll(() => {
+            this.gameLoop();
+            this.startTimeCycle();
+        });
     }
 
     // ===== ISOMETRIC PROJECTION UTILITIES =====
@@ -121,6 +139,53 @@ class Game {
         // Border
         this.ctx.strokeStyle = borderColor;
         this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+    }
+
+    // Draw an isometric tile with texture
+    drawIsometricTexturedTile(screenX, screenY, textureDataUrl) {
+        const hw = this.tileWidth / 2;  // half width
+        const hh = this.tileHeight / 2; // half height
+
+        // Create a clipping region for the diamond shape
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.moveTo(screenX, screenY - hh);           // Top
+        this.ctx.lineTo(screenX + hw, screenY);           // Right
+        this.ctx.lineTo(screenX, screenY + hh);           // Bottom
+        this.ctx.lineTo(screenX - hw, screenY);           // Left
+        this.ctx.closePath();
+        this.ctx.clip();
+
+        // Draw the texture as a pattern
+        const img = new Image();
+        if (!this.tileTextureCache) this.tileTextureCache = {};
+
+        if (this.tileTextureCache[textureDataUrl]) {
+            // Use cached texture
+            const pattern = this.ctx.createPattern(this.tileTextureCache[textureDataUrl], 'repeat');
+            this.ctx.fillStyle = pattern;
+            this.ctx.fillRect(screenX - hw, screenY - hh, this.tileWidth, this.tileHeight);
+        } else {
+            // Load and cache texture
+            img.src = textureDataUrl;
+            this.tileTextureCache[textureDataUrl] = img;
+            // Fallback fill
+            this.ctx.fillStyle = '#7CB342';
+            this.ctx.fillRect(screenX - hw, screenY - hh, this.tileWidth, this.tileHeight);
+        }
+
+        this.ctx.restore();
+
+        // Border
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.moveTo(screenX, screenY - hh);
+        this.ctx.lineTo(screenX + hw, screenY);
+        this.ctx.lineTo(screenX, screenY + hh);
+        this.ctx.lineTo(screenX - hw, screenY);
+        this.ctx.closePath();
         this.ctx.stroke();
     }
 
@@ -1279,6 +1344,133 @@ class Game {
         });
     }
 
+    // ===== SPRITE INITIALIZATION =====
+    initSprites() {
+        // Generate player character sprite (cute young girl with long hair)
+        const playerSpriteData = this.spriteGenerator.generateCharacterSpriteSheet(48, 48, {
+            hair: '#8B4513',      // Brown hair
+            skin: '#FFE0BD',      // Light skin
+            outfit: '#FF6B9D',    // Pink dress
+            accent: '#FF1493'     // Pink bow
+        });
+
+        const playerSheet = new SpriteSheet(playerSpriteData, 48, 48);
+        this.spriteManager.sprites['player'] = playerSheet;
+
+        // Create player animated sprite
+        this.player.sprite = new AnimatedSprite(playerSheet, 48, 48);
+
+        // Setup 4-directional animations
+        this.player.sprite.setup4DirectionalAnimations(
+            // Idle frames (one per direction)
+            {
+                down: { x: 0, y: 0 },
+                left: { x: 0, y: 1 },
+                right: { x: 0, y: 2 },
+                up: { x: 0, y: 3 }
+            },
+            // Walking frames (4 frames per direction)
+            {
+                down: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+                left: [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }],
+                right: [{ x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 }],
+                up: [{ x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 }]
+            }
+        );
+
+        // Generate NPC sprites
+        this.npcs.forEach((npc, index) => {
+            const config = this.getNPCSpriteConfig(npc);
+            const npcSpriteData = this.spriteGenerator.generateNPCSprite(48, 48, config);
+            npc.sprite = new SpriteSheet(npcSpriteData, 48, 48);
+        });
+
+        // Generate tile textures
+        this.tileSprites = {
+            grass: this.spriteGenerator.generateTile(64, 32, 'grass'),
+            path: this.spriteGenerator.generateTile(64, 32, 'path'),
+            road: this.spriteGenerator.generateTile(64, 32, 'road'),
+            water: this.spriteGenerator.generateTile(64, 32, 'water'),
+            park: this.spriteGenerator.generateTile(64, 32, 'park'),
+            railway: this.spriteGenerator.generateTile(64, 32, 'railway')
+        };
+    }
+
+    getNPCSpriteConfig(npc) {
+        // Determine sprite characteristics based on NPC role
+        const configs = {
+            "Mrs. Chen": { bodyColor: '#FFF59D', hairColor: '#424242', skinColor: '#FFE0BD', accessory: 'apron', age: 'adult' },
+            "Emma": { bodyColor: '#81C784', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
+            "Hannah": { bodyColor: '#FFB74D', hairColor: '#6D4C41', skinColor: '#FFD7B5', accessory: 'apron', age: 'adult' },
+            "Dr. Shin Li": { bodyColor: '#E0F7FA', hairColor: '#000000', skinColor: '#F5DEB3', accessory: 'medcoat', age: 'adult' },
+            "Dr. Patel": { bodyColor: '#E0F7FA', hairColor: '#000000', skinColor: '#D2B48C', accessory: 'medcoat', age: 'adult' },
+            "Dr. Emily": { bodyColor: '#E0F7FA', hairColor: '#FFD700', skinColor: '#FFE0BD', accessory: 'medcoat', age: 'adult' },
+            "Marcus": { bodyColor: '#BCAAA4', hairColor: '#5D4037', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
+            "Jade": { bodyColor: '#424242', hairColor: '#FF6B6B', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
+            "Wei": { bodyColor: '#FFF9C4', hairColor: '#000000', skinColor: '#F5DEB3', accessory: 'apron', age: 'adult' },
+            "Tom": { bodyColor: '#90A4AE', hairColor: '#757575', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
+            "Sarah": { bodyColor: '#A5D6A7', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
+            "Ben": { bodyColor: '#64B5F6', hairColor: '#4E342E', skinColor: '#FFD7B5', accessory: null, age: 'adult' },
+            "Olivia": { bodyColor: '#F48FB1', hairColor: '#FFD700', skinColor: '#FFE0BD', accessory: null, age: 'child' },
+            "Jack": { bodyColor: '#4FC3F7', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'child' }
+        };
+
+        return configs[npc.name] || {
+            bodyColor: '#90CAF9',
+            hairColor: '#6D4C41',
+            skinColor: '#FFE0BD',
+            accessory: null,
+            age: 'adult'
+        };
+    }
+
+    initAnimals() {
+        // Generate animal sprites
+        const animalTypes = ['kookaburra', 'lorikeet', 'lizard', 'magpie', 'cat', 'dog', 'possum'];
+        this.animalSprites = {};
+
+        animalTypes.forEach(type => {
+            const spriteData = this.spriteGenerator.generateAnimalSprite(24, 24, type);
+            this.animalSprites[type] = new SpriteSheet(spriteData, 24, 24);
+        });
+
+        // Add animals to the world
+        this.addAnimalToWorld('kookaburra', 200, 170, 30);  // Near railway gardens
+        this.addAnimalToWorld('kookaburra', 180, 220, 20);  // Near Beecroft Public School
+        this.addAnimalToWorld('lorikeet', 195, 186, 40);    // Village green
+        this.addAnimalToWorld('lorikeet', 290, 152, 35);    // Chilworth Reserve
+        this.addAnimalToWorld('lorikeet', 50, 170, 30);     // Fearnley Park
+        this.addAnimalToWorld('magpie', 170, 187, 45);      // Village green
+        this.addAnimalToWorld('magpie', 260, 255, 40);      // Booth Park
+        this.addAnimalToWorld('lizard', 190, 175, 15);      // Near paths
+        this.addAnimalToWorld('lizard', 215, 195, 12);      // Near paths
+        this.addAnimalToWorld('cat', 85, 135, 25);          // Residential area (west)
+        this.addAnimalToWorld('cat', 160, 150, 20);         // Residential area
+        this.addAnimalToWorld('dog', 90, 140, 30);          // Residential area (west)
+        this.addAnimalToWorld('dog', 155, 145, 25);         // Residential area
+        this.addAnimalToWorld('possum', 45, 168, 20);       // Fearnley Park (forest)
+        this.addAnimalToWorld('possum', 30, 160, 18);       // Western forest
+    }
+
+    addAnimalToWorld(type, x, y, wanderRadius) {
+        this.animals.push({
+            type,
+            x,
+            y,
+            baseX: x,
+            baseY: y,
+            wanderRadius,
+            targetX: x,
+            targetY: y,
+            speed: type === 'lorikeet' ? 0.08 : type === 'lizard' ? 0.03 : 0.05,
+            moveTimer: 0,
+            standTimer: Math.random() * 3000,
+            frame: 0,
+            frameTimer: 0,
+            sprite: this.animalSprites[type]
+        });
+    }
+
     // ===== INTERIOR MAPS =====
     initInteriors() {
         // Create simple interior layouts for buildings
@@ -2036,6 +2228,63 @@ class Game {
         }
     }
 
+    updateAnimals() {
+        if (!this.animals) return;
+
+        this.animals.forEach(animal => {
+            // Update animation frame
+            animal.frameTimer += this.deltaTime;
+            if (animal.frameTimer >= 150) {  // Change frame every 150ms
+                animal.frameTimer = 0;
+                animal.frame = (animal.frame + 1) % 4;
+            }
+
+            // Update AI behavior
+            if (animal.standTimer > 0) {
+                animal.standTimer -= this.deltaTime;
+            } else if (animal.moveTimer > 0) {
+                animal.moveTimer -= this.deltaTime;
+
+                // Move toward target
+                const dx = animal.targetX - animal.x;
+                const dy = animal.targetY - animal.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0.1) {
+                    animal.x += (dx / distance) * animal.speed;
+                    animal.y += (dy / distance) * animal.speed;
+                } else {
+                    // Reached target, stand for a bit
+                    animal.moveTimer = 0;
+                    animal.standTimer = Math.random() * 2000 + 1000;
+                }
+            } else {
+                // Pick new random target within wander radius
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * animal.wanderRadius;
+                animal.targetX = animal.baseX + Math.cos(angle) * radius;
+                animal.targetY = animal.baseY + Math.sin(angle) * radius;
+
+                // Clamp to map bounds
+                animal.targetX = Math.max(5, Math.min(this.mapWidth - 5, animal.targetX));
+                animal.targetY = Math.max(5, Math.min(this.mapHeight - 5, animal.targetY));
+
+                animal.moveTimer = Math.random() * 3000 + 1000;
+            }
+
+            // Avoid player (flee if too close)
+            const playerDx = this.player.x - animal.x;
+            const playerDy = this.player.y - animal.y;
+            const playerDist = Math.sqrt(playerDx * playerDx + playerDy * playerDy);
+
+            if (playerDist < 3) {
+                // Move away from player
+                animal.x -= (playerDx / playerDist) * animal.speed * 2;
+                animal.y -= (playerDy / playerDist) * animal.speed * 2;
+            }
+        });
+    }
+
     // ===== TIME SYSTEM =====
     startTimeCycle() {
         setInterval(() => {
@@ -2110,23 +2359,40 @@ class Game {
 
     // ===== UPDATE LOOP =====
     update() {
+        // Calculate delta time for smooth animations
+        const now = Date.now();
+        this.deltaTime = now - this.lastFrameTime;
+        this.lastFrameTime = now;
+
         // Player movement
         const prevX = this.player.x;
         const prevY = this.player.y;
 
         const moveSpeed = this.player.inCar ? this.player.carType.speed * 0.15 : 0.15;
 
+        // Track player movement and direction
+        let moved = false;
+        let newDirection = this.player.direction;
+
         if (this.keys['ArrowUp'] || this.keys['w']) {
             this.player.y = Math.max(0, this.player.y - moveSpeed);
+            newDirection = 'up';
+            moved = true;
         }
         if (this.keys['ArrowDown'] || this.keys['s']) {
             this.player.y = Math.min(this.getCurrentMapHeight() - 1, this.player.y + moveSpeed);
+            newDirection = 'down';
+            moved = true;
         }
         if (this.keys['ArrowLeft'] || this.keys['a']) {
             this.player.x = Math.max(0, this.player.x - moveSpeed);
+            newDirection = 'left';
+            moved = true;
         }
         if (this.keys['ArrowRight'] || this.keys['d']) {
             this.player.x = Math.min(this.getCurrentMapWidth() - 1, this.player.x + moveSpeed);
+            newDirection = 'right';
+            moved = true;
         }
 
         // Collision detection
@@ -2152,6 +2418,15 @@ class Game {
             }
         }
 
+        // Update player animation state
+        this.player.direction = newDirection;
+        this.player.isMoving = moved && (this.player.x !== prevX || this.player.y !== prevY);
+
+        if (this.player.sprite) {
+            this.player.sprite.setDirection(this.player.direction, this.player.isMoving);
+            this.player.sprite.update(this.deltaTime);
+        }
+
         // Update camera - center on player
         this.camera.x = this.player.x;
         this.camera.y = this.player.y;
@@ -2163,6 +2438,9 @@ class Game {
 
         // Update NPCs
         this.updateNPCs();
+
+        // Update animals
+        this.updateAnimals();
     }
 
     getCurrentMapData() {
@@ -2214,20 +2492,26 @@ class Game {
 
                 let color;
                 let height = 0;
+                let useTexture = false;
+                let textureName = null;
 
                 switch (tile) {
                     case 0: // Grass
-                        color = this.getSeasonalGrassColor();
+                        textureName = 'grass';
+                        useTexture = true;
                         break;
                     case 1: // Dirt
-                        color = '#8b7355';
+                        textureName = 'path';
+                        useTexture = true;
                         break;
                     case 2: // Water
-                        color = '#4fc3f7';
+                        textureName = 'water';
+                        useTexture = true;
                         height = -5; // Water slightly lower
                         break;
                     case 3: // Road
-                        color = '#757575';
+                        textureName = 'road';
+                        useTexture = true;
                         height = -2; // Roads slightly recessed
                         break;
                     case 4: // Farmland
@@ -2240,18 +2524,28 @@ class Game {
                         color = '#f5deb3';
                         break;
                     case 8: // Rails
-                        color = '#424242';
+                        textureName = 'railway';
+                        useTexture = true;
                         break;
                     case 9: // Flowers
-                        color = this.getSeasonalFlowerColor();
+                        textureName = 'park';
+                        useTexture = true;
                         break;
                     default:
-                        color = this.getSeasonalGrassColor();
+                        textureName = 'grass';
+                        useTexture = true;
                 }
 
                 // Adjust screen position for height
                 const finalScreen = this.worldToScreenWithCamera(x, y, height);
-                this.drawIsometricTile(finalScreen.x, finalScreen.y, color);
+
+                if (useTexture && this.tileSprites && this.tileSprites[textureName]) {
+                    // Draw textured tile
+                    this.drawIsometricTexturedTile(finalScreen.x, finalScreen.y, this.tileSprites[textureName]);
+                } else {
+                    // Fallback to solid color
+                    this.drawIsometricTile(finalScreen.x, finalScreen.y, color || this.getSeasonalGrassColor());
+                }
             }
         }
 
@@ -2286,6 +2580,15 @@ class Game {
                     entities.push({ type: 'npc', data: npc, sortY: npc.y, sortX: npc.x });
                 }
             });
+
+            // Add animals
+            if (this.animals) {
+                this.animals.forEach(animal => {
+                    if (animal.x >= startX && animal.x < endX && animal.y >= startY && animal.y < endY) {
+                        entities.push({ type: 'animal', data: animal, sortY: animal.y, sortX: animal.x });
+                    }
+                });
+            }
         }
 
         // Add player
@@ -2307,6 +2610,8 @@ class Game {
                 this.renderIsometricBuilding(entity.data);
             } else if (entity.type === 'npc') {
                 this.renderIsometricNPC(entity.data);
+            } else if (entity.type === 'animal') {
+                this.renderIsometricAnimal(entity.data);
             } else if (entity.type === 'player') {
                 this.renderIsometricPlayer(entity.data);
             }
@@ -2439,7 +2744,6 @@ class Game {
     }
 
     renderIsometricNPC(npc) {
-        const charHeight = 25;
         const screen = this.worldToScreenWithCamera(npc.x, npc.y, 0);
 
         // Shadow
@@ -2448,35 +2752,34 @@ class Game {
         this.ctx.ellipse(screen.x, screen.y + 3, 10, 5, 0, 0, Math.PI * 2);
         this.ctx.fill();
 
-        // Character (simple 3D-ish representation)
-        // Body
-        this.ctx.fillStyle = '#4a9eff';
-        this.ctx.fillRect(screen.x - 6, screen.y - charHeight, 12, 15);
-
-        // Head
-        this.ctx.fillStyle = '#ffdbac';
-        this.ctx.beginPath();
-        this.ctx.arc(screen.x, screen.y - charHeight - 8, 8, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Emoji overlay
-        this.ctx.font = '20px Arial';
-        this.ctx.fillText(npc.emoji, screen.x - 10, screen.y - charHeight + 8);
+        if (npc.sprite && npc.sprite.loaded) {
+            // Render NPC sprite
+            npc.sprite.drawFrame(this.ctx, 0, 0, screen.x, screen.y - 24, 48, 48);
+        } else {
+            // Fallback rendering
+            this.ctx.fillStyle = '#4a9eff';
+            this.ctx.fillRect(screen.x - 6, screen.y - 25, 12, 15);
+            this.ctx.fillStyle = '#ffdbac';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - 33, 8, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
 
         // Sick indicator
         if (npc.isSick) {
             this.ctx.font = '16px Arial';
-            this.ctx.fillText('🤢', screen.x + 8, screen.y - charHeight - 10);
+            this.ctx.fillText('🤢', screen.x + 8, screen.y - 35);
         }
 
-        // Name
-        this.ctx.font = '8px Arial';
+        // Name (smaller, more subtle)
+        this.ctx.font = '7px Arial';
         this.ctx.fillStyle = '#000';
-        this.ctx.fillText(npc.name, screen.x - npc.name.length * 2, screen.y - charHeight - 18);
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(npc.name, screen.x, screen.y - 50);
+        this.ctx.textAlign = 'left';
     }
 
     renderIsometricPlayer(player) {
-        const charHeight = 28;
         const screen = this.worldToScreenWithCamera(player.x, player.y, 0);
 
         // Shadow
@@ -2486,34 +2789,44 @@ class Game {
         this.ctx.fill();
 
         if (player.inCar && player.carType) {
-            // Car rendering
+            // Car rendering (still use emoji for now)
             this.ctx.font = '32px Arial';
             this.ctx.fillText(player.carType.emoji, screen.x - 16, screen.y - 5);
+        } else if (player.sprite) {
+            // Render animated sprite
+            player.sprite.draw(this.ctx, screen.x, screen.y - 24, 48, 48);
         } else {
-            // Character body
+            // Fallback rendering if sprite not loaded
             this.ctx.fillStyle = '#ff6b6b';
-            this.ctx.fillRect(screen.x - 7, screen.y - charHeight, 14, 18);
-
-            // Character head
-            this.ctx.fillStyle = '#ff6b6b';
+            this.ctx.fillRect(screen.x - 7, screen.y - 28, 14, 18);
             this.ctx.beginPath();
-            this.ctx.arc(screen.x, screen.y - charHeight - 9, 9, 0, Math.PI * 2);
-            this.ctx.fill();
-
-            // Face (eyes)
-            this.ctx.fillStyle = '#fff';
-            this.ctx.beginPath();
-            this.ctx.arc(screen.x - 4, screen.y - charHeight - 11, 2, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.beginPath();
-            this.ctx.arc(screen.x + 4, screen.y - charHeight - 11, 2, 0, Math.PI * 2);
+            this.ctx.arc(screen.x, screen.y - 37, 9, 0, Math.PI * 2);
             this.ctx.fill();
         }
 
-        // Name label
-        this.ctx.font = '10px Arial';
+        // Name label (smaller, more subtle)
+        this.ctx.font = '8px Arial';
         this.ctx.fillStyle = '#000';
-        this.ctx.fillText('You', screen.x - 10, screen.y - charHeight - 20);
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('You', screen.x, screen.y - 52);
+        this.ctx.textAlign = 'left';
+    }
+
+    renderIsometricAnimal(animal) {
+        if (!animal || !animal.sprite) return;
+
+        const screen = this.worldToScreenWithCamera(animal.x, animal.y, 0);
+
+        // Shadow (smaller for animals)
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 2, 6, 3, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Render animal sprite
+        if (animal.sprite.loaded) {
+            animal.sprite.drawFrame(this.ctx, animal.frame, 0, screen.x, screen.y - 12, 24, 24);
+        }
     }
 
     // Helper function to darken/lighten colors
