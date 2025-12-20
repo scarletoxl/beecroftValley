@@ -24,15 +24,15 @@
         </header>
 
         <main>
-            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <canvas id="gameCanvas" width="960" height="640"></canvas>
 
             <aside id="controls">
                 <h3>Controls</h3>
                 <ul>
                     <li><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> Move</li>
-                    <li><kbd>Space</kbd> Interact</li>
+                    <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Alt Move</li>
+                    <li><kbd>Space</kbd> Talk to People</li>
                     <li><kbd>E</kbd> Use Tool</li>
-                    <li><kbd>I</kbd> Inventory</li>
                 </ul>
 
                 <div id="toolbar">
@@ -44,11 +44,24 @@
                         <button class="tool" data-tool="axe">🪓 Axe</button>
                     </div>
                 </div>
+
+                <div id="locations">
+                    <h3>Explore Beecroft!</h3>
+                    <ul style="font-size: 0.85em; list-style: none; padding: 0;">
+                        <li>🚂 Railway Station</li>
+                        <li>🏫 Schools</li>
+                        <li>🏥 Medical Centres</li>
+                        <li>🏪 Woolworths</li>
+                        <li>☕ The Beehive Cafe</li>
+                        <li>🎪 Playground</li>
+                        <li>🌳 Parks & Trees</li>
+                    </ul>
+                </div>
             </aside>
         </main>
 
         <footer>
-            <p>Welcome to Beecroft Valley! Use arrow keys to move around your farm.</p>
+            <p>Welcome to Beecroft Valley! Use arrow keys to explore. Press Space near people to chat!</p>
         </footer>
     </div>
 
