@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beecroft Valley - A Farming Life Sim</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>🌾 Beecroft Valley</h1>
+            <div id="hud">
+                <div class="hud-item">
+                    <span>💰 Gold: <span id="gold">100</span></span>
+                </div>
+                <div class="hud-item">
+                    <span>⚡ Energy: <span id="energy">100</span>/100</span>
+                </div>
+                <div class="hud-item">
+                    <span>📅 Day: <span id="day">1</span></span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+            <aside id="controls">
+                <h3>Controls</h3>
+                <ul>
+                    <li><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> Move</li>
+                    <li><kbd>Space</kbd> Interact</li>
+                    <li><kbd>E</kbd> Use Tool</li>
+                    <li><kbd>I</kbd> Inventory</li>
+                </ul>
+
+                <div id="toolbar">
+                    <h3>Tools</h3>
+                    <div class="tool-slots">
+                        <button class="tool active" data-tool="hoe">🔨 Hoe</button>
+                        <button class="tool" data-tool="water">💧 Water</button>
+                        <button class="tool" data-tool="seeds">🌱 Seeds</button>
+                        <button class="tool" data-tool="axe">🪓 Axe</button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer>
+            <p>Welcome to Beecroft Valley! Use arrow keys to move around your farm.</p>
+        </footer>
+    </div>
+
+    <script src="js/game.js" type="module"></script>
+</body>
+</html>
