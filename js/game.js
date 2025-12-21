@@ -113,6 +113,7 @@ class Game {
         this.initAnimalSprites();
         this.createUI();
         this.setupEventListeners();
+        this.setupCanvasResize();
 
         // Validate spawn point is walkable (not inside building or water)
         this.validateSpawnPoint();
@@ -122,6 +123,27 @@ class Game {
             this.gameLoop();
             this.startTimeCycle();
         });
+    }
+
+    setupCanvasResize() {
+        const resize = () => {
+            const container = this.canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            // Account for controls panel width
+            const controlsWidth = document.getElementById('controls')?.offsetWidth || 0;
+            const availableWidth = rect.width - controlsWidth;
+            const availableHeight = rect.height;
+
+            // Set canvas size to fill available space
+            this.canvas.width = Math.max(400, availableWidth);
+            this.canvas.height = Math.max(300, availableHeight);
+        };
+
+        // Initial resize
+        resize();
+
+        // Resize on window resize
+        window.addEventListener('resize', resize);
     }
 
     // Ensure player spawns on a walkable tile
