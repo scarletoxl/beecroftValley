@@ -102,6 +102,7 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
+        this.initMarkers(); // Create markers from buildings
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
@@ -839,6 +840,20 @@ class Game {
                 }
             }
         });
+    }
+
+    // ===== MARKER INITIALIZATION =====
+    // Create floating map markers from buildings
+    initMarkers() {
+        this.markers = this.buildings.map(b => ({
+            x: b.x + (b.width || 0) / 2,
+            y: b.y + (b.height || 0) / 2,
+            name: b.name,
+            emoji: b.emoji,
+            type: b.type,
+            interactable: b.canEnter || b.isShop || b.isRestaurant || b.isChristmasTree || b.isCarDealer,
+            data: b
+        }));
     }
 
     // ===== NPC INITIALIZATION =====
@@ -1885,14 +1900,32 @@ class Game {
                 this.useTool();
             }
 
-            // Talk to NPCs / Enter buildings
+            // Talk to NPCs / Interact with markers
             if (e.key === ' ') {
                 if (this.currentMap === 'overworld') {
-                    const building = this.getNearbyBuilding();
-                    if (building && building.canEnter) {
-                        this.enterBuilding(building);
-                    } else {
-                        this.talkToNearbyNPC();
+                    // First check for nearby NPCs
+                    let foundNPC = false;
+                    const talkDistance = 1.5;
+                    for (let npc of this.npcs) {
+                        const dx = this.player.x - npc.x;
+                        const dy = this.player.y - npc.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < talkDistance) {
+                            this.showNPCDialog(npc);
+                            foundNPC = true;
+                            break;
+                        }
+                    }
+
+                    // Then check for nearby markers
+                    if (!foundNPC) {
+                        const marker = this.getNearestMarker();
+                        if (marker) {
+                            this.interactWithMarker(marker);
+                        } else {
+                            // Fallback to old building interaction or crop harvesting
+                            this.talkToNearbyNPC();
+                        }
                     }
                 } else {
                     // Exit interior
@@ -2791,12 +2824,13 @@ class Game {
             moved = true;
         }
 
-        // Collision detection
+        // Collision detection - only block water (tile 2), not building tiles
+        // Building areas are now represented by floating markers, so players walk freely
         const tileX = Math.floor(this.player.x);
         const tileY = Math.floor(this.player.y);
 
         const currentMapData = this.getCurrentMapData();
-        if (currentMapData[tileY] && (currentMapData[tileY][tileX] === 2 || currentMapData[tileY][tileX] === 6)) {
+        if (currentMapData[tileY] && currentMapData[tileY][tileX] === 2) {
             this.player.x = prevX;
             this.player.y = prevY;
         }
@@ -2915,8 +2949,9 @@ class Game {
                         const farmKey = `${x},${y}`;
                         color = this.wateredTiles && this.wateredTiles.has(farmKey) ? '#4a2c13' : '#6b4423';
                         break;
-                    case 6: // Building (will be drawn separately)
-                        color = '#d4a373';
+                    case 6: // Building area - render as grass (markers float above)
+                        textureName = 'grass';
+                        useTexture = true;
                         break;
                     case 7: // Floor
                         color = '#f5deb3';
@@ -2958,16 +2993,15 @@ class Game {
                 }
             });
 
-            // Add buildings
-            this.buildings.forEach(building => {
-                if (building.x < endX && building.x + building.width > startX &&
-                    building.y < endY && building.y + building.height > startY) {
-                    // Sort by bottom of building
+            // Add markers (floating pins for POIs)
+            this.markers.forEach(marker => {
+                if (marker.x >= startX - 2 && marker.x < endX + 2 &&
+                    marker.y >= startY - 2 && marker.y < endY + 2) {
                     entities.push({
-                        type: 'building',
-                        data: building,
-                        sortY: building.y + building.height,
-                        sortX: building.x
+                        type: 'marker',
+                        data: marker,
+                        sortY: marker.y,
+                        sortX: marker.x
                     });
                 }
             });
@@ -3028,8 +3062,8 @@ class Game {
         entities.forEach(entity => {
             if (entity.type === 'tree') {
                 this.renderIsometricTree(entity.data);
-            } else if (entity.type === 'building') {
-                this.renderIsometricBuilding(entity.data);
+            } else if (entity.type === 'marker') {
+                this.renderMarker(entity.data);
             } else if (entity.type === 'npc') {
                 this.renderIsometricNPC(entity.data);
             } else if (entity.type === 'interior_npc') {
@@ -3297,6 +3331,56 @@ class Game {
         }
     }
 
+    // ===== MARKER RENDERING =====
+    // Render a floating map marker using the MarkerRenderer class
+    renderMarker(marker) {
+        const screen = this.worldToScreenWithCamera(marker.x, marker.y, 0);
+
+        // Calculate distance from player
+        const dx = this.player.x - marker.x;
+        const dy = this.player.y - marker.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Use the MarkerRenderer class
+        MarkerRenderer.render(this.ctx, marker, screen.x, screen.y, distance, Date.now());
+    }
+
+    // Get the nearest interactable marker within range
+    getNearestMarker() {
+        let nearest = null;
+        let nearestDist = Infinity;
+
+        for (const marker of this.markers) {
+            if (!marker.interactable) continue;
+            const dx = this.player.x - marker.x;
+            const dy = this.player.y - marker.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 5 && dist < nearestDist) {
+                nearestDist = dist;
+                nearest = marker;
+            }
+        }
+        return nearest;
+    }
+
+    // Interact with a marker
+    interactWithMarker(marker) {
+        const b = marker.data;
+        if (b.isChristmasTree) {
+            this.toggleChristmasMusic();
+        } else if (b.isRestaurant) {
+            this.showRestaurantMenu(b);
+        } else if (b.isShop) {
+            this.showShopMenu(b);
+        } else if (b.isCarDealer) {
+            this.showCarDealer();
+        } else if (b.canEnter) {
+            this.enterBuilding(b);
+        } else {
+            this.showMessage(`📍 ${marker.name}`);
+        }
+    }
+
     renderIsometricBuilding(building) {
         // Special rendering for Christmas tree
         if (building.isChristmasTree) {
@@ -3511,25 +3595,27 @@ class Game {
     }
 
     renderLocationIndicator() {
-        // Find nearest building
-        let nearestBuilding = null;
-        let nearestDistance = Infinity;
+        // Find nearest marker using the interactable one first, then any nearby
+        const interactableMarker = this.getNearestMarker();
+        let nearestMarker = interactableMarker;
 
-        this.buildings.forEach(building => {
-            const centerX = building.x + building.width / 2;
-            const centerY = building.y + building.height / 2;
-            const dx = this.player.x - centerX;
-            const dy = this.player.y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        // If no interactable marker nearby, find the closest one overall
+        if (!nearestMarker) {
+            let nearestDistance = Infinity;
+            this.markers.forEach(marker => {
+                const dx = this.player.x - marker.x;
+                const dy = this.player.y - marker.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < nearestDistance && distance < 15) {
-                nearestDistance = distance;
-                nearestBuilding = building;
-            }
-        });
+                if (distance < nearestDistance && distance < 15) {
+                    nearestDistance = distance;
+                    nearestMarker = marker;
+                }
+            });
+        }
 
         // Display location name
-        if (nearestBuilding) {
+        if (nearestMarker) {
             const boxWidth = 300;
             const boxHeight = 40;
             const boxX = (this.canvas.width - boxWidth) / 2;
@@ -3548,7 +3634,7 @@ class Game {
             this.ctx.font = 'bold 14px Arial';
             this.ctx.fillStyle = '#fff';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(`📍 ${nearestBuilding.name}`, this.canvas.width / 2, boxY + 25);
+            this.ctx.fillText(`📍 ${nearestMarker.name}`, this.canvas.width / 2, boxY + 25);
             this.ctx.textAlign = 'left';
         } else {
             // Show general area
