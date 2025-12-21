@@ -173,148 +173,260 @@ class SpriteManager {
     }
 }
 
-// Procedural sprite generator for placeholder graphics
+// Procedural sprite generator - Creates pixel-art style RPG sprites
 class ProceduralSpriteGenerator {
     constructor() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
+        // Disable image smoothing for crisp pixel art
+        this.ctx.imageSmoothingEnabled = false;
     }
 
-    // Generate a simple character sprite sheet
+    // Helper to draw a pixel at scaled position
+    pixel(x, y, color, scale = 3) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(x * scale, y * scale, scale, scale);
+    }
+
+    // Darken a color for shading
+    darken(color, amount = 0.2) {
+        const hex = color.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) * (1 - amount));
+        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) * (1 - amount));
+        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) * (1 - amount));
+        return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
+    }
+
+    // Lighten a color for highlights
+    lighten(color, amount = 0.2) {
+        const hex = color.replace('#', '');
+        const r = Math.min(255, parseInt(hex.substr(0, 2), 16) * (1 + amount));
+        const g = Math.min(255, parseInt(hex.substr(2, 2), 16) * (1 + amount));
+        const b = Math.min(255, parseInt(hex.substr(4, 2), 16) * (1 + amount));
+        return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
+    }
+
+    // Generate a pixel-art character sprite sheet (16x16 base, scaled to 48x48)
     generateCharacterSpriteSheet(width, height, colors) {
-        this.canvas.width = width * 4; // 4 frames per direction
-        this.canvas.height = height * 4; // 4 directions
+        const scale = 3; // 16 * 3 = 48
+        const baseW = 16;
+        const baseH = 16;
+
+        this.canvas.width = width * 4;
+        this.canvas.height = height * 4;
+        this.ctx.imageSmoothingEnabled = false;
 
         const { hair, skin, outfit, accent } = colors;
+        const outfitDark = this.darken(outfit, 0.3);
+        const hairDark = this.darken(hair, 0.3);
+        const skinDark = this.darken(skin, 0.15);
+        const outline = '#2a1f1d';
 
-        // Generate all frames
+        // Generate all frames - dir: 0=down, 1=left, 2=right, 3=up
         for (let dir = 0; dir < 4; dir++) {
             for (let frame = 0; frame < 4; frame++) {
-                this.drawCharacterFrame(
-                    frame * width,
-                    dir * height,
-                    width,
-                    height,
-                    dir,
-                    frame,
-                    colors
-                );
+                const offsetX = frame * width;
+                const offsetY = dir * height;
+
+                // Clear frame
+                this.ctx.clearRect(offsetX, offsetY, width, height);
+
+                // Walking animation offset
+                const walkOffset = (frame === 1 || frame === 3) ? 1 : 0;
+                const armSwing = (frame === 1) ? -1 : (frame === 3) ? 1 : 0;
+
+                // Draw pixel art character
+                const px = (x, y, c) => {
+                    this.ctx.fillStyle = c;
+                    this.ctx.fillRect(offsetX + x * scale, offsetY + y * scale, scale, scale);
+                };
+
+                // === HAIR (top of head) ===
+                if (dir === 3) { // up - show back of hair
+                    px(6, 2, hair); px(7, 2, hair); px(8, 2, hair); px(9, 2, hair);
+                    px(5, 3, hair); px(6, 3, hair); px(7, 3, hair); px(8, 3, hair); px(9, 3, hair); px(10, 3, hair);
+                    px(5, 4, hair); px(6, 4, hair); px(7, 4, hair); px(8, 4, hair); px(9, 4, hair); px(10, 4, hair);
+                    px(5, 5, hairDark); px(6, 5, hair); px(7, 5, hair); px(8, 5, hair); px(9, 5, hair); px(10, 5, hairDark);
+                } else {
+                    // Hair top
+                    px(6, 1, hairDark); px(7, 1, hair); px(8, 1, hair); px(9, 1, hairDark);
+                    px(5, 2, hairDark); px(6, 2, hair); px(7, 2, hair); px(8, 2, hair); px(9, 2, hair); px(10, 2, hairDark);
+                    px(5, 3, hair); px(6, 3, hair); px(7, 3, hair); px(8, 3, hair); px(9, 3, hair); px(10, 3, hair);
+                    // Hair sides
+                    if (dir === 1) { // left - more hair on right
+                        px(10, 4, hair); px(10, 5, hairDark);
+                    } else if (dir === 2) { // right - more hair on left
+                        px(5, 4, hair); px(5, 5, hairDark);
+                    } else { // down - hair on both sides
+                        px(5, 4, hair); px(10, 4, hair);
+                    }
+                }
+
+                // === FACE ===
+                // Head shape
+                px(6, 4, skin); px(7, 4, skin); px(8, 4, skin); px(9, 4, skin);
+                px(6, 5, skin); px(7, 5, skin); px(8, 5, skin); px(9, 5, skin);
+                px(6, 6, skinDark); px(7, 6, skin); px(8, 6, skin); px(9, 6, skinDark);
+
+                // Eyes based on direction
+                if (dir === 0) { // down - two eyes
+                    px(6, 5, '#000'); px(9, 5, '#000');
+                    // Eye highlights
+                    px(6, 4, '#fff'); px(9, 4, '#fff');
+                } else if (dir === 1) { // left - one eye on left
+                    px(6, 5, '#000'); px(6, 4, '#fff');
+                } else if (dir === 2) { // right - one eye on right
+                    px(9, 5, '#000'); px(9, 4, '#fff');
+                }
+                // dir === 3 (up) - no eyes visible
+
+                // Accent (bow/headband)
+                if (accent && dir !== 3) {
+                    px(7, 2, accent); px(8, 2, accent);
+                }
+
+                // === BODY/OUTFIT ===
+                // Torso
+                px(6, 7, outfit); px(7, 7, outfit); px(8, 7, outfit); px(9, 7, outfit);
+                px(6, 8, outfit); px(7, 8, outfit); px(8, 8, outfit); px(9, 8, outfit);
+                px(6, 9, outfitDark); px(7, 9, outfit); px(8, 9, outfit); px(9, 9, outfitDark);
+
+                // Skirt/lower body
+                px(5, 10, outfit); px(6, 10, outfit); px(7, 10, outfit); px(8, 10, outfit); px(9, 10, outfit); px(10, 10, outfit);
+                px(5, 11, outfitDark); px(6, 11, outfit); px(7, 11, outfit); px(8, 11, outfit); px(9, 11, outfit); px(10, 11, outfitDark);
+
+                // === ARMS ===
+                if (dir === 1) { // left
+                    px(10, 7 + armSwing, skin); px(10, 8, skin);
+                } else if (dir === 2) { // right
+                    px(5, 7 + armSwing, skin); px(5, 8, skin);
+                } else {
+                    // Arms on both sides
+                    px(5, 7 + armSwing, skin); px(5, 8, skin);
+                    px(10, 7 - armSwing, skin); px(10, 8, skin);
+                }
+
+                // === LEGS (with walking animation) ===
+                if (frame === 0 || frame === 2) { // standing/neutral
+                    px(6, 12, skinDark); px(7, 12, skin);
+                    px(8, 12, skin); px(9, 12, skinDark);
+                    px(6, 13, outline); px(7, 13, skin);
+                    px(8, 13, skin); px(9, 13, outline);
+                    // Feet
+                    px(6, 14, outline); px(7, 14, outline);
+                    px(8, 14, outline); px(9, 14, outline);
+                } else if (frame === 1) { // left leg forward
+                    px(5, 12, skinDark); px(6, 12, skin);
+                    px(9, 12, skin); px(10, 12, skinDark);
+                    px(5, 13, outline); px(6, 13, skin);
+                    px(9, 13, skin);
+                    px(5, 14, outline); px(6, 14, outline);
+                    px(9, 14, outline); px(10, 14, outline);
+                } else { // frame === 3, right leg forward
+                    px(6, 12, skinDark); px(7, 12, skin);
+                    px(9, 12, skin); px(10, 12, skinDark);
+                    px(7, 13, skin);
+                    px(10, 13, outline); px(9, 13, skin);
+                    px(6, 14, outline); px(7, 14, outline);
+                    px(9, 14, outline); px(10, 14, outline);
+                }
             }
         }
 
         return this.canvas.toDataURL();
     }
 
-    drawCharacterFrame(x, y, w, h, direction, frame, colors) {
-        const { hair, skin, outfit, accent } = colors;
-
-        // Clear area
-        this.ctx.clearRect(x, y, w, h);
-
-        // Calculate animation offset for legs
-        const legOffset = frame % 2 === 0 ? 0 : 1;
-
-        // Direction: 0=down, 1=left, 2=right, 3=up
-
-        // Body (centered)
-        this.ctx.fillStyle = outfit;
-        this.ctx.fillRect(x + w/3, y + h/2, w/3, h/2.5);
-
-        // Head
-        this.ctx.fillStyle = skin;
-        this.ctx.beginPath();
-        this.ctx.arc(x + w/2, y + h/3, w/4, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Hair
-        this.ctx.fillStyle = hair;
-        this.ctx.beginPath();
-        this.ctx.arc(x + w/2, y + h/3 - 2, w/3.5, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Hair accent (bow/headband)
-        if (accent) {
-            this.ctx.fillStyle = accent;
-            this.ctx.fillRect(x + w/2 - 3, y + h/4, 6, 3);
-        }
-
-        // Legs (simple walking animation)
-        this.ctx.fillStyle = skin;
-        if (direction === 0 || direction === 3) { // down or up
-            this.ctx.fillRect(x + w/3 + legOffset, y + h*0.75, 3, h/4);
-            this.ctx.fillRect(x + w/3 + w/6 - legOffset, y + h*0.75, 3, h/4);
-        } else { // left or right
-            this.ctx.fillRect(x + w/2 - 2, y + h*0.75, 4, h/4);
-        }
-
-        // Eyes (direction dependent)
-        this.ctx.fillStyle = '#000';
-        if (direction === 0) { // down
-            this.ctx.fillRect(x + w/2 - 4, y + h/3, 2, 2);
-            this.ctx.fillRect(x + w/2 + 2, y + h/3, 2, 2);
-        } else if (direction === 1) { // left
-            this.ctx.fillRect(x + w/2 - 2, y + h/3, 2, 2);
-        } else if (direction === 2) { // right
-            this.ctx.fillRect(x + w/2, y + h/3, 2, 2);
-        } else { // up - no eyes visible
-            // Just show back of head
-        }
-    }
-
-    // Generate NPC sprite
+    // Generate NPC sprite with pixel art style
     generateNPCSprite(width, height, config) {
+        const scale = 3;
         this.canvas.width = width;
         this.canvas.height = height;
+        this.ctx.imageSmoothingEnabled = false;
         this.ctx.clearRect(0, 0, width, height);
 
         const { bodyColor, hairColor, skinColor, accessory, age } = config;
+        const bodyDark = this.darken(bodyColor, 0.3);
+        const hairDark = this.darken(hairColor, 0.3);
+        const skinDark = this.darken(skinColor, 0.15);
+        const outline = '#2a1f1d';
 
-        // Scale based on age
-        const scale = age === 'child' ? 0.8 : age === 'elderly' ? 0.9 : 1.0;
-        const offsetY = age === 'child' ? height * 0.1 : 0;
+        // Scale factor for children
+        const yOffset = age === 'child' ? 3 : 0;
 
-        // Body
-        this.ctx.fillStyle = bodyColor;
-        this.ctx.fillRect(width/3, height/2 + offsetY, width/3, height/2.5 * scale);
-
-        // Head
-        this.ctx.fillStyle = skinColor;
-        this.ctx.beginPath();
-        this.ctx.arc(width/2, height/3 + offsetY, width/4 * scale, 0, Math.PI * 2);
-        this.ctx.fill();
+        const px = (x, y, c) => {
+            this.ctx.fillStyle = c;
+            this.ctx.fillRect(x * scale, (y + yOffset) * scale, scale, scale);
+        };
 
         // Hair
-        this.ctx.fillStyle = hairColor;
-        this.ctx.beginPath();
-        this.ctx.arc(width/2, height/3 - 2 + offsetY, width/3.5 * scale, 0, Math.PI * 2);
-        this.ctx.fill();
+        px(6, 1, hairDark); px(7, 1, hairColor); px(8, 1, hairColor); px(9, 1, hairDark);
+        px(5, 2, hairDark); px(6, 2, hairColor); px(7, 2, hairColor); px(8, 2, hairColor); px(9, 2, hairColor); px(10, 2, hairDark);
+        px(5, 3, hairColor); px(6, 3, hairColor); px(7, 3, hairColor); px(8, 3, hairColor); px(9, 3, hairColor); px(10, 3, hairColor);
+        px(5, 4, hairColor); px(10, 4, hairColor);
+
+        // Face
+        px(6, 4, skinColor); px(7, 4, skinColor); px(8, 4, skinColor); px(9, 4, skinColor);
+        px(6, 5, skinColor); px(7, 5, skinColor); px(8, 5, skinColor); px(9, 5, skinColor);
+        px(6, 6, skinDark); px(7, 6, skinColor); px(8, 6, skinColor); px(9, 6, skinDark);
 
         // Eyes
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(width/2 - 4, height/3 + offsetY, 2, 2);
-        this.ctx.fillRect(width/2 + 2, height/3 + offsetY, 2, 2);
+        px(6, 5, '#000'); px(9, 5, '#000');
+        px(6, 4, '#fff'); px(9, 4, '#fff');
 
-        // Accessory (glasses, hat, etc.)
-        if (accessory === 'glasses') {
-            this.ctx.strokeStyle = '#333';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(width/2 - 6, height/3 - 2 + offsetY, 5, 4);
-            this.ctx.strokeRect(width/2 + 1, height/3 - 2 + offsetY, 5, 4);
+        // Body
+        if (accessory === 'medcoat') {
+            // Doctor's coat
+            const coatColor = '#E8F4F8';
+            const coatDark = '#C5D9E0';
+            px(5, 7, coatColor); px(6, 7, coatColor); px(7, 7, coatColor); px(8, 7, coatColor); px(9, 7, coatColor); px(10, 7, coatColor);
+            px(5, 8, coatColor); px(6, 8, coatColor); px(7, 8, coatColor); px(8, 8, coatColor); px(9, 8, coatColor); px(10, 8, coatColor);
+            px(5, 9, coatDark); px(6, 9, coatColor); px(7, 9, coatColor); px(8, 9, coatColor); px(9, 9, coatColor); px(10, 9, coatDark);
+            px(5, 10, coatDark); px(6, 10, coatColor); px(7, 10, coatColor); px(8, 10, coatColor); px(9, 10, coatColor); px(10, 10, coatDark);
+            px(5, 11, coatDark); px(6, 11, coatColor); px(10, 11, coatDark); px(9, 11, coatColor);
         } else if (accessory === 'apron') {
-            this.ctx.fillStyle = '#FFF';
-            this.ctx.fillRect(width/3, height/2 + offsetY, width/3, height/3 * scale);
-        } else if (accessory === 'medcoat') {
-            this.ctx.fillStyle = '#E0F0FF';
-            this.ctx.fillRect(width/3 - 2, height/2 + offsetY, width/3 + 4, height/2.5 * scale);
+            // Outfit with apron
+            px(6, 7, bodyColor); px(7, 7, bodyColor); px(8, 7, bodyColor); px(9, 7, bodyColor);
+            px(6, 8, '#FFFFFF'); px(7, 8, '#FFFFFF'); px(8, 8, '#FFFFFF'); px(9, 8, '#FFFFFF');
+            px(6, 9, '#FFFFFF'); px(7, 9, '#FFFFFF'); px(8, 9, '#FFFFFF'); px(9, 9, '#FFFFFF');
+            px(5, 10, bodyColor); px(6, 10, '#FFFFFF'); px(7, 10, '#FFFFFF'); px(8, 10, '#FFFFFF'); px(9, 10, '#FFFFFF'); px(10, 10, bodyColor);
+            px(5, 11, bodyDark); px(6, 11, '#EEEEEE'); px(7, 11, '#FFFFFF'); px(8, 11, '#FFFFFF'); px(9, 11, '#EEEEEE'); px(10, 11, bodyDark);
+        } else {
+            // Normal outfit
+            px(6, 7, bodyColor); px(7, 7, bodyColor); px(8, 7, bodyColor); px(9, 7, bodyColor);
+            px(6, 8, bodyColor); px(7, 8, bodyColor); px(8, 8, bodyColor); px(9, 8, bodyColor);
+            px(6, 9, bodyDark); px(7, 9, bodyColor); px(8, 9, bodyColor); px(9, 9, bodyDark);
+            px(5, 10, bodyColor); px(6, 10, bodyColor); px(7, 10, bodyColor); px(8, 10, bodyColor); px(9, 10, bodyColor); px(10, 10, bodyColor);
+            px(5, 11, bodyDark); px(6, 11, bodyColor); px(7, 11, bodyColor); px(8, 11, bodyColor); px(9, 11, bodyColor); px(10, 11, bodyDark);
+        }
+
+        // Arms
+        px(5, 7, skinColor); px(5, 8, skinColor);
+        px(10, 7, skinColor); px(10, 8, skinColor);
+
+        // Legs
+        px(6, 12, skinDark); px(7, 12, skinColor);
+        px(8, 12, skinColor); px(9, 12, skinDark);
+        px(6, 13, outline); px(7, 13, skinColor);
+        px(8, 13, skinColor); px(9, 13, outline);
+        // Feet
+        px(6, 14, outline); px(7, 14, outline);
+        px(8, 14, outline); px(9, 14, outline);
+
+        // Glasses accessory
+        if (accessory === 'glasses') {
+            px(5, 5, '#333'); px(6, 5, '#333');
+            px(7, 5, '#333');
+            px(8, 5, '#333'); px(9, 5, '#333'); px(10, 5, '#333');
         }
 
         return this.canvas.toDataURL();
     }
 
-    // Generate simple animal sprite
+    // Generate pixel-art animal sprite
     generateAnimalSprite(width, height, type) {
         this.canvas.width = width * 4; // 4 frames
         this.canvas.height = height;
+        this.ctx.imageSmoothingEnabled = false;
 
         for (let frame = 0; frame < 4; frame++) {
             this.drawAnimalFrame(frame * width, 0, width, height, type, frame);
@@ -325,83 +437,154 @@ class ProceduralSpriteGenerator {
 
     drawAnimalFrame(x, y, w, h, type, frame) {
         this.ctx.clearRect(x, y, w, h);
+        const scale = 2; // 12x12 base scaled to 24x24
 
-        const wingFlap = frame % 2 === 0 ? -2 : 2;
+        // Helper for pixel drawing
+        const px = (px_x, px_y, c) => {
+            this.ctx.fillStyle = c;
+            this.ctx.fillRect(x + px_x * scale, y + px_y * scale, scale, scale);
+        };
+
+        const wingFlap = frame % 2 === 0 ? 0 : 1;
 
         if (type === 'kookaburra') {
+            const brown = '#8B7355';
+            const cream = '#F5DEB3';
+            const dark = '#5D4037';
             // Body
-            this.ctx.fillStyle = '#8B7355';
-            this.ctx.fillRect(x + w/4, y + h/3, w/2, h/2);
+            px(4, 6, brown); px(5, 6, brown); px(6, 6, brown); px(7, 6, brown);
+            px(4, 7, brown); px(5, 7, cream); px(6, 7, cream); px(7, 7, brown);
+            px(4, 8, dark); px(5, 8, brown); px(6, 8, brown); px(7, 8, dark);
             // Head
-            this.ctx.fillStyle = '#A0826D';
-            this.ctx.beginPath();
-            this.ctx.arc(x + w/2, y + h/4, w/4, 0, Math.PI * 2);
-            this.ctx.fill();
+            px(5, 3, cream); px(6, 3, cream);
+            px(4, 4, cream); px(5, 4, cream); px(6, 4, cream); px(7, 4, cream);
+            px(5, 5, cream); px(6, 5, cream);
+            // Eye
+            px(6, 4, '#000');
             // Beak
-            this.ctx.fillStyle = '#000';
-            this.ctx.fillRect(x + w/2 + 3, y + h/4, 4, 2);
+            px(8, 4, dark); px(9, 4, dark); px(10, 4 + wingFlap, '#000');
+            // Tail
+            px(2, 7, dark); px(3, 7, brown); px(2, 8, dark);
         } else if (type === 'lorikeet') {
-            // Colorful bird
-            this.ctx.fillStyle = '#FF6B6B';
-            this.ctx.fillRect(x + w/4, y + h/3, w/2, h/3);
-            this.ctx.fillStyle = '#4ECDC4';
-            this.ctx.fillRect(x + w/4, y + h/2, w/2, h/4);
-            // Wings
-            this.ctx.fillStyle = '#95E1D3';
-            this.ctx.fillRect(x + w/4 - 2, y + h/3 + wingFlap, 3, h/3);
-            this.ctx.fillRect(x + w*0.75, y + h/3 + wingFlap, 3, h/3);
-        } else if (type === 'lizard') {
-            // Blue tongue lizard
-            this.ctx.fillStyle = '#8B8680';
-            this.ctx.fillRect(x + w/6, y + h/2, w*2/3, h/4);
+            const red = '#FF3333';
+            const green = '#00AA00';
+            const blue = '#3366FF';
+            const yellow = '#FFCC00';
+            // Body
+            px(5, 5, green); px(6, 5, green);
+            px(4, 6, green); px(5, 6, blue); px(6, 6, blue); px(7, 6, green);
+            px(5, 7, green); px(6, 7, green);
             // Head
-            this.ctx.fillRect(x + w*0.75, y + h/2, w/5, h/5);
+            px(5, 3, red); px(6, 3, red);
+            px(4, 4, red); px(5, 4, red); px(6, 4, red); px(7, 4, red);
+            // Eye
+            px(6, 4, '#000');
+            // Beak
+            px(8, 4, yellow);
+            // Wings (animated)
+            px(3, 5 - wingFlap, blue); px(3, 6, green);
+            px(8, 5 - wingFlap, blue); px(8, 6, green);
+        } else if (type === 'lizard') {
+            const gray = '#7A7A7A';
+            const dark = '#5A5A5A';
+            // Body (horizontal)
+            px(3, 6, gray); px(4, 6, gray); px(5, 6, gray); px(6, 6, gray); px(7, 6, gray);
+            px(4, 7, dark); px(5, 7, dark); px(6, 7, dark);
+            // Head
+            px(8, 5, gray); px(9, 5, gray);
+            px(8, 6, gray); px(9, 6, gray);
+            // Eye
+            px(9, 5, '#000');
+            // Tail
+            px(2, 6, dark); px(1, 5, dark);
+            // Legs
+            px(4, 8, gray); px(6, 8, gray);
             // Tongue (occasionally)
             if (frame === 2) {
-                this.ctx.fillStyle = '#4169E1';
-                this.ctx.fillRect(x + w*0.9, y + h/2 + 2, 4, 2);
+                px(10, 6, '#4169E1'); px(11, 6, '#4169E1');
             }
         } else if (type === 'magpie') {
-            // Black and white bird
-            this.ctx.fillStyle = '#000';
-            this.ctx.fillRect(x + w/4, y + h/3, w/2, h/2);
-            this.ctx.fillStyle = '#FFF';
-            this.ctx.fillRect(x + w/3, y + h/2, w/3, h/6);
+            const black = '#1a1a1a';
+            const white = '#FFFFFF';
+            // Body
+            px(5, 6, black); px(6, 6, black);
+            px(4, 7, black); px(5, 7, white); px(6, 7, white); px(7, 7, black);
+            px(5, 8, black); px(6, 8, black);
+            // Head
+            px(5, 4, black); px(6, 4, black);
+            px(4, 5, black); px(5, 5, black); px(6, 5, black); px(7, 5, black);
+            // Eye
+            px(6, 4, '#FFD700');
+            // Beak
+            px(8, 5, '#666');
+            // Wings
+            px(3, 6 - wingFlap, black); px(8, 6 - wingFlap, black);
         } else if (type === 'cat') {
-            // Simple cat
-            this.ctx.fillStyle = '#FF8C69';
-            this.ctx.fillRect(x + w/3, y + h/2, w/3, h/3);
+            const orange = '#FF8C42';
+            const dark = '#CC6B30';
+            // Body
+            px(5, 7, orange); px(6, 7, orange);
+            px(4, 8, orange); px(5, 8, orange); px(6, 8, orange); px(7, 8, orange);
+            px(5, 9, dark); px(6, 9, dark);
             // Head
-            this.ctx.beginPath();
-            this.ctx.arc(x + w/2, y + h/3, w/4, 0, Math.PI * 2);
-            this.ctx.fill();
+            px(5, 5, orange); px(6, 5, orange);
+            px(4, 6, orange); px(5, 6, orange); px(6, 6, orange); px(7, 6, orange);
             // Ears
-            this.ctx.fillRect(x + w/3, y + h/6, 3, 6);
-            this.ctx.fillRect(x + w*2/3 - 3, y + h/6, 3, 6);
+            px(4, 4, orange); px(7, 4, orange);
+            // Eyes
+            px(5, 5, '#32CD32'); px(6, 5, '#32CD32');
+            // Nose
+            px(5, 6, '#FFB6C1');
+            // Tail (animated)
+            px(8, 7, orange); px(9, 6 + wingFlap, orange);
+            // Legs
+            px(4, 10, dark); px(7, 10, dark);
         } else if (type === 'dog') {
-            // Simple dog
-            this.ctx.fillStyle = '#D2691E';
-            this.ctx.fillRect(x + w/3, y + h/2, w/3, h/3);
+            const brown = '#8B5A2B';
+            const dark = '#5D3A1A';
+            const tan = '#D2B48C';
+            // Body
+            px(5, 7, brown); px(6, 7, brown);
+            px(4, 8, brown); px(5, 8, tan); px(6, 8, tan); px(7, 8, brown);
+            px(5, 9, brown); px(6, 9, brown);
             // Head
-            this.ctx.beginPath();
-            this.ctx.arc(x + w/2, y + h/3, w/3.5, 0, Math.PI * 2);
-            this.ctx.fill();
-            // Floppy ears
-            this.ctx.fillRect(x + w/4, y + h/4, 4, h/4);
-            this.ctx.fillRect(x + w*3/4 - 4, y + h/4, 4, h/4);
+            px(5, 4, brown); px(6, 4, brown);
+            px(4, 5, brown); px(5, 5, brown); px(6, 5, brown); px(7, 5, brown);
+            px(5, 6, tan); px(6, 6, tan);
+            // Ears (floppy)
+            px(3, 5, dark); px(3, 6, dark);
+            px(8, 5, dark); px(8, 6, dark);
+            // Eyes
+            px(5, 4, '#000'); px(6, 4, '#000');
+            // Nose
+            px(5, 5, '#000');
+            // Tail (animated)
+            px(8, 7, brown); px(9, 6 - wingFlap, brown);
+            // Legs
+            px(4, 10, dark); px(7, 10, dark);
         } else if (type === 'possum') {
-            // Gray possum
-            this.ctx.fillStyle = '#A9A9A9';
-            this.ctx.fillRect(x + w/3, y + h/2, w/3, h/3);
-            // Head with big ears
-            this.ctx.beginPath();
-            this.ctx.arc(x + w/2, y + h/3, w/4, 0, Math.PI * 2);
-            this.ctx.fill();
-            // Large round ears
-            this.ctx.beginPath();
-            this.ctx.arc(x + w/3, y + h/4, w/6, 0, Math.PI * 2);
-            this.ctx.arc(x + w*2/3, y + h/4, w/6, 0, Math.PI * 2);
-            this.ctx.fill();
+            const gray = '#808080';
+            const dark = '#505050';
+            const pink = '#FFB6C1';
+            // Body
+            px(5, 7, gray); px(6, 7, gray);
+            px(4, 8, gray); px(5, 8, gray); px(6, 8, gray); px(7, 8, gray);
+            px(5, 9, dark); px(6, 9, dark);
+            // Head
+            px(5, 4, gray); px(6, 4, gray);
+            px(4, 5, gray); px(5, 5, gray); px(6, 5, gray); px(7, 5, gray);
+            px(5, 6, gray); px(6, 6, gray);
+            // Big ears
+            px(3, 3, pink); px(4, 3, gray); px(7, 3, gray); px(8, 3, pink);
+            px(4, 4, gray); px(7, 4, gray);
+            // Eyes (big and cute)
+            px(5, 5, '#000'); px(6, 5, '#000');
+            // Nose
+            px(5, 6, pink);
+            // Tail (curled)
+            px(8, 8, gray); px(9, 7, gray); px(9, 6, dark);
+            // Legs
+            px(4, 10, dark); px(7, 10, dark);
         }
     }
 

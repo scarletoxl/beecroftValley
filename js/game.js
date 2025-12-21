@@ -20,7 +20,7 @@ class Game {
 
         // Game state - Initialize with defaults
         this.player = {
-            x: 235, y: 240, // Start at farm house near 19 Albert Rd
+            x: 260, y: 258, // Start on main Beecroft Road near station
             speed: 1,
             energy: 100,
             maxEnergy: 100,
@@ -388,6 +388,19 @@ class Game {
                     }
                 }
             }
+        });
+
+        // Clear trees from spawn area and main roads to prevent getting stuck
+        this.clearSpawnArea(260, 258, 5); // Main spawn point
+        this.clearSpawnArea(235, 240, 3); // Near farm house
+    }
+
+    clearSpawnArea(centerX, centerY, radius) {
+        // Remove any trees within radius of the spawn point
+        this.trees = this.trees.filter(tree => {
+            const dx = tree.x - centerX;
+            const dy = tree.y - centerY;
+            return Math.sqrt(dx * dx + dy * dy) > radius;
         });
     }
 
