@@ -1330,6 +1330,9 @@ class Game {
                 playing: Math.random() > 0.7,
                 animation: 0
             });
+        });
+    }
+
     // ===== SPRITE INITIALIZATION =====
     initSprites() {
         // Generate player character sprite (cute young girl with long hair)
