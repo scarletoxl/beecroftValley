@@ -2602,6 +2602,12 @@ class Game {
             }
         });
 
+        // Render mini-map and location indicator (from expanded map features)
+        if (this.currentMap === 'overworld') {
+            this.renderMiniMap();
+            this.renderLocationIndicator();
+        }
+
         // Apply day/night overlay
         this.applyDayNightOverlay();
     }
