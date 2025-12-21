@@ -89,6 +89,9 @@ class Game {
         // Animals
         this.animals = [];
 
+        // Farm animals (chickens, cows, sheep) - for player's farm
+        this.farmAnimals = [];
+
         // Farming system - crops and watered tiles
         this.crops = []; // { x, y, type, stage, watered, plantedDay }
         this.wateredTiles = new Set(); // "x,y" keys for watered farmland
@@ -107,6 +110,7 @@ class Game {
         this.initSprites();
         this.initAnimals();
         this.initAnimalSprites();
+        this.initFarmAnimals();
         this.createUI();
         this.setupEventListeners();
 
@@ -1786,6 +1790,120 @@ class Game {
         });
     }
 
+    // ===== FARM ANIMALS INITIALIZATION =====
+    initFarmAnimals() {
+        // Farm animals at player's property (19 Albert Rd at 235, 240)
+        // Positioned around the farm area
+        const farmX = 235;
+        const farmY = 240;
+
+        this.farmAnimals = [
+            // Chickens (3 chickens in coop area)
+            {
+                type: 'chicken',
+                x: farmX - 3,
+                y: farmY + 2,
+                emoji: '🐔',
+                name: 'Henrietta',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1, // 1 day
+                produces: 'egg'
+            },
+            {
+                type: 'chicken',
+                x: farmX - 4,
+                y: farmY + 3,
+                emoji: '🐔',
+                name: 'Clucky',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'egg'
+            },
+            {
+                type: 'chicken',
+                x: farmX - 2,
+                y: farmY + 3,
+                emoji: '🐔',
+                name: 'Pecky',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'egg'
+            },
+
+            // Cows (2 cows in barn area)
+            {
+                type: 'cow',
+                x: farmX + 2,
+                y: farmY + 1,
+                emoji: '🐄',
+                name: 'Bessie',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'milk'
+            },
+            {
+                type: 'cow',
+                x: farmX + 4,
+                y: farmY + 2,
+                emoji: '🐄',
+                name: 'Daisy',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'milk'
+            },
+
+            // Sheep (3 sheep in pen area)
+            {
+                type: 'sheep',
+                x: farmX - 1,
+                y: farmY - 2,
+                emoji: '🐑',
+                name: 'Fluffy',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3, // 3 days for wool
+                produces: 'wool'
+            },
+            {
+                type: 'sheep',
+                x: farmX + 1,
+                y: farmY - 3,
+                emoji: '🐑',
+                name: 'Woolly',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3,
+                produces: 'wool'
+            },
+            {
+                type: 'sheep',
+                x: farmX - 2,
+                y: farmY - 1,
+                emoji: '🐑',
+                name: 'Baa-rbara',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3,
+                produces: 'wool'
+            }
+        ];
+
+        console.log(`Initialized ${this.farmAnimals.length} farm animals at player's farm`);
+    }
+
     // ===== INTERIOR MAPS =====
     initInteriors() {
         // Create simple interior layouts for buildings with NPCs
@@ -3219,6 +3337,15 @@ class Game {
                 });
             }
 
+            // Add farm animals
+            if (this.farmAnimals) {
+                this.farmAnimals.forEach(animal => {
+                    if (animal.x >= startX && animal.x < endX && animal.y >= startY && animal.y < endY) {
+                        entities.push({ type: 'farmanimal', data: animal, sortY: animal.y, sortX: animal.x });
+                    }
+                });
+            }
+
             // Add crops
             if (this.crops) {
                 this.crops.forEach(crop => {
@@ -3289,6 +3416,8 @@ class Game {
                 this.renderFurniture(entity.data);
             } else if (entity.type === 'animal') {
                 this.renderIsometricAnimal(entity.data);
+            } else if (entity.type === 'farmanimal') {
+                this.renderFarmAnimal(entity.data);
             } else if (entity.type === 'crop') {
                 this.renderIsometricCrop(entity.data);
             } else if (entity.type === 'streetlight') {
@@ -3871,6 +4000,56 @@ class Game {
         // Render animal sprite
         if (animal.sprite.loaded) {
             animal.sprite.drawFrame(this.ctx, animal.frame, 0, screen.x, screen.y - 12, 24, 24);
+        }
+    }
+
+    renderFarmAnimal(animal) {
+        const screen = this.worldToScreenWithCamera(animal.x, animal.y, 0);
+
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 2, 10, 5, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Render farm animal emoji (larger than wild animals)
+        this.ctx.font = '28px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(animal.emoji, screen.x, screen.y);
+        this.ctx.textAlign = 'left';
+
+        // Happiness indicator (hearts above animal if happy)
+        if (animal.happiness > 80) {
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('💚', screen.x, screen.y - 20);
+        } else if (animal.happiness < 30) {
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('💔', screen.x, screen.y - 20);
+        }
+
+        // Interactive hint if player nearby
+        if (this.player) {
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - animal.x, 2) +
+                Math.pow(this.player.y - animal.y, 2)
+            );
+
+            if (dist < 1.5) {
+                this.ctx.font = '8px Arial';
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.textAlign = 'center';
+
+                let actionText = `${animal.name} - Press E to Pet`;
+                if (!animal.fedToday) {
+                    actionText = `${animal.name} - Press F to Feed`;
+                }
+
+                this.ctx.strokeText(actionText, screen.x, screen.y - 30);
+                this.ctx.fillText(actionText, screen.x, screen.y - 30);
+                this.ctx.textAlign = 'left';
+            }
         }
     }
 
