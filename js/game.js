@@ -3534,6 +3534,88 @@ class Game {
         this.ctx.textAlign = 'center';
         this.ctx.fillText(building.emoji, centerScreen.x, centerScreen.y + 6);
         this.ctx.textAlign = 'left';
+
+        // Add CLEAR VISIBLE DOOR if building can be entered
+        if (building.canEnter && building.hasInterior) {
+            this.renderBuildingDoor(building);
+        }
+    }
+
+    renderBuildingDoor(building) {
+        // Door at front center-bottom of building
+        const doorX = building.x + Math.floor(building.width / 2);
+        const doorY = building.y + building.height - 1;
+        const doorScreen = this.worldToScreenWithCamera(doorX, doorY, 0);
+
+        // Door background (wooden brown)
+        const doorWidth = 16;
+        const doorHeight = 24;
+        this.ctx.fillStyle = '#5D4037'; // Dark brown
+        this.ctx.fillRect(
+            doorScreen.x - doorWidth / 2,
+            doorScreen.y - doorHeight / 2,
+            doorWidth,
+            doorHeight
+        );
+
+        // Door frame (lighter wood)
+        this.ctx.strokeStyle = '#8D6E63';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2,
+            doorScreen.y - doorHeight / 2,
+            doorWidth,
+            doorHeight
+        );
+
+        // Door panels (detail)
+        this.ctx.strokeStyle = '#4E342E';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2 + 2,
+            doorScreen.y - doorHeight / 2 + 2,
+            doorWidth - 4,
+            doorHeight / 2 - 3
+        );
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2 + 2,
+            doorScreen.y - 1,
+            doorWidth - 4,
+            doorHeight / 2 - 3
+        );
+
+        // Doorknob (golden brass)
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.beginPath();
+        this.ctx.arc(doorScreen.x + doorWidth / 2 - 4, doorScreen.y, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Doorknob outline
+        this.ctx.strokeStyle = '#B8860B';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+
+        // Check if player is near door for interaction hint
+        if (this.player) {
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - doorX, 2) +
+                Math.pow(this.player.y - doorY, 2)
+            );
+
+            // Show "Press SPACE to enter" if player is close
+            if (dist < 2) {
+                this.ctx.font = '10px Arial';
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 3;
+                this.ctx.textAlign = 'center';
+
+                const text = `Press SPACE to enter ${building.name}`;
+                this.ctx.strokeText(text, doorScreen.x, doorScreen.y - 35);
+                this.ctx.fillText(text, doorScreen.x, doorScreen.y - 35);
+                this.ctx.textAlign = 'left';
+            }
+        }
     }
 
     renderIsometricNPC(npc) {
