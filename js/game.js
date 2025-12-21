@@ -791,12 +791,16 @@ class Game {
             }
         ];
 
-        // Mark building tiles
+        // Mark building tiles, but preserve roads and paths for navigation
         this.buildings.forEach(building => {
             for (let y = building.y; y < building.y + building.height; y++) {
                 for (let x = building.x; x < building.x + building.width; x++) {
-                    if (x < this.mapWidth && y < this.mapHeight) {
-                        this.map[y][x] = 6;
+                    if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                        const currentTile = this.map[y][x];
+                        // Only mark as building if it's grass (0) - preserve roads (3), paths (1), railway (8), parks (9)
+                        if (currentTile === 0) {
+                            this.map[y][x] = 6;
+                        }
                     }
                 }
             }
@@ -1507,7 +1511,7 @@ class Game {
 
     // ===== INTERIOR MAPS =====
     initInteriors() {
-        // Create simple interior layouts for buildings
+        // Create simple interior layouts for buildings with NPCs
         this.interiorMaps = {
             "The Beehive Cafe": {
                 width: 15,
@@ -1516,16 +1520,22 @@ class Game {
                 exitX: 7,
                 exitY: 11,
                 spawnX: 7,
-                spawnY: 10
+                spawnY: 10,
+                npcs: [
+                    { name: "Mrs. Chen", x: 7, y: 3, emoji: "👵", role: "cafe owner", greeting: "Welcome! What can I get you?" }
+                ]
             },
-            "Beecroft Place (Woolworths)": {
+            "Woolworths Beecroft": {
                 width: 20,
                 height: 15,
                 tiles: this.createShopInterior(),
                 exitX: 10,
                 exitY: 14,
                 spawnX: 10,
-                spawnY: 13
+                spawnY: 13,
+                npcs: [
+                    { name: "Emma", x: 10, y: 5, emoji: "👩", role: "shopkeeper", greeting: "Let me know if you need help finding anything!" }
+                ]
             },
             "Your Farm House": {
                 width: 12,
@@ -1534,7 +1544,8 @@ class Game {
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
-                spawnY: 8
+                spawnY: 8,
+                npcs: []
             },
             "HerGP Medical Clinic": {
                 width: 10,
@@ -1543,7 +1554,10 @@ class Game {
                 exitX: 5,
                 exitY: 7,
                 spawnX: 5,
-                spawnY: 6
+                spawnY: 6,
+                npcs: [
+                    { name: "Dr. Shin Li", x: 5, y: 3, emoji: "👩‍⚕️", role: "doctor", greeting: "How can I help you today?" }
+                ]
             },
             "Beecroft Auto Sales": {
                 width: 18,
@@ -1552,9 +1566,56 @@ class Game {
                 exitX: 9,
                 exitY: 11,
                 spawnX: 9,
-                spawnY: 10
+                spawnY: 10,
+                npcs: [
+                    { name: "Marcus", x: 9, y: 4, emoji: "👨", role: "salesman", greeting: "Looking for a new ride?" }
+                ]
+            },
+            "Hannah's Beecroft": {
+                width: 14,
+                height: 10,
+                tiles: this.createCafeInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Hannah", x: 7, y: 3, emoji: "👩‍🍳", role: "chef", greeting: "Welcome to Hannah's! Take a seat!" }
+                ]
+            },
+            "Chargrill Charlie's": {
+                width: 12,
+                height: 10,
+                tiles: this.createCafeInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: [
+                    { name: "Charlie", x: 6, y: 3, emoji: "👨‍🍳", role: "grill master", greeting: "Best charcoal chicken in Beecroft!" }
+                ]
             }
         };
+
+        // Generate sprites for interior NPCs
+        this.interiorNPCSprites = {};
+        Object.values(this.interiorMaps).forEach(interior => {
+            if (interior.npcs) {
+                interior.npcs.forEach(npc => {
+                    if (!this.interiorNPCSprites[npc.name]) {
+                        const config = this.getNPCSpriteConfig(npc) || {
+                            bodyColor: '#90CAF9',
+                            hairColor: '#6D4C41',
+                            skinColor: '#FFE0BD',
+                            accessory: null,
+                            age: 'adult'
+                        };
+                        const spriteData = this.spriteGenerator.generateNPCSprite(48, 48, config);
+                        this.interiorNPCSprites[npc.name] = new SpriteSheet(spriteData, 48, 48);
+                    }
+                });
+            }
+        });
     }
 
     createCafeInterior() {
@@ -2625,6 +2686,21 @@ class Game {
             }
         }
 
+        // Add interior NPCs when inside a building
+        if (this.currentMap !== 'overworld') {
+            const interior = this.interiorMaps[this.currentMap];
+            if (interior && interior.npcs) {
+                interior.npcs.forEach(npc => {
+                    entities.push({
+                        type: 'interior_npc',
+                        data: npc,
+                        sortY: npc.y,
+                        sortX: npc.x
+                    });
+                });
+            }
+        }
+
         // Add player
         entities.push({ type: 'player', data: this.player, sortY: this.player.y, sortX: this.player.x });
 
@@ -2644,6 +2720,8 @@ class Game {
                 this.renderIsometricBuilding(entity.data);
             } else if (entity.type === 'npc') {
                 this.renderIsometricNPC(entity.data);
+            } else if (entity.type === 'interior_npc') {
+                this.renderInteriorNPC(entity.data);
             } else if (entity.type === 'animal') {
                 this.renderIsometricAnimal(entity.data);
             } else if (entity.type === 'player') {
@@ -2816,6 +2894,40 @@ class Game {
         this.ctx.fillStyle = '#000';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(npc.name, screen.x, screen.y - 50);
+        this.ctx.textAlign = 'left';
+    }
+
+    renderInteriorNPC(npc) {
+        const screen = this.worldToScreenWithCamera(npc.x, npc.y, 0);
+
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 3, 10, 5, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Try to use pre-generated sprite
+        const sprite = this.interiorNPCSprites?.[npc.name];
+        if (sprite && sprite.loaded) {
+            sprite.drawFrame(this.ctx, 0, 0, screen.x, screen.y - 24, 48, 48);
+        } else {
+            // Fallback to colored shape
+            this.ctx.fillStyle = '#4a9eff';
+            this.ctx.fillRect(screen.x - 6, screen.y - 25, 12, 15);
+            this.ctx.fillStyle = '#ffdbac';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - 33, 8, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        // Name and role
+        this.ctx.font = '8px Arial';
+        this.ctx.fillStyle = '#000';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(npc.name, screen.x, screen.y - 50);
+        this.ctx.font = '6px Arial';
+        this.ctx.fillStyle = '#666';
+        this.ctx.fillText(`(${npc.role})`, screen.x, screen.y - 42);
         this.ctx.textAlign = 'left';
     }
 
