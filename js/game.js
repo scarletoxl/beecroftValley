@@ -102,6 +102,7 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
+        this.initStreetLights();
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
@@ -822,6 +823,31 @@ class Game {
                 hasInterior: false,
                 canEnter: false,
                 isChristmasTree: true
+            },
+
+            // === NEW BUILDINGS ===
+            {
+                name: "Beecroft Carpenter Shop",
+                x: 232, y: 270,
+                width: 6, height: 5,
+                type: "carpenter",
+                emoji: "🔨",
+                color: "#D7CCC8",
+                hasInterior: true,
+                canEnter: true,
+                isCarpenter: true,
+                owner: "Bill the Carpenter"
+            },
+            {
+                name: "Beecroft Mines Entrance",
+                x: 180, y: 300,
+                width: 8, height: 6,
+                type: "mine",
+                emoji: "⛏️",
+                color: "#78909C",
+                hasInterior: true,
+                canEnter: true,
+                isMine: true
             }
         ];
 
@@ -839,6 +865,71 @@ class Game {
                 }
             }
         });
+    }
+
+    // ===== STREET LIGHTS INITIALIZATION =====
+    // Place street lights every 5-6 tiles along all major roads
+    // Lights glow at night (6pm-6am) with yellow illumination
+    initStreetLights() {
+        this.streetLights = [];
+        const spacing = 6; // Place light every 6 tiles
+
+        // Beecroft Road - North-south at x=250, entire map
+        for (let y = 0; y < this.mapHeight; y += spacing) {
+            this.streetLights.push({ x: 250, y: y });
+        }
+
+        // Hannah Street - East-west at y=255
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 255 });
+        }
+
+        // Chapman Avenue - East-west at y=235
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 235 });
+        }
+
+        // Copeland Road - East-west at y=265
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 265 });
+        }
+
+        // Railway tracks - East-west at y=250
+        for (let x = 180; x < 350; x += spacing) {
+            this.streetLights.push({ x: x, y: 250 });
+        }
+
+        // Malton Road - East from station
+        for (let x = 260; x < 300; x += spacing) {
+            this.streetLights.push({ x: x, y: 260 });
+        }
+
+        // Wongala Crescent - Curved road (simplified as line segments)
+        for (let x = 260; x < 280; x += spacing) {
+            const y = 250 + (x - 260) * 0.5; // Diagonal approximation
+            this.streetLights.push({ x: x, y: Math.floor(y) });
+        }
+
+        // Albert Road - Near player's home
+        for (let y = 235; y < 245; y += spacing) {
+            this.streetLights.push({ x: 235, y: y });
+        }
+
+        // Welham Street
+        for (let x = 235; x < 245; x += spacing) {
+            this.streetLights.push({ x: x, y: 243 });
+        }
+
+        // Sutherland Road - Diagonal (southeast from Copeland)
+        for (let i = 0; i < 15; i++) {
+            const x = 260 + i * 2;
+            const y = 265 + i * 2;
+            if (x < this.mapWidth && y < this.mapHeight) {
+                this.streetLights.push({ x: x, y: y });
+            }
+        }
+
+        console.log(`Initialized ${this.streetLights.length} street lights`);
     }
 
     // ===== NPC INITIALIZATION =====
@@ -1230,6 +1321,66 @@ class Game {
                 standTimer: 0,
                 baseX: 172,
                 baseY: 188
+            },
+
+            // === NEW NPCS ===
+            {
+                name: "Bill", x: 234, y: 272, emoji: "👨‍🔧",
+                role: "carpenter",
+                greeting: "Need anything built? I'm your man!",
+                dialogues: [
+                    "I can craft furniture from wood.",
+                    "Bring me wood and pebbles for tools.",
+                    "Quality craftsmanship, guaranteed!",
+                    "Been working wood for 30 years."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 234,
+                baseY: 272,
+                isCarpenter: true
+            },
+            {
+                name: "Rocky", x: 182, y: 302, emoji: "⛏️",
+                role: "miner",
+                greeting: "The mines go deep... real deep.",
+                dialogues: [
+                    "Found copper on level 3 yesterday!",
+                    "Bring a good pickaxe down there.",
+                    "Watch out for the critters!",
+                    "Mining's in my blood."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 182,
+                baseY: 302
+            },
+            {
+                name: "Dusty", x: 185, y: 303, emoji: "🪨",
+                role: "mining foreman",
+                greeting: "Stay safe down in the mines!",
+                dialogues: [
+                    "We've got 20 levels so far.",
+                    "Deeper you go, better the ore.",
+                    "Found diamonds on level 18!",
+                    "Don't mine alone, it's dangerous."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 185,
+                baseY: 303
             }
         ];
 
@@ -2996,6 +3147,15 @@ class Game {
                     }
                 });
             }
+
+            // Add street lights
+            if (this.streetLights) {
+                this.streetLights.forEach(light => {
+                    if (light.x >= startX && light.x < endX && light.y >= startY && light.y < endY) {
+                        entities.push({ type: 'streetlight', data: light, sortY: light.y, sortX: light.x });
+                    }
+                });
+            }
         }
 
         // Add interior NPCs when inside a building
@@ -3038,6 +3198,8 @@ class Game {
                 this.renderIsometricAnimal(entity.data);
             } else if (entity.type === 'crop') {
                 this.renderIsometricCrop(entity.data);
+            } else if (entity.type === 'streetlight') {
+                this.renderStreetLight(entity.data);
             } else if (entity.type === 'player') {
                 this.renderIsometricPlayer(entity.data);
             }
@@ -3090,6 +3252,50 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(screen.x, screen.y - treeHeight - 8, 10, 0, Math.PI * 2);
         this.ctx.fill();
+    }
+
+    renderStreetLight(light) {
+        const screen = this.worldToScreenWithCamera(light.x, light.y, 0);
+        const isNight = this.time && (this.time.hour >= 18 || this.time.hour < 6);
+
+        // Street light post (gray pole, 2 tiles high)
+        const postHeight = 50;
+        this.ctx.fillStyle = '#5a5a5a';
+        this.ctx.fillRect(screen.x - 2, screen.y - postHeight, 4, postHeight);
+
+        // Post base
+        this.ctx.fillStyle = '#3a3a3a';
+        this.ctx.fillRect(screen.x - 4, screen.y, 8, 4);
+
+        // Light fixture at top
+        this.ctx.fillStyle = '#7a7a7a';
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, screen.y - postHeight, 4, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // At night: glow effect
+        if (isNight) {
+            // Bright light at top
+            this.ctx.fillStyle = '#ffffaa';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - postHeight, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Glowing yellow circle of light on ground (radius 3 tiles)
+            const glowRadius = this.tileWidth * 1.5; // About 3 tiles
+            const gradient = this.ctx.createRadialGradient(
+                screen.x, screen.y, 0,
+                screen.x, screen.y, glowRadius
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 170, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 170, 0.15)');
+            gradient.addColorStop(1, 'rgba(255, 255, 170, 0)');
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y, glowRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
     }
 
     renderIsometricCrop(crop) {
