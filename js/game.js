@@ -2195,7 +2195,7 @@ class Game {
             "My Home": {
                 width: 12,
                 height: 10,
-                tiles: this.createHomeInterior(),
+                tiles: this.createDetailedHomeInterior(),
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
@@ -2205,7 +2205,7 @@ class Game {
             "Bridey's Home": {
                 width: 12,
                 height: 10,
-                tiles: this.createHomeInterior(),
+                tiles: this.createDetailedHomeInterior(),
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
