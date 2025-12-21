@@ -20,7 +20,7 @@ class Game {
 
         // Game state - Initialize with defaults
         this.player = {
-            x: 260, y: 258, // Start on main Beecroft Road near station
+            x: 270, y: 260, // Start on Malton Road, east of shops (clear of buildings)
             speed: 1,
             energy: 100,
             maxEnergy: 100,
@@ -99,11 +99,43 @@ class Game {
         this.createUI();
         this.setupEventListeners();
 
+        // Validate spawn point is walkable (not inside building or water)
+        this.validateSpawnPoint();
+
         // Start game loop after sprites load
         this.spriteManager.waitForAll(() => {
             this.gameLoop();
             this.startTimeCycle();
         });
+    }
+
+    // Ensure player spawns on a walkable tile
+    validateSpawnPoint() {
+        const tile = this.map[Math.floor(this.player.y)]?.[Math.floor(this.player.x)];
+
+        // If spawn is blocked (building=6, water=2), find nearest road
+        if (tile === 6 || tile === 2 || tile === undefined) {
+            console.warn('Spawn point blocked, finding safe location...');
+
+            // Search in expanding circles for a walkable tile (road=3)
+            for (let radius = 1; radius < 50; radius++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const testX = Math.floor(this.player.x) + dx;
+                        const testY = Math.floor(this.player.y) + dy;
+                        const testTile = this.map[testY]?.[testX];
+
+                        // Found a road tile
+                        if (testTile === 3 || testTile === 1 || testTile === 0) {
+                            this.player.x = testX + 0.5;
+                            this.player.y = testY + 0.5;
+                            console.log(`Moved to safe spawn: (${testX}, ${testY})`);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // ===== ISOMETRIC PROJECTION UTILITIES =====
@@ -391,7 +423,7 @@ class Game {
         });
 
         // Clear trees from spawn area and main roads to prevent getting stuck
-        this.clearSpawnArea(260, 258, 5); // Main spawn point
+        this.clearSpawnArea(270, 260, 5); // Main spawn point on Malton Road
         this.clearSpawnArea(235, 240, 3); // Near farm house
     }
 
