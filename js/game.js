@@ -2193,7 +2193,7 @@ class Game {
 
     // ===== UI CREATION =====
     createUI() {
-        // Create dialog box
+        // Create dialog box with chat interface
         const dialogBox = document.createElement('div');
         dialogBox.id = 'dialog-box';
         dialogBox.style.display = 'none';
@@ -2202,9 +2202,16 @@ class Game {
                 <div class="dialog-header">
                     <span class="dialog-emoji"></span>
                     <span class="dialog-name"></span>
+                    <span class="dialog-role"></span>
                     <button class="dialog-close">×</button>
                 </div>
-                <div class="dialog-text"></div>
+                <div class="dialog-chat">
+                    <div class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" placeholder="Say something..." maxlength="200">
+                        <button class="chat-send">Send</button>
+                    </div>
+                </div>
                 <div class="dialog-options"></div>
             </div>
         `;
@@ -2288,8 +2295,34 @@ class Game {
                         }
                     }
                 } else {
-                    // Exit interior
-                    this.exitBuilding();
+                    // Inside building - check for nearby interior NPCs first
+                    const interior = this.interiorMaps[this.currentMap];
+                    if (interior && interior.npcs) {
+                        let foundInteriorNPC = false;
+                        const talkDistance = 2;
+                        for (let npc of interior.npcs) {
+                            const dx = this.player.x - npc.x;
+                            const dy = this.player.y - npc.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < talkDistance) {
+                                this.showNPCDialog(npc, this.currentMap);
+                                foundInteriorNPC = true;
+                                break;
+                            }
+                        }
+                        // Check if at exit
+                        if (!foundInteriorNPC) {
+                            const exitDist = Math.sqrt(
+                                Math.pow(this.player.x - interior.exitX, 2) +
+                                Math.pow(this.player.y - interior.exitY, 2)
+                            );
+                            if (exitDist < 1.5) {
+                                this.exitBuilding();
+                            }
+                        }
+                    } else {
+                        this.exitBuilding();
+                    }
                 }
             }
 
@@ -2365,7 +2398,7 @@ class Game {
         }
     }
 
-    showNPCDialog(npc) {
+    showNPCDialog(npc, location = 'Beecroft') {
         this.uiState.showingDialog = true;
         this.uiState.currentNPC = npc;
 
@@ -2373,11 +2406,64 @@ class Game {
         this.checkQuestProgress('talk', npc.name);
 
         const dialogBox = document.getElementById('dialog-box');
-        const randomDialogue = npc.dialogues[Math.floor(Math.random() * npc.dialogues.length)];
 
+        // Set NPC info in header
         dialogBox.querySelector('.dialog-emoji').textContent = npc.emoji;
         dialogBox.querySelector('.dialog-name').textContent = npc.name;
-        dialogBox.querySelector('.dialog-text').textContent = randomDialogue;
+        dialogBox.querySelector('.dialog-role').textContent = `(${npc.role || 'resident'})`;
+
+        // Initialize AI chat and clear previous messages
+        const chatMessages = dialogBox.querySelector('.chat-messages');
+        chatMessages.innerHTML = '';
+
+        // Start AI conversation
+        const greeting = aiChat.startConversation(npc, location);
+        this.addChatMessage(chatMessages, npc.emoji, greeting, 'npc');
+
+        // Setup chat input
+        const chatInput = dialogBox.querySelector('.chat-input');
+        const chatSend = dialogBox.querySelector('.chat-send');
+
+        // Remove old event listeners by cloning
+        const newChatInput = chatInput.cloneNode(true);
+        const newChatSend = chatSend.cloneNode(true);
+        chatInput.parentNode.replaceChild(newChatInput, chatInput);
+        chatSend.parentNode.replaceChild(newChatSend, chatSend);
+
+        // Add send handler
+        const sendMessage = async () => {
+            const message = newChatInput.value.trim();
+            if (!message || aiChat.isLoading) return;
+
+            // Add player message
+            this.addChatMessage(chatMessages, '🧑', message, 'player');
+            newChatInput.value = '';
+
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message npc typing';
+            typingIndicator.innerHTML = `<span class="msg-emoji">${npc.emoji}</span><span class="msg-text">...</span>`;
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Get AI response
+            const response = await aiChat.sendMessage(message);
+
+            // Remove typing indicator and add response
+            typingIndicator.remove();
+            this.addChatMessage(chatMessages, npc.emoji, response, 'npc');
+        };
+
+        newChatSend.onclick = sendMessage;
+        newChatInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
+
+        // Focus input
+        setTimeout(() => newChatInput.focus(), 100);
 
         // Create options
         const options = dialogBox.querySelector('.dialog-options');
@@ -2398,7 +2484,7 @@ class Game {
         }
 
         // Marriage option
-        if (npc.canMarry && this.relationships[npc.name].hearts >= 8 && this.player.hasRing) {
+        if (npc.canMarry && this.relationships[npc.name]?.hearts >= 8 && this.player.hasRing) {
             const proposeBtn = document.createElement('button');
             proposeBtn.textContent = '💍 Propose Marriage';
             proposeBtn.onclick = () => this.proposeMarriage(npc);
@@ -2406,6 +2492,14 @@ class Game {
         }
 
         dialogBox.style.display = 'flex';
+    }
+
+    addChatMessage(container, emoji, text, role) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role}`;
+        msgDiv.innerHTML = `<span class="msg-emoji">${emoji}</span><span class="msg-text">${text}</span>`;
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
     }
 
     showBuildingDialog(building) {
@@ -2440,6 +2534,10 @@ class Game {
         document.getElementById('dialog-box').style.display = 'none';
         this.uiState.showingDialog = false;
         this.uiState.currentNPC = null;
+        // End AI conversation
+        if (typeof aiChat !== 'undefined') {
+            aiChat.endConversation();
+        }
     }
 
     // ===== GIFT SYSTEM =====
