@@ -248,120 +248,143 @@ class Game {
             }
         }
 
-        // Roads - Based on accurate Beecroft geography with Station at (250, 250)
+        // Generate roads from GPS-based road data
+        this.generateRoadsFromGPS();
 
-        // Beecroft Road - Main north-south arterial (5 tiles wide, centered at x=250)
-        for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 248; x <= 252; x++) {
-                this.map[y][x] = 3;
+        // Generate railway from GPS-based data
+        this.generateRailwayFromGPS();
+
+        this.addTreeClusters();
+        this.addParks();
+    }
+
+    // Generate roads from GPS coordinate data
+    generateRoadsFromGPS() {
+        const roads = BeeccroftRoadData.getRoadsWithGameCoords();
+
+        roads.forEach(road => {
+            // Draw road segments between points
+            for (let i = 0; i < road.points.length - 1; i++) {
+                const start = road.points[i];
+                const end = road.points[i + 1];
+                this.drawRoadSegment(start.x, start.y, end.x, end.y, road.width, 3);
             }
-        }
+        });
 
-        // Hannah Street - East-west shopping strip (4 tiles wide, y=255)
-        for (let x = 100; x < 400; x++) {
-            for (let y = 253; y <= 256; y++) {
-                this.map[y][x] = 3;
-            }
-        }
+        // Add additional local connector roads for gameplay
+        this.addLocalRoads();
+    }
 
-        // Chapman Avenue - East-west north of station (4 tiles wide, y=235)
-        for (let x = 120; x < 380; x++) {
-            for (let y = 233; y <= 236; y++) {
-                this.map[y][x] = 3;
-            }
-        }
+    // Generate railway from GPS coordinate data
+    generateRailwayFromGPS() {
+        const railway = BeeccroftRoadData.getRailwayWithGameCoords();
 
-        // Copeland Road - East-west south of station (4 tiles wide, y=265)
-        for (let x = 150; x < 370; x++) {
-            for (let y = 263; y <= 266; y++) {
-                this.map[y][x] = 3;
-            }
+        // Draw railway segments between points
+        for (let i = 0; i < railway.points.length - 1; i++) {
+            const start = railway.points[i];
+            const end = railway.points[i + 1];
+            this.drawRoadSegment(start.x, start.y, end.x, end.y, railway.width, 8);
         }
+    }
 
-        // Wongala Crescent - Curved road through eastern area (4 tiles wide)
-        for (let i = 0; i < 80; i++) {
-            const x = 260 + Math.floor(i * 0.25);
-            const y = 248 + Math.floor(Math.sin(i * 0.08) * 12);
-            if (x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                for (let w = 0; w < 4; w++) {
-                    if (this.map[y + w] && this.map[y + w][x]) {
-                        this.map[y + w][x] = 3;
+    // Draw a road/railway segment between two points
+    drawRoadSegment(x1, y1, x2, y2, width, tileType) {
+        // Use Bresenham-style line algorithm with width
+        const dx = Math.abs(x2 - x1);
+        const dy = Math.abs(y2 - y1);
+        const sx = x1 < x2 ? 1 : -1;
+        const sy = y1 < y2 ? 1 : -1;
+        let err = dx - dy;
+
+        let x = Math.floor(x1);
+        let y = Math.floor(y1);
+        const endX = Math.floor(x2);
+        const endY = Math.floor(y2);
+
+        const halfWidth = Math.floor(width / 2);
+
+        while (true) {
+            // Draw width around the center point
+            for (let wy = -halfWidth; wy <= halfWidth; wy++) {
+                for (let wx = -halfWidth; wx <= halfWidth; wx++) {
+                    const px = x + wx;
+                    const py = y + wy;
+                    if (px >= 0 && px < this.mapWidth && py >= 0 && py < this.mapHeight) {
+                        // Don't overwrite railway with roads
+                        if (tileType === 3 && this.map[py][px] === 8) continue;
+                        this.map[py][px] = tileType;
                     }
                 }
             }
-        }
 
-        // Sutherland Road - Diagonal southeast from Copeland Rd area (4 tiles wide)
-        for (let i = 0; i < 100; i++) {
-            const x = 265 + Math.floor(i * 0.6);
-            const y = 268 + Math.floor(i * 0.45);
-            if (x < this.mapWidth && y < this.mapHeight) {
-                for (let w = 0; w < 4; w++) {
-                    if (this.map[y] && this.map[y][x + w]) {
-                        this.map[y][x + w] = 3;
-                    }
-                }
+            if (x === endX && y === endY) break;
+
+            const e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y += sy;
             }
         }
+    }
 
-        // Malton Road - East from station area (4 tiles wide)
-        for (let x = 250; x < 320; x++) {
-            for (let y = 258; y <= 261; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Albert Road - Where player starts (3 tiles wide)
-        for (let y = 230; y < 250; y++) {
+    // Add local connector roads for better gameplay navigation
+    addLocalRoads() {
+        // Albert Road - Near player start
+        for (let y = 230; y < 260; y++) {
             for (let x = 233; x <= 235; x++) {
-                this.map[y][x] = 3;
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
             }
         }
 
-        // Welham Street - Residential area (3 tiles wide)
-        for (let x = 230; x < 250; x++) {
+        // Welham Street
+        for (let x = 200; x < 260; x++) {
             for (let y = 243; y <= 245; y++) {
-                this.map[y][x] = 3;
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
             }
         }
 
-        // Local streets network (2-3 tiles wide)
+        // North-south connectors
+        for (let y = 180; y < 320; y++) {
+            for (let x = 220; x <= 222; x++) {
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
+            }
+        }
+
+        for (let y = 200; y < 380; y++) {
+            for (let x = 285; x <= 287; x++) {
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
+            }
+        }
+
         // Eastern residential streets
         for (let x = 280; x < 450; x++) {
             for (let y = 220; y <= 222; y++) {
-                this.map[y][x] = 3;
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
             }
         }
 
         // Western residential streets
-        for (let x = 50; x < 230; x++) {
+        for (let x = 50; x < 240; x++) {
             for (let y = 200; y <= 202; y++) {
-                this.map[y][x] = 3;
+                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+                    this.map[y][x] = 3;
+                }
             }
         }
-
-        // North-south connector roads
-        for (let y = 180; y < 300; y++) {
-            for (let x = 220; x <= 222; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        for (let y = 200; y < 350; y++) {
-            for (let x = 285; x <= 287; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Railway tracks - East-west through station at y=250 (4 tiles wide)
-        for (let x = 0; x < this.mapWidth; x++) {
-            for (let y = 249; y <= 251; y++) {
-                this.map[y][x] = 8;
-            }
-        }
-
-        this.addTreeClusters();
-        this.addParks();
     }
 
     addTreeClusters() {
@@ -843,17 +866,24 @@ class Game {
     }
 
     // ===== MARKER INITIALIZATION =====
-    // Create floating map markers from buildings
+    // Create floating map markers from GPS-based POI data
     initMarkers() {
-        this.markers = this.buildings.map(b => ({
-            x: b.x + (b.width || 0) / 2,
-            y: b.y + (b.height || 0) / 2,
-            name: b.name,
-            emoji: b.emoji,
-            type: b.type,
-            interactable: b.canEnter || b.isShop || b.isRestaurant || b.isChristmasTree || b.isCarDealer,
-            data: b
+        // Use BeeccroftPOIData with GPS coordinates
+        const pois = BeeccroftPOIData.getPOIsWithGameCoords();
+
+        this.markers = pois.map(poi => ({
+            x: poi.x,
+            y: poi.y,
+            lat: poi.lat,
+            lng: poi.lng,
+            name: poi.name,
+            emoji: poi.emoji,
+            type: poi.type,
+            interactable: poi.interactable,
+            data: poi // Keep reference to full POI data
         }));
+
+        console.log(`Initialized ${this.markers.length} markers from GPS coordinates`);
     }
 
     // ===== NPC INITIALIZATION =====
