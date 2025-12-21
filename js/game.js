@@ -7,11 +7,10 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
 
-        // Isometric tile dimensions (2:1 ratio)
-        this.tileWidth = 64;  // Width of diamond
-        this.tileHeight = 32; // Height of diamond
-        this.tileSize = 32;   // Keep for compatibility with some calculations
+        // Real map system - renders OSM tiles as background
+        this.mapSystem = new RealMapSystem(this.canvas, this.ctx);
 
+        // Map dimensions (in game units)
         this.mapWidth = 500;
         this.mapHeight = 500;
 
@@ -2796,100 +2795,28 @@ class Game {
 
     // ===== RENDERING =====
     render() {
-        // Clear canvas with sky color
-        this.ctx.fillStyle = '#87CEEB';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Render OSM tiles as background (overworld only)
+        if (this.currentMap === 'overworld') {
+            this.mapSystem.render(this.camera.x, this.camera.y);
+        } else {
+            // Interior: use old rendering for now
+            this.ctx.fillStyle = '#f5deb3';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.renderInterior();
+        }
 
-        const currentMapData = this.getCurrentMapData();
-
-        // Calculate visible tile range (generous bounds for isometric)
-        const viewRange = 25;
+        // Calculate visible range for entities
+        const viewRange = 30;
         const startX = Math.max(0, Math.floor(this.camera.x - viewRange));
         const startY = Math.max(0, Math.floor(this.camera.y - viewRange));
         const endX = Math.min(this.getCurrentMapWidth(), Math.ceil(this.camera.x + viewRange));
         const endY = Math.min(this.getCurrentMapHeight(), Math.ceil(this.camera.y + viewRange));
 
-        // Render tiles (isometric diamonds)
-        for (let y = startY; y < endY; y++) {
-            for (let x = startX; x < endX; x++) {
-                if (!currentMapData[y] || currentMapData[y][x] === undefined) continue;
-
-                const tile = currentMapData[y][x];
-                const screen = this.worldToScreenWithCamera(x, y, 0);
-
-                let color;
-                let height = 0;
-                let useTexture = false;
-                let textureName = null;
-
-                switch (tile) {
-                    case 0: // Grass
-                        textureName = 'grass';
-                        useTexture = true;
-                        break;
-                    case 1: // Dirt
-                        textureName = 'path';
-                        useTexture = true;
-                        break;
-                    case 2: // Water
-                        textureName = 'water';
-                        useTexture = true;
-                        height = -5; // Water slightly lower
-                        break;
-                    case 3: // Road
-                        textureName = 'road';
-                        useTexture = true;
-                        height = -2; // Roads slightly recessed
-                        break;
-                    case 4: // Farmland
-                        // Check if this tile is watered (darker if watered)
-                        const farmKey = `${x},${y}`;
-                        color = this.wateredTiles && this.wateredTiles.has(farmKey) ? '#4a2c13' : '#6b4423';
-                        break;
-                    case 6: // Building area - render as grass (markers float above)
-                        textureName = 'grass';
-                        useTexture = true;
-                        break;
-                    case 7: // Floor
-                        color = '#f5deb3';
-                        break;
-                    case 8: // Rails
-                        textureName = 'railway';
-                        useTexture = true;
-                        break;
-                    case 9: // Flowers
-                        textureName = 'park';
-                        useTexture = true;
-                        break;
-                    default:
-                        textureName = 'grass';
-                        useTexture = true;
-                }
-
-                // Adjust screen position for height
-                const finalScreen = this.worldToScreenWithCamera(x, y, height);
-
-                if (useTexture && this.tileSprites && this.tileSprites[textureName]) {
-                    // Draw textured tile
-                    this.drawIsometricTexturedTile(finalScreen.x, finalScreen.y, this.tileSprites[textureName]);
-                } else {
-                    // Fallback to solid color
-                    this.drawIsometricTile(finalScreen.x, finalScreen.y, color || this.getSeasonalGrassColor());
-                }
-            }
-        }
-
         // Collect all entities for depth sorting
         const entities = [];
 
-        // Add trees (only on overworld)
+        // Add entities only on overworld
         if (this.currentMap === 'overworld') {
-            this.trees.forEach(tree => {
-                if (tree.x >= startX && tree.x < endX && tree.y >= startY && tree.y < endY) {
-                    entities.push({ type: 'tree', data: tree, sortY: tree.y, sortX: tree.x });
-                }
-            });
-
             // Add markers (floating pins for POIs)
             this.markers.forEach(marker => {
                 if (marker.x >= startX - 2 && marker.x < endX + 2 &&
@@ -3024,7 +2951,12 @@ class Game {
     }
 
     renderIsometricCrop(crop) {
-        const screen = this.worldToScreenWithCamera(crop.x + 0.5, crop.y + 0.5, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            crop.x + 0.5, crop.y + 0.5,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
         const cropData = this.getCropData(crop.type);
 
         // Draw watered indicator on tile
@@ -3231,7 +3163,12 @@ class Game {
     // ===== MARKER RENDERING =====
     // Render a floating map marker using the MarkerRenderer class
     renderMarker(marker) {
-        const screen = this.worldToScreenWithCamera(marker.x, marker.y, 0);
+        // Use map system for screen coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            marker.x, marker.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Calculate distance from player
         const dx = this.player.x - marker.x;
@@ -3312,7 +3249,12 @@ class Game {
     }
 
     renderIsometricNPC(npc) {
-        const screen = this.worldToScreenWithCamera(npc.x, npc.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            npc.x, npc.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -3381,8 +3323,55 @@ class Game {
         this.ctx.textAlign = 'left';
     }
 
+    renderInterior() {
+        const interior = this.interiorMaps[this.currentMap];
+        if (!interior || !interior.tiles) return;
+
+        const tileSize = 32;
+
+        // Render tiles relative to camera
+        for (let y = 0; y < interior.height; y++) {
+            for (let x = 0; x < interior.width; x++) {
+                const screen = this.worldToScreenWithCamera(x, y, 0);
+                const tile = interior.tiles[y]?.[x] || 7;
+
+                // Floor tile
+                if (tile === 7) {
+                    this.drawIsometricTile(screen.x, screen.y, '#f5deb3', '#d4a373');
+                } else if (tile === 6) {
+                    // Obstacle (table, shelf, etc.)
+                    this.drawIsometricTile(screen.x, screen.y, '#8B4513', '#654321');
+                }
+            }
+        }
+
+        // Draw exit door indicator
+        if (interior.exitX !== undefined && interior.exitY !== undefined) {
+            const exitScreen = this.worldToScreenWithCamera(interior.exitX, interior.exitY, 0);
+            this.ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
+            this.ctx.beginPath();
+            this.ctx.arc(exitScreen.x, exitScreen.y, 15, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.font = '12px Arial';
+            this.ctx.fillStyle = '#2e7d32';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('EXIT', exitScreen.x, exitScreen.y + 4);
+            this.ctx.textAlign = 'left';
+        }
+    }
+
     renderIsometricPlayer(player) {
-        const screen = this.worldToScreenWithCamera(player.x, player.y, 0);
+        // Use different coordinate systems for overworld vs interior
+        let screen;
+        if (this.currentMap === 'overworld') {
+            screen = this.mapSystem.gameToScreen(
+                player.x, player.y,
+                this.camera.x, this.camera.y,
+                this.canvas.width, this.canvas.height
+            );
+        } else {
+            screen = this.worldToScreenWithCamera(player.x, player.y, 0);
+        }
 
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -3417,7 +3406,12 @@ class Game {
     renderIsometricAnimal(animal) {
         if (!animal || !animal.sprite) return;
 
-        const screen = this.worldToScreenWithCamera(animal.x, animal.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            animal.x, animal.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Shadow (smaller for animals)
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
@@ -3446,49 +3440,12 @@ class Game {
 
     // ===== MINI-MAP =====
     renderMiniMap() {
-        const miniMapSize = 150;
-        const miniMapX = this.canvas.width - miniMapSize - 10;
-        const miniMapY = 10;
-        const scale = miniMapSize / this.mapWidth;
-
-        // Background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
-
-        // Border
-        this.ctx.strokeStyle = '#fff';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
-
-        // Draw major roads on mini-map
-        this.ctx.fillStyle = '#888';
-        // Beecroft Road (vertical)
-        this.ctx.fillRect(miniMapX + 198 * scale, miniMapY, 4 * scale, miniMapSize);
-        // Hannah Street (horizontal)
-        this.ctx.fillRect(miniMapX, miniMapY + 188 * scale, miniMapSize, 4 * scale);
-
-        // Draw player position
-        const playerMapX = miniMapX + this.player.x * scale;
-        const playerMapY = miniMapY + this.player.y * scale;
-        this.ctx.fillStyle = '#ff0000';
-        this.ctx.beginPath();
-        this.ctx.arc(playerMapX, playerMapY, 3, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Draw major landmarks
-        this.ctx.fillStyle = '#00ff00';
-        this.buildings.forEach(building => {
-            if (building.type === 'station' || building.type === 'school') {
-                const bx = miniMapX + (building.x + building.width / 2) * scale;
-                const by = miniMapY + (building.y + building.height / 2) * scale;
-                this.ctx.fillRect(bx - 1, by - 1, 2, 2);
-            }
-        });
-
-        // Label
-        this.ctx.font = 'bold 10px Arial';
-        this.ctx.fillStyle = '#fff';
-        this.ctx.fillText('MAP', miniMapX + 5, miniMapY + 15);
+        // Use map system's minimap renderer with GPS-based markers
+        this.mapSystem.renderMinimap(
+            this.camera.x, this.camera.y,
+            this.player.x, this.player.y,
+            this.markers
+        );
     }
 
     renderLocationIndicator() {
