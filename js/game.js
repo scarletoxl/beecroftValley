@@ -7,13 +7,16 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
 
-        // Isometric tile dimensions (2:1 ratio)
-        this.tileWidth = 64;  // Width of diamond
-        this.tileHeight = 32; // Height of diamond
-        this.tileSize = 32;   // Keep for compatibility with some calculations
+        // Real map system - renders OSM tiles as background
+        this.mapSystem = new RealMapSystem(this.canvas, this.ctx);
 
+        // Map dimensions (in game units)
         this.mapWidth = 500;
         this.mapHeight = 500;
+
+        // Isometric tile dimensions (for interior rendering)
+        this.tileWidth = 64;
+        this.tileHeight = 32;
 
         // Camera for scrolling (in world coordinates)
         this.camera = { x: 0, y: 0 };
@@ -106,6 +109,8 @@ class Game {
         this.initNPCs();
         this.initBuildings();
         this.initStreetLights();
+        this.initMarkers(); // Create markers from buildings
+        this.clearTreesFromMarkers(); // Keep trees away from buildings
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
@@ -113,6 +118,7 @@ class Game {
         this.initFarmAnimals();
         this.createUI();
         this.setupEventListeners();
+        this.setupCanvasResize();
 
         // Validate spawn point is walkable (not inside building or water)
         this.validateSpawnPoint();
@@ -122,6 +128,27 @@ class Game {
             this.gameLoop();
             this.startTimeCycle();
         });
+    }
+
+    setupCanvasResize() {
+        const resize = () => {
+            const container = this.canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            // Account for controls panel width
+            const controlsWidth = document.getElementById('controls')?.offsetWidth || 0;
+            const availableWidth = rect.width - controlsWidth;
+            const availableHeight = rect.height;
+
+            // Set canvas size to fill available space
+            this.canvas.width = Math.max(400, availableWidth);
+            this.canvas.height = Math.max(300, availableHeight);
+        };
+
+        // Initial resize
+        resize();
+
+        // Resize on window resize
+        window.addEventListener('resize', resize);
     }
 
     // Ensure player spawns on a walkable tile
@@ -239,128 +266,18 @@ class Game {
     }
 
     // ===== MAP INITIALIZATION =====
+    // OSM tiles show the real roads/railway - we only track terrain for collision
     initMap() {
         this.map = [];
         this.trees = [];
         this.buildings = [];
 
-        // Fill with grass
+        // Fill with grass - OSM tiles show the real terrain
+        // Map array is only used for collision detection (water, etc.)
         for (let y = 0; y < this.mapHeight; y++) {
             this.map[y] = [];
             for (let x = 0; x < this.mapWidth; x++) {
-                this.map[y][x] = 0;
-            }
-        }
-
-        // Roads - Based on accurate Beecroft geography with Station at (250, 250)
-
-        // Beecroft Road - Main north-south arterial (5 tiles wide, centered at x=250)
-        for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 248; x <= 252; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Hannah Street - East-west shopping strip (4 tiles wide, y=255)
-        for (let x = 100; x < 400; x++) {
-            for (let y = 253; y <= 256; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Chapman Avenue - East-west north of station (4 tiles wide, y=235)
-        for (let x = 120; x < 380; x++) {
-            for (let y = 233; y <= 236; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Copeland Road - East-west south of station (4 tiles wide, y=265)
-        for (let x = 150; x < 370; x++) {
-            for (let y = 263; y <= 266; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Wongala Crescent - Curved road through eastern area (4 tiles wide)
-        for (let i = 0; i < 80; i++) {
-            const x = 260 + Math.floor(i * 0.25);
-            const y = 248 + Math.floor(Math.sin(i * 0.08) * 12);
-            if (x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                for (let w = 0; w < 4; w++) {
-                    if (this.map[y + w] && this.map[y + w][x]) {
-                        this.map[y + w][x] = 3;
-                    }
-                }
-            }
-        }
-
-        // Sutherland Road - Diagonal southeast from Copeland Rd area (4 tiles wide)
-        for (let i = 0; i < 100; i++) {
-            const x = 265 + Math.floor(i * 0.6);
-            const y = 268 + Math.floor(i * 0.45);
-            if (x < this.mapWidth && y < this.mapHeight) {
-                for (let w = 0; w < 4; w++) {
-                    if (this.map[y] && this.map[y][x + w]) {
-                        this.map[y][x + w] = 3;
-                    }
-                }
-            }
-        }
-
-        // Malton Road - East from station area (4 tiles wide)
-        for (let x = 250; x < 320; x++) {
-            for (let y = 258; y <= 261; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Albert Road - Where player starts (3 tiles wide)
-        for (let y = 230; y < 250; y++) {
-            for (let x = 233; x <= 235; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Welham Street - Residential area (3 tiles wide)
-        for (let x = 230; x < 250; x++) {
-            for (let y = 243; y <= 245; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Local streets network (2-3 tiles wide)
-        // Eastern residential streets
-        for (let x = 280; x < 450; x++) {
-            for (let y = 220; y <= 222; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Western residential streets
-        for (let x = 50; x < 230; x++) {
-            for (let y = 200; y <= 202; y++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // North-south connector roads
-        for (let y = 180; y < 300; y++) {
-            for (let x = 220; x <= 222; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        for (let y = 200; y < 350; y++) {
-            for (let x = 285; x <= 287; x++) {
-                this.map[y][x] = 3;
-            }
-        }
-
-        // Railway tracks - East-west through station at y=250 (4 tiles wide)
-        for (let x = 0; x < this.mapWidth; x++) {
-            for (let y = 249; y <= 251; y++) {
-                this.map[y][x] = 8;
+                this.map[y][x] = 0; // All walkable grass
             }
         }
 
@@ -449,6 +366,26 @@ class Game {
             const dy = tree.y - centerY;
             return Math.sqrt(dx * dx + dy * dy) > radius;
         });
+    }
+
+    clearTreesFromMarkers() {
+        // Remove trees that are too close to any marker/building
+        const clearRadius = 8; // Clear trees within 8 tiles of any marker
+        const originalCount = this.trees.length;
+
+        this.trees = this.trees.filter(tree => {
+            for (const marker of this.markers) {
+                const dx = tree.x - marker.x;
+                const dy = tree.y - marker.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < clearRadius) {
+                    return false; // Remove this tree
+                }
+            }
+            return true; // Keep tree
+        });
+
+        console.log(`Cleared ${originalCount - this.trees.length} trees from around markers`);
     }
 
     addParks() {
@@ -934,6 +871,25 @@ class Game {
         }
 
         console.log(`Initialized ${this.streetLights.length} street lights`);
+    // ===== MARKER INITIALIZATION =====
+    // Create floating map markers from GPS-based POI data
+    initMarkers() {
+        // Use BeeccroftPOIData with GPS coordinates
+        const pois = BeeccroftPOIData.getPOIsWithGameCoords();
+
+        this.markers = pois.map(poi => ({
+            x: poi.x,
+            y: poi.y,
+            lat: poi.lat,
+            lng: poi.lng,
+            name: poi.name,
+            emoji: poi.emoji,
+            type: poi.type,
+            interactable: poi.interactable,
+            data: poi // Keep reference to full POI data
+        }));
+
+        console.log(`Initialized ${this.markers.length} markers from GPS coordinates`);
     }
 
     // ===== NPC INITIALIZATION =====
@@ -1908,6 +1864,7 @@ class Game {
     initInteriors() {
         // Create simple interior layouts for buildings with NPCs
         this.interiorMaps = {
+            // ===== CAFES & RESTAURANTS =====
             "The Beehive Cafe": {
                 width: 15,
                 height: 12,
@@ -1917,9 +1874,68 @@ class Game {
                 spawnX: 7,
                 spawnY: 10,
                 npcs: [
-                    { name: "Mrs. Chen", x: 7, y: 3, emoji: "👵", role: "cafe owner", greeting: "Welcome! What can I get you?" }
+                    { name: "Mrs. Chen", x: 7, y: 3, emoji: "👵", role: "cafe owner", greeting: "Welcome to The Beehive! Best coffee in Beecroft." },
+                    { name: "Sophie", x: 4, y: 5, emoji: "👩", role: "barista", greeting: "What can I get started for you?" },
+                    { name: "Old Tom", x: 10, y: 6, emoji: "👴", role: "regular customer", greeting: "Been coming here for 30 years. Best scones in Sydney!" }
                 ]
             },
+            "Hannah's Beecroft": {
+                width: 14,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Hannah", x: 7, y: 3, emoji: "👩‍🍳", role: "chef & owner", greeting: "Welcome to Hannah's! We have fresh specials today!" },
+                    { name: "James", x: 4, y: 4, emoji: "👨", role: "waiter", greeting: "I'll be your server today. Menu's on the table." },
+                    { name: "Local Couple", x: 10, y: 5, emoji: "👫", role: "diners", greeting: "The pasta here is amazing!" }
+                ]
+            },
+            "Chargrill Charlie's": {
+                width: 12,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: [
+                    { name: "Charlie", x: 6, y: 3, emoji: "👨‍🍳", role: "grill master", greeting: "Best charcoal chicken in Beecroft! What'll it be?" },
+                    { name: "Kev", x: 3, y: 4, emoji: "👨", role: "kitchen hand", greeting: "Fresh batch coming out of the oven!" }
+                ]
+            },
+            "Yo Sushi": {
+                width: 14,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Takeshi", x: 7, y: 2, emoji: "👨‍🍳", role: "sushi chef", greeting: "Irasshaimase! Welcome! Fresh fish today!" },
+                    { name: "Yuki", x: 4, y: 4, emoji: "👩", role: "waitress", greeting: "Would you like the lunch special? Very popular!" },
+                    { name: "Ken", x: 10, y: 3, emoji: "👨", role: "apprentice chef", greeting: "Learning the art of sushi from the master!" }
+                ]
+            },
+            "The Verandah Beecroft": {
+                width: 14,
+                height: 10,
+                tiles: this.createCafeInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Melissa", x: 7, y: 3, emoji: "👩", role: "cafe manager", greeting: "Welcome to The Verandah! Lovely day for a coffee." },
+                    { name: "Young Mum", x: 4, y: 5, emoji: "👩‍👧", role: "customer", greeting: "This place is so family friendly. Kids love it!" },
+                    { name: "Book Club Ladies", x: 10, y: 6, emoji: "👵", role: "regulars", greeting: "We meet here every Thursday. Great atmosphere!" }
+                ]
+            },
+
+            // ===== SHOPS =====
             "Woolworths Beecroft": {
                 width: 20,
                 height: 15,
@@ -1929,7 +1945,24 @@ class Game {
                 spawnX: 10,
                 spawnY: 13,
                 npcs: [
-                    { name: "Emma", x: 10, y: 5, emoji: "👩", role: "shopkeeper", greeting: "Let me know if you need help finding anything!" }
+                    { name: "Emma", x: 10, y: 5, emoji: "👩", role: "store manager", greeting: "Welcome to Woolies! Let me know if you need help." },
+                    { name: "Darren", x: 5, y: 7, emoji: "👨", role: "shelf stocker", greeting: "Just restocking the shelves. Fresh stuff in aisle 3!" },
+                    { name: "Linda", x: 15, y: 5, emoji: "👩", role: "checkout operator", greeting: "Ready when you are! Do you have a rewards card?" },
+                    { name: "Shopper", x: 8, y: 10, emoji: "🧓", role: "customer", greeting: "These prices keep going up, don't they?" }
+                ]
+            },
+            "Beecroft Village Shopping Centre": {
+                width: 20,
+                height: 15,
+                tiles: this.createShopInterior(),
+                exitX: 10,
+                exitY: 14,
+                spawnX: 10,
+                spawnY: 13,
+                npcs: [
+                    { name: "Security Pete", x: 10, y: 3, emoji: "👮", role: "security guard", greeting: "G'day! Just keeping things safe around here." },
+                    { name: "Shop Owner", x: 5, y: 6, emoji: "👨", role: "boutique owner", greeting: "Have a look around! Everything's on special." },
+                    { name: "Busy Mum", x: 14, y: 8, emoji: "👩", role: "shopper", greeting: "So much to do today! Where's the pharmacy?" }
                 ]
             },
             "19 Albert Rd": {
@@ -1946,16 +1979,17 @@ class Game {
                 hasBed: true,
                 hasFridge: true
             },
-            "HerGP Medical Clinic": {
-                width: 10,
-                height: 8,
-                tiles: this.createClinicInterior(),
-                exitX: 5,
-                exitY: 7,
-                spawnX: 5,
-                spawnY: 6,
+            "Vintage Cellars": {
+                width: 12,
+                height: 10,
+                tiles: this.createLiquorStoreInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
                 npcs: [
-                    { name: "Dr. Shin Li", x: 5, y: 3, emoji: "👩‍⚕️", role: "doctor", greeting: "How can I help you today?" }
+                    { name: "Richard", x: 6, y: 3, emoji: "🧔", role: "sommelier", greeting: "Looking for something special? I can recommend a great drop." },
+                    { name: "Wine Enthusiast", x: 3, y: 5, emoji: "👨", role: "customer", greeting: "The 2019 Shiraz here is exceptional!" }
                 ]
             },
             "Beecroft Auto Sales": {
@@ -1967,31 +2001,217 @@ class Game {
                 spawnX: 9,
                 spawnY: 10,
                 npcs: [
-                    { name: "Marcus", x: 9, y: 4, emoji: "👨", role: "salesman", greeting: "Looking for a new ride?" }
+                    { name: "Marcus", x: 9, y: 4, emoji: "👨", role: "sales manager", greeting: "Looking for a new ride? We've got great deals!" },
+                    { name: "Dave", x: 5, y: 6, emoji: "🧔", role: "mechanic", greeting: "Every car here's been fully inspected. Top quality!" },
+                    { name: "First Car Buyer", x: 13, y: 5, emoji: "👦", role: "customer", greeting: "So nervous! Buying my first car today!" }
                 ]
             },
-            "Hannah's Beecroft": {
-                width: 14,
-                height: 10,
-                tiles: this.createCafeInterior(),
-                exitX: 7,
-                exitY: 9,
-                spawnX: 7,
-                spawnY: 8,
+
+            // ===== MEDICAL & SERVICES =====
+            "HerGP Medical Clinic": {
+                width: 10,
+                height: 8,
+                tiles: this.createClinicInterior(),
+                exitX: 5,
+                exitY: 7,
+                spawnX: 5,
+                spawnY: 6,
                 npcs: [
-                    { name: "Hannah", x: 7, y: 3, emoji: "👩‍🍳", role: "chef", greeting: "Welcome to Hannah's! Take a seat!" }
+                    { name: "Dr. Shin Li", x: 5, y: 3, emoji: "👩‍⚕️", role: "doctor", greeting: "Hello! How are you feeling today?" },
+                    { name: "Nurse Priya", x: 7, y: 4, emoji: "👩‍⚕️", role: "nurse", greeting: "The doctor will see you shortly. Please take a seat." },
+                    { name: "Patient", x: 3, y: 5, emoji: "🤒", role: "waiting patient", greeting: "*cough* Just here for a checkup..." }
                 ]
             },
-            "Chargrill Charlie's": {
+            "Beecroft Vet": {
                 width: 12,
                 height: 10,
-                tiles: this.createCafeInterior(),
+                tiles: this.createVetInterior(),
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
                 spawnY: 8,
                 npcs: [
-                    { name: "Charlie", x: 6, y: 3, emoji: "👨‍🍳", role: "grill master", greeting: "Best charcoal chicken in Beecroft!" }
+                    { name: "Dr. Sarah", x: 6, y: 3, emoji: "👩‍⚕️", role: "veterinarian", greeting: "Bring your furry friend in! I'll take good care of them." },
+                    { name: "Vet Nurse Amy", x: 8, y: 4, emoji: "👩", role: "vet nurse", greeting: "Aww, what a cute pet! We'll look after them." },
+                    { name: "Pet Owner", x: 3, y: 6, emoji: "👧", role: "with sick cat", greeting: "My cat hasn't been eating. Hope she'll be okay..." }
+                ]
+            },
+
+            // ===== STATIONS =====
+            "Beecroft Railway Station": {
+                width: 16,
+                height: 12,
+                tiles: this.createStationInterior(),
+                exitX: 8,
+                exitY: 11,
+                spawnX: 8,
+                spawnY: 10,
+                npcs: [
+                    { name: "Station Master Bob", x: 8, y: 2, emoji: "👨‍✈️", role: "station master", greeting: "Next train to Central in 10 minutes. Platform 1!" },
+                    { name: "Ticket Officer", x: 6, y: 3, emoji: "👩", role: "ticket sales", greeting: "Single or return? Opal card works too!" },
+                    { name: "Commuter", x: 4, y: 7, emoji: "👨‍💼", role: "waiting for train", greeting: "Running late again... hope the train's on time." },
+                    { name: "Tourist Family", x: 12, y: 7, emoji: "👨‍👩‍👧", role: "visitors", greeting: "Which way to the Blue Mountains?" }
+                ]
+            },
+            "Cheltenham Station": {
+                width: 16,
+                height: 12,
+                tiles: this.createStationInterior(),
+                exitX: 8,
+                exitY: 11,
+                spawnX: 8,
+                spawnY: 10,
+                npcs: [
+                    { name: "Station Attendant", x: 8, y: 2, emoji: "👨", role: "station staff", greeting: "Trains running on time today. Platform 2 for city." },
+                    { name: "Student", x: 5, y: 7, emoji: "👧", role: "schoolgirl", greeting: "Ugh, Monday mornings..." },
+                    { name: "Retiree Couple", x: 11, y: 7, emoji: "👴", role: "day trippers", greeting: "Off to the city for a show! Haven't been in years." }
+                ]
+            },
+
+            // ===== SCHOOLS & EDUCATION =====
+            "Beecroft Public School": {
+                width: 18,
+                height: 14,
+                tiles: this.createSchoolInterior(),
+                exitX: 9,
+                exitY: 13,
+                spawnX: 9,
+                spawnY: 12,
+                npcs: [
+                    { name: "Principal Morrison", x: 9, y: 2, emoji: "👨‍🏫", role: "principal", greeting: "Welcome to Beecroft Public! Education is our passion." },
+                    { name: "Ms. Thompson", x: 5, y: 4, emoji: "👩‍🏫", role: "year 3 teacher", greeting: "Just preparing for tomorrow's lesson. Love teaching!" },
+                    { name: "School Kids", x: 12, y: 6, emoji: "👦", role: "students", greeting: "Recess is the best! Want to play handball?" },
+                    { name: "Parent Helper", x: 4, y: 8, emoji: "👩", role: "volunteer", greeting: "Helping with the reading program today." }
+                ]
+            },
+            "Cheltenham Girls' High School": {
+                width: 18,
+                height: 14,
+                tiles: this.createSchoolInterior(),
+                exitX: 9,
+                exitY: 13,
+                spawnX: 9,
+                spawnY: 12,
+                npcs: [
+                    { name: "Principal Dr. Wright", x: 9, y: 2, emoji: "👩‍🏫", role: "principal", greeting: "Cheltenham Girls produces the best and brightest!" },
+                    { name: "Science Teacher", x: 5, y: 5, emoji: "👩‍🔬", role: "chemistry teacher", greeting: "Science is everywhere! Today we're doing experiments." },
+                    { name: "Senior Students", x: 12, y: 6, emoji: "👧", role: "year 12 students", greeting: "HSC stress is real... but we'll get through it!" },
+                    { name: "Librarian", x: 14, y: 4, emoji: "🧓", role: "librarian", greeting: "Shh! This is the library. Need help finding a book?" }
+                ]
+            },
+            "Smart Cookies Early Learning Centre": {
+                width: 14,
+                height: 12,
+                tiles: this.createDaycareInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Miss Jenny", x: 7, y: 3, emoji: "👩‍🏫", role: "centre director", greeting: "Welcome! The children are having such a great day!" },
+                    { name: "Miss Kate", x: 4, y: 5, emoji: "👩", role: "early childhood educator", greeting: "We're doing finger painting today! So much fun!" },
+                    { name: "Toddlers", x: 9, y: 5, emoji: "👶", role: "children", greeting: "*giggles and plays*" },
+                    { name: "Anxious Parent", x: 5, y: 8, emoji: "👨", role: "dropping off child", greeting: "First day at daycare... hope they'll be okay!" }
+                ]
+            },
+            "Cheltenham Early Education": {
+                width: 14,
+                height: 12,
+                tiles: this.createDaycareInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Director Paula", x: 7, y: 3, emoji: "👩", role: "director", greeting: "Learning through play is our philosophy!" },
+                    { name: "Educator Tim", x: 4, y: 5, emoji: "👨", role: "educator", greeting: "The kids are building a tower! Want to help?" },
+                    { name: "Little Ones", x: 9, y: 6, emoji: "👶", role: "children", greeting: "*playing with blocks*" }
+                ]
+            },
+
+            // ===== COMMUNITY & RECREATION =====
+            "Beecroft Presbyterian Church": {
+                width: 12,
+                height: 16,
+                tiles: this.createChurchInterior(),
+                exitX: 6,
+                exitY: 15,
+                spawnX: 6,
+                spawnY: 14,
+                npcs: [
+                    { name: "Pastor David", x: 6, y: 2, emoji: "👨‍💼", role: "pastor", greeting: "Welcome! All are welcome here. Peace be with you." },
+                    { name: "Church Warden", x: 3, y: 5, emoji: "👵", role: "warden", greeting: "Been part of this community for 40 years." },
+                    { name: "Choir Member", x: 9, y: 4, emoji: "👩", role: "choir singer", greeting: "Rehearsing for Sunday's service. Do you sing?" }
+                ]
+            },
+            "Beecroft Community Centre": {
+                width: 16,
+                height: 14,
+                tiles: this.createCommunityInterior(),
+                exitX: 8,
+                exitY: 13,
+                spawnX: 8,
+                spawnY: 12,
+                npcs: [
+                    { name: "Centre Manager Jan", x: 8, y: 3, emoji: "👩", role: "manager", greeting: "So many activities on today! Check the noticeboard." },
+                    { name: "Yoga Instructor", x: 5, y: 6, emoji: "🧘", role: "yoga teacher", greeting: "Namaste! Class starts at 10am. Join us!" },
+                    { name: "Art Class Group", x: 11, y: 5, emoji: "👵", role: "painters", greeting: "We meet every Tuesday for watercolors!" },
+                    { name: "Council Worker", x: 4, y: 9, emoji: "👨", role: "maintenance", greeting: "Just making sure everything's in order." }
+                ]
+            },
+            "Fire Station": {
+                width: 20,
+                height: 14,
+                tiles: this.createFireStationInterior(),
+                exitX: 10,
+                exitY: 13,
+                spawnX: 10,
+                spawnY: 12,
+                npcs: [
+                    { name: "Captain Steve", x: 10, y: 3, emoji: "👨‍🚒", role: "fire captain", greeting: "Keeping Beecroft safe! Hope you never need us." },
+                    { name: "Firefighter Mike", x: 5, y: 5, emoji: "👨‍🚒", role: "firefighter", greeting: "Just finished cleaning the truck. Ready for action!" },
+                    { name: "Firefighter Sam", x: 14, y: 5, emoji: "👩‍🚒", role: "firefighter", greeting: "Training hard every day. Safety first!" },
+                    { name: "Fire Dog Rusty", x: 10, y: 8, emoji: "🐕", role: "station dog", greeting: "*wags tail happily*" }
+                ]
+            },
+            "Love Pilates Beecroft": {
+                width: 14,
+                height: 12,
+                tiles: this.createGymInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Instructor Lisa", x: 7, y: 3, emoji: "🧘‍♀️", role: "pilates instructor", greeting: "Welcome! Ready to strengthen your core?" },
+                    { name: "Regular Client", x: 4, y: 5, emoji: "👩", role: "member", greeting: "I've been coming here for 2 years. Life changing!" },
+                    { name: "Beginner", x: 10, y: 5, emoji: "👩", role: "new member", greeting: "My first class! A bit nervous but excited." }
+                ]
+            },
+
+            // ===== HOMES =====
+            "My Home": {
+                width: 12,
+                height: 10,
+                tiles: this.createHomeInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: []  // Player's home - empty
+            },
+            "Bridey's Home": {
+                width: 12,
+                height: 10,
+                tiles: this.createHomeInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: [
+                    { name: "Bridey", x: 6, y: 4, emoji: "👧", role: "your friend", greeting: "Hey! Come in! Want to hang out?" },
+                    { name: "Bridey's Mum", x: 3, y: 3, emoji: "👩", role: "Bridey's mother", greeting: "Oh hello dear! Would you like some afternoon tea?" },
+                    { name: "Family Cat", x: 8, y: 5, emoji: "🐱", role: "pet cat", greeting: "*purrs and rubs against your leg*" }
                 ]
             }
         };
@@ -2165,9 +2385,198 @@ class Game {
         return interior;
     }
 
+    createStationInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 16; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Ticket counter
+        interior[3][6] = 6;
+        interior[3][7] = 6;
+        interior[3][8] = 6;
+        interior[3][9] = 6;
+        // Benches
+        interior[7][3] = 6;
+        interior[7][4] = 6;
+        interior[7][11] = 6;
+        interior[7][12] = 6;
+        return interior;
+    }
+
+    createVetInterior() {
+        const interior = [];
+        for (let y = 0; y < 10; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Examination table
+        interior[3][6] = 6;
+        interior[3][7] = 6;
+        // Waiting area chairs
+        interior[6][2] = 6;
+        interior[6][3] = 6;
+        return interior;
+    }
+
+    createSchoolInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 18; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Desks in rows
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 4; col++) {
+                interior[4 + row * 3][3 + col * 3] = 6;
+            }
+        }
+        // Teacher's desk at front
+        interior[2][8] = 6;
+        interior[2][9] = 6;
+        return interior;
+    }
+
+    createChurchInterior() {
+        const interior = [];
+        for (let y = 0; y < 16; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Pews (benches)
+        for (let row = 0; row < 5; row++) {
+            interior[4 + row * 2][2] = 6;
+            interior[4 + row * 2][3] = 6;
+            interior[4 + row * 2][8] = 6;
+            interior[4 + row * 2][9] = 6;
+        }
+        // Altar
+        interior[1][5] = 6;
+        interior[1][6] = 6;
+        return interior;
+    }
+
+    createFireStationInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 20; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Fire trucks (large obstacles)
+        for (let i = 0; i < 4; i++) {
+            interior[4][3 + i] = 6;
+            interior[5][3 + i] = 6;
+            interior[4][12 + i] = 6;
+            interior[5][12 + i] = 6;
+        }
+        return interior;
+    }
+
+    createGymInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Yoga mats / equipment areas
+        interior[3][3] = 6;
+        interior[3][7] = 6;
+        interior[3][10] = 6;
+        interior[6][3] = 6;
+        interior[6][7] = 6;
+        interior[6][10] = 6;
+        return interior;
+    }
+
+    createCommunityInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 16; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Tables for meetings
+        interior[4][4] = 6;
+        interior[4][5] = 6;
+        interior[4][10] = 6;
+        interior[4][11] = 6;
+        interior[8][7] = 6;
+        interior[8][8] = 6;
+        return interior;
+    }
+
+    createRestaurantInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Dining tables
+        interior[3][3] = 6;
+        interior[3][7] = 6;
+        interior[3][10] = 6;
+        interior[6][3] = 6;
+        interior[6][7] = 6;
+        interior[6][10] = 6;
+        // Counter/bar area
+        interior[2][6] = 6;
+        interior[2][7] = 6;
+        return interior;
+    }
+
+    createLiquorStoreInterior() {
+        const interior = [];
+        for (let y = 0; y < 10; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Wine racks
+        for (let x = 2; x < 10; x += 2) {
+            interior[3][x] = 6;
+            interior[5][x] = 6;
+        }
+        return interior;
+    }
+
+    createDaycareInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Play areas
+        interior[3][3] = 6;
+        interior[3][4] = 6;
+        interior[3][9] = 6;
+        interior[3][10] = 6;
+        // Nap area
+        interior[7][6] = 6;
+        interior[7][7] = 6;
+        return interior;
+    }
+
     // ===== UI CREATION =====
     createUI() {
-        // Create dialog box
+        // Create dialog box with chat interface
         const dialogBox = document.createElement('div');
         dialogBox.id = 'dialog-box';
         dialogBox.style.display = 'none';
@@ -2176,9 +2585,16 @@ class Game {
                 <div class="dialog-header">
                     <span class="dialog-emoji"></span>
                     <span class="dialog-name"></span>
+                    <span class="dialog-role"></span>
                     <button class="dialog-close">×</button>
                 </div>
-                <div class="dialog-text"></div>
+                <div class="dialog-chat">
+                    <div class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" placeholder="Say something..." maxlength="200">
+                        <button class="chat-send">Send</button>
+                    </div>
+                </div>
                 <div class="dialog-options"></div>
             </div>
         `;
@@ -2227,6 +2643,11 @@ class Game {
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         window.addEventListener('keydown', (e) => {
+            // Don't process game keys when dialog is open (except Escape)
+            if (this.uiState.showingDialog && e.key !== 'Escape') {
+                return;
+            }
+
             this.keys[e.key] = true;
 
             // Tool usage
@@ -2234,18 +2655,62 @@ class Game {
                 this.useTool();
             }
 
-            // Talk to NPCs / Enter buildings
+            // Talk to NPCs / Interact with markers
             if (e.key === ' ') {
                 if (this.currentMap === 'overworld') {
-                    const building = this.getNearbyBuilding();
-                    if (building && building.canEnter) {
-                        this.enterBuilding(building);
-                    } else {
-                        this.talkToNearbyNPC();
+                    // First check for nearby NPCs
+                    let foundNPC = false;
+                    const talkDistance = 1.5;
+                    for (let npc of this.npcs) {
+                        const dx = this.player.x - npc.x;
+                        const dy = this.player.y - npc.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < talkDistance) {
+                            this.showNPCDialog(npc);
+                            foundNPC = true;
+                            break;
+                        }
+                    }
+
+                    // Then check for nearby markers
+                    if (!foundNPC) {
+                        const marker = this.getNearestMarker();
+                        if (marker) {
+                            this.interactWithMarker(marker);
+                        } else {
+                            // Fallback to old building interaction or crop harvesting
+                            this.talkToNearbyNPC();
+                        }
                     }
                 } else {
-                    // Exit interior
-                    this.exitBuilding();
+                    // Inside building - check for nearby interior NPCs first
+                    const interior = this.interiorMaps[this.currentMap];
+                    if (interior && interior.npcs) {
+                        let foundInteriorNPC = false;
+                        const talkDistance = 2;
+                        for (let npc of interior.npcs) {
+                            const dx = this.player.x - npc.x;
+                            const dy = this.player.y - npc.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < talkDistance) {
+                                this.showNPCDialog(npc, this.currentMap);
+                                foundInteriorNPC = true;
+                                break;
+                            }
+                        }
+                        // Check if at exit
+                        if (!foundInteriorNPC) {
+                            const exitDist = Math.sqrt(
+                                Math.pow(this.player.x - interior.exitX, 2) +
+                                Math.pow(this.player.y - interior.exitY, 2)
+                            );
+                            if (exitDist < 1.5) {
+                                this.exitBuilding();
+                            }
+                        }
+                    } else {
+                        this.exitBuilding();
+                    }
                 }
             }
 
@@ -2321,7 +2786,7 @@ class Game {
         }
     }
 
-    showNPCDialog(npc) {
+    showNPCDialog(npc, location = 'Beecroft') {
         this.uiState.showingDialog = true;
         this.uiState.currentNPC = npc;
 
@@ -2329,11 +2794,64 @@ class Game {
         this.checkQuestProgress('talk', npc.name);
 
         const dialogBox = document.getElementById('dialog-box');
-        const randomDialogue = npc.dialogues[Math.floor(Math.random() * npc.dialogues.length)];
 
+        // Set NPC info in header
         dialogBox.querySelector('.dialog-emoji').textContent = npc.emoji;
         dialogBox.querySelector('.dialog-name').textContent = npc.name;
-        dialogBox.querySelector('.dialog-text').textContent = randomDialogue;
+        dialogBox.querySelector('.dialog-role').textContent = `(${npc.role || 'resident'})`;
+
+        // Initialize AI chat and clear previous messages
+        const chatMessages = dialogBox.querySelector('.chat-messages');
+        chatMessages.innerHTML = '';
+
+        // Start AI conversation
+        const greeting = aiChat.startConversation(npc, location);
+        this.addChatMessage(chatMessages, npc.emoji, greeting, 'npc');
+
+        // Setup chat input
+        const chatInput = dialogBox.querySelector('.chat-input');
+        const chatSend = dialogBox.querySelector('.chat-send');
+
+        // Remove old event listeners by cloning
+        const newChatInput = chatInput.cloneNode(true);
+        const newChatSend = chatSend.cloneNode(true);
+        chatInput.parentNode.replaceChild(newChatInput, chatInput);
+        chatSend.parentNode.replaceChild(newChatSend, chatSend);
+
+        // Add send handler
+        const sendMessage = async () => {
+            const message = newChatInput.value.trim();
+            if (!message || aiChat.isLoading) return;
+
+            // Add player message
+            this.addChatMessage(chatMessages, '🧑', message, 'player');
+            newChatInput.value = '';
+
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message npc typing';
+            typingIndicator.innerHTML = `<span class="msg-emoji">${npc.emoji}</span><span class="msg-text">...</span>`;
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Get AI response
+            const response = await aiChat.sendMessage(message);
+
+            // Remove typing indicator and add response
+            typingIndicator.remove();
+            this.addChatMessage(chatMessages, npc.emoji, response, 'npc');
+        };
+
+        newChatSend.onclick = sendMessage;
+        newChatInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
+
+        // Focus input
+        setTimeout(() => newChatInput.focus(), 100);
 
         // Create options
         const options = dialogBox.querySelector('.dialog-options');
@@ -2354,7 +2872,7 @@ class Game {
         }
 
         // Marriage option
-        if (npc.canMarry && this.relationships[npc.name].hearts >= 8 && this.player.hasRing) {
+        if (npc.canMarry && this.relationships[npc.name]?.hearts >= 8 && this.player.hasRing) {
             const proposeBtn = document.createElement('button');
             proposeBtn.textContent = '💍 Propose Marriage';
             proposeBtn.onclick = () => this.proposeMarriage(npc);
@@ -2362,6 +2880,14 @@ class Game {
         }
 
         dialogBox.style.display = 'flex';
+    }
+
+    addChatMessage(container, emoji, text, role) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role}`;
+        msgDiv.innerHTML = `<span class="msg-emoji">${emoji}</span><span class="msg-text">${text}</span>`;
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
     }
 
     showBuildingDialog(building) {
@@ -2396,6 +2922,10 @@ class Game {
         document.getElementById('dialog-box').style.display = 'none';
         this.uiState.showingDialog = false;
         this.uiState.currentNPC = null;
+        // End AI conversation
+        if (typeof aiChat !== 'undefined') {
+            aiChat.endConversation();
+        }
     }
 
     // ===== GIFT SYSTEM =====
@@ -3140,12 +3670,13 @@ class Game {
             moved = true;
         }
 
-        // Collision detection
+        // Collision detection - only block water (tile 2), not building tiles
+        // Building areas are now represented by floating markers, so players walk freely
         const tileX = Math.floor(this.player.x);
         const tileY = Math.floor(this.player.y);
 
         const currentMapData = this.getCurrentMapData();
-        if (currentMapData[tileY] && (currentMapData[tileY][tileX] === 2 || currentMapData[tileY][tileX] === 6)) {
+        if (currentMapData[tileY] && currentMapData[tileY][tileX] === 2) {
             this.player.x = prevX;
             this.player.y = prevY;
         }
@@ -3176,10 +3707,13 @@ class Game {
         this.camera.x = this.player.x;
         this.camera.y = this.player.y;
 
-        // Clamp camera to map bounds (with some padding)
-        const padding = 10;
-        this.camera.x = Math.max(padding, Math.min(this.getCurrentMapWidth() - padding, this.camera.x));
-        this.camera.y = Math.max(padding, Math.min(this.getCurrentMapHeight() - padding, this.camera.y));
+        // Clamp camera to map bounds (only for overworld, interiors are small)
+        if (this.currentMap === 'overworld') {
+            const padding = 10;
+            this.camera.x = Math.max(padding, Math.min(this.getCurrentMapWidth() - padding, this.camera.x));
+            this.camera.y = Math.max(padding, Math.min(this.getCurrentMapHeight() - padding, this.camera.y));
+        }
+        // For interiors, just let camera follow player directly
 
         // Update NPCs
         this.updateNPCs();
@@ -3214,109 +3748,37 @@ class Game {
 
     // ===== RENDERING =====
     render() {
-        // Clear canvas with sky color
-        this.ctx.fillStyle = '#87CEEB';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Render OSM tiles as background (overworld only)
+        if (this.currentMap === 'overworld') {
+            this.mapSystem.render(this.camera.x, this.camera.y);
+        } else {
+            // Interior: dark background, then render floor tiles
+            this.ctx.fillStyle = '#3a3a3a';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.renderInterior();
+        }
 
-        const currentMapData = this.getCurrentMapData();
-
-        // Calculate visible tile range (generous bounds for isometric)
-        const viewRange = 25;
+        // Calculate visible range for entities
+        const viewRange = 30;
         const startX = Math.max(0, Math.floor(this.camera.x - viewRange));
         const startY = Math.max(0, Math.floor(this.camera.y - viewRange));
         const endX = Math.min(this.getCurrentMapWidth(), Math.ceil(this.camera.x + viewRange));
         const endY = Math.min(this.getCurrentMapHeight(), Math.ceil(this.camera.y + viewRange));
 
-        // Render tiles (isometric diamonds)
-        for (let y = startY; y < endY; y++) {
-            for (let x = startX; x < endX; x++) {
-                if (!currentMapData[y] || currentMapData[y][x] === undefined) continue;
-
-                const tile = currentMapData[y][x];
-                const screen = this.worldToScreenWithCamera(x, y, 0);
-
-                let color;
-                let height = 0;
-                let useTexture = false;
-                let textureName = null;
-
-                switch (tile) {
-                    case 0: // Grass
-                        textureName = 'grass';
-                        useTexture = true;
-                        break;
-                    case 1: // Dirt
-                        textureName = 'path';
-                        useTexture = true;
-                        break;
-                    case 2: // Water
-                        textureName = 'water';
-                        useTexture = true;
-                        height = -5; // Water slightly lower
-                        break;
-                    case 3: // Road
-                        textureName = 'road';
-                        useTexture = true;
-                        height = -2; // Roads slightly recessed
-                        break;
-                    case 4: // Farmland
-                        // Check if this tile is watered (darker if watered)
-                        const farmKey = `${x},${y}`;
-                        color = this.wateredTiles && this.wateredTiles.has(farmKey) ? '#4a2c13' : '#6b4423';
-                        break;
-                    case 6: // Building (will be drawn separately)
-                        color = '#d4a373';
-                        break;
-                    case 7: // Floor
-                        color = '#f5deb3';
-                        break;
-                    case 8: // Rails
-                        textureName = 'railway';
-                        useTexture = true;
-                        break;
-                    case 9: // Flowers
-                        textureName = 'park';
-                        useTexture = true;
-                        break;
-                    default:
-                        textureName = 'grass';
-                        useTexture = true;
-                }
-
-                // Adjust screen position for height
-                const finalScreen = this.worldToScreenWithCamera(x, y, height);
-
-                if (useTexture && this.tileSprites && this.tileSprites[textureName]) {
-                    // Draw textured tile
-                    this.drawIsometricTexturedTile(finalScreen.x, finalScreen.y, this.tileSprites[textureName]);
-                } else {
-                    // Fallback to solid color
-                    this.drawIsometricTile(finalScreen.x, finalScreen.y, color || this.getSeasonalGrassColor());
-                }
-            }
-        }
-
         // Collect all entities for depth sorting
         const entities = [];
 
-        // Add trees (only on overworld)
+        // Add entities only on overworld
         if (this.currentMap === 'overworld') {
-            this.trees.forEach(tree => {
-                if (tree.x >= startX && tree.x < endX && tree.y >= startY && tree.y < endY) {
-                    entities.push({ type: 'tree', data: tree, sortY: tree.y, sortX: tree.x });
-                }
-            });
-
-            // Add buildings
-            this.buildings.forEach(building => {
-                if (building.x < endX && building.x + building.width > startX &&
-                    building.y < endY && building.y + building.height > startY) {
-                    // Sort by bottom of building
+            // Add markers (floating pins for POIs)
+            this.markers.forEach(marker => {
+                if (marker.x >= startX - 2 && marker.x < endX + 2 &&
+                    marker.y >= startY - 2 && marker.y < endY + 2) {
                     entities.push({
-                        type: 'building',
-                        data: building,
-                        sortY: building.y + building.height,
-                        sortX: building.x
+                        type: 'marker',
+                        data: marker,
+                        sortY: marker.y,
+                        sortX: marker.x
                     });
                 }
             });
@@ -3360,6 +3822,12 @@ class Game {
                 this.streetLights.forEach(light => {
                     if (light.x >= startX && light.x < endX && light.y >= startY && light.y < endY) {
                         entities.push({ type: 'streetlight', data: light, sortY: light.y, sortX: light.x });
+            // Add trees
+            if (this.trees) {
+                this.trees.forEach(tree => {
+                    if (tree.x >= startX - 2 && tree.x < endX + 2 &&
+                        tree.y >= startY - 2 && tree.y < endY + 2) {
+                        entities.push({ type: 'tree', data: tree, sortY: tree.y, sortX: tree.x });
                     }
                 });
             }
@@ -3406,8 +3874,8 @@ class Game {
         entities.forEach(entity => {
             if (entity.type === 'tree') {
                 this.renderIsometricTree(entity.data);
-            } else if (entity.type === 'building') {
-                this.renderIsometricBuilding(entity.data);
+            } else if (entity.type === 'marker') {
+                this.renderMarker(entity.data);
             } else if (entity.type === 'npc') {
                 this.renderIsometricNPC(entity.data);
             } else if (entity.type === 'interior_npc') {
@@ -3440,7 +3908,12 @@ class Game {
     // ===== ISOMETRIC ENTITY RENDERING =====
     renderIsometricTree(tree) {
         const treeHeight = 40; // Height of the tree in pixels
-        const screen = this.worldToScreenWithCamera(tree.x, tree.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            tree.x, tree.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Tree shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
@@ -3521,7 +3994,12 @@ class Game {
     }
 
     renderIsometricCrop(crop) {
-        const screen = this.worldToScreenWithCamera(crop.x + 0.5, crop.y + 0.5, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            crop.x + 0.5, crop.y + 0.5,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
         const cropData = this.getCropData(crop.type);
 
         // Draw watered indicator on tile
@@ -3725,6 +4203,61 @@ class Game {
         }
     }
 
+    // ===== MARKER RENDERING =====
+    // Render a floating map marker using the MarkerRenderer class
+    renderMarker(marker) {
+        // Use map system for screen coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            marker.x, marker.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
+
+        // Calculate distance from player
+        const dx = this.player.x - marker.x;
+        const dy = this.player.y - marker.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Use the MarkerRenderer class
+        MarkerRenderer.render(this.ctx, marker, screen.x, screen.y, distance, Date.now());
+    }
+
+    // Get the nearest interactable marker within range
+    getNearestMarker() {
+        let nearest = null;
+        let nearestDist = Infinity;
+
+        for (const marker of this.markers) {
+            if (!marker.interactable) continue;
+            const dx = this.player.x - marker.x;
+            const dy = this.player.y - marker.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 5 && dist < nearestDist) {
+                nearestDist = dist;
+                nearest = marker;
+            }
+        }
+        return nearest;
+    }
+
+    // Interact with a marker
+    interactWithMarker(marker) {
+        const b = marker.data;
+        if (b.isChristmasTree) {
+            this.toggleChristmasMusic();
+        } else if (b.isRestaurant) {
+            this.showRestaurantMenu(b);
+        } else if (b.isShop) {
+            this.showShopMenu(b);
+        } else if (b.isCarDealer) {
+            this.showCarDealer();
+        } else if (b.canEnter) {
+            this.enterBuilding(b);
+        } else {
+            this.showMessage(`📍 ${marker.name}`);
+        }
+    }
+
     renderIsometricBuilding(building) {
         // Special rendering for Christmas tree
         if (building.isChristmasTree) {
@@ -3841,7 +4374,12 @@ class Game {
     }
 
     renderIsometricNPC(npc) {
-        const screen = this.worldToScreenWithCamera(npc.x, npc.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            npc.x, npc.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -3910,51 +4448,81 @@ class Game {
         this.ctx.textAlign = 'left';
     }
 
-    renderFurniture(furniture) {
-        const screen = this.worldToScreenWithCamera(furniture.x, furniture.y, 0);
+    renderInterior() {
+        const interior = this.interiorMaps[this.currentMap];
+        if (!interior || !interior.tiles) return;
 
-        // Shadow for 3D effect
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-        this.ctx.beginPath();
-        this.ctx.ellipse(screen.x, screen.y + 2, 12, 6, 0, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Render tiles relative to camera
+        for (let y = 0; y < interior.height; y++) {
+            for (let x = 0; x < interior.width; x++) {
+                const screen = this.worldToScreenWithCamera(x, y, 0);
+                const tile = interior.tiles[y]?.[x] || 7;
 
-        // Render furniture emoji (large and clear)
-        this.ctx.font = '24px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(furniture.emoji, screen.x, screen.y);
-        this.ctx.textAlign = 'left';
+                // Checkerboard floor pattern for visibility
+                const isLight = (x + y) % 2 === 0;
 
-        // Interactive hint if player nearby
-        if (furniture.interactive && this.player) {
-            const dist = Math.sqrt(
-                Math.pow(this.player.x - furniture.x, 2) +
-                Math.pow(this.player.y - furniture.y, 2)
-            );
-
-            if (dist < 1.5) {
-                this.ctx.font = '8px Arial';
-                this.ctx.fillStyle = '#FFFFFF';
-                this.ctx.strokeStyle = '#000000';
-                this.ctx.lineWidth = 2;
-                this.ctx.textAlign = 'center';
-
-                let actionText = 'Press E';
-                if (furniture.action === 'sleep') actionText = 'Press E to Sleep';
-                else if (furniture.action === 'cook') actionText = 'Press E to Cook';
-                else if (furniture.action === 'craft') actionText = 'Press E to Craft';
-                else if (furniture.action === 'storage') actionText = 'Press E to Open';
-                else if (furniture.action === 'watch') actionText = 'Press E to Watch TV';
-
-                this.ctx.strokeText(actionText, screen.x, screen.y - 20);
-                this.ctx.fillText(actionText, screen.x, screen.y - 20);
-                this.ctx.textAlign = 'left';
+                if (tile === 7) {
+                    // Floor tile - checkerboard pattern
+                    const floorColor = isLight ? '#e8d4b8' : '#d4c4a8';
+                    this.drawIsometricTile(screen.x, screen.y, floorColor, '#c0a080');
+                } else if (tile === 6) {
+                    // Obstacle (table, shelf, counter, etc.)
+                    this.drawIsometricTile(screen.x, screen.y, '#8B4513', '#654321');
+                    // Add a small highlight on top
+                    this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    this.ctx.fillRect(screen.x - 8, screen.y - 10, 16, 4);
+                }
             }
+        }
+
+        // Draw walls around the perimeter
+        this.ctx.fillStyle = '#a08060';
+        for (let x = 0; x < interior.width; x++) {
+            // Top wall
+            const topScreen = this.worldToScreenWithCamera(x, -0.5, 0);
+            this.ctx.fillRect(topScreen.x - this.tileWidth/2, topScreen.y - 30, this.tileWidth, 30);
+        }
+        for (let y = 0; y < interior.height; y++) {
+            // Left wall
+            const leftScreen = this.worldToScreenWithCamera(-0.5, y, 0);
+            this.ctx.fillRect(leftScreen.x - 10, leftScreen.y - 20, 10, 30);
+        }
+
+        // Draw exit door indicator
+        if (interior.exitX !== undefined && interior.exitY !== undefined) {
+            const exitScreen = this.worldToScreenWithCamera(interior.exitX, interior.exitY, 0);
+
+            // Green glow
+            this.ctx.fillStyle = 'rgba(76, 175, 80, 0.4)';
+            this.ctx.beginPath();
+            this.ctx.arc(exitScreen.x, exitScreen.y, 20, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Door icon
+            this.ctx.font = '20px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('🚪', exitScreen.x, exitScreen.y + 6);
+
+            // EXIT label
+            this.ctx.font = 'bold 10px Arial';
+            this.ctx.fillStyle = '#2e7d32';
+            this.ctx.fillText('EXIT', exitScreen.x, exitScreen.y + 22);
+            this.ctx.textAlign = 'left';
         }
     }
 
     renderIsometricPlayer(player) {
-        const screen = this.worldToScreenWithCamera(player.x, player.y, 0);
+        // Use different coordinate systems for overworld vs interior
+        let screen;
+        if (this.currentMap === 'overworld') {
+            screen = this.mapSystem.gameToScreen(
+                player.x, player.y,
+                this.camera.x, this.camera.y,
+                this.canvas.width, this.canvas.height
+            );
+        } else {
+            screen = this.worldToScreenWithCamera(player.x, player.y, 0);
+        }
 
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -3989,7 +4557,12 @@ class Game {
     renderIsometricAnimal(animal) {
         if (!animal || !animal.sprite) return;
 
-        const screen = this.worldToScreenWithCamera(animal.x, animal.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            animal.x, animal.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Shadow (smaller for animals)
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
@@ -4068,71 +4641,36 @@ class Game {
 
     // ===== MINI-MAP =====
     renderMiniMap() {
-        const miniMapSize = 150;
-        const miniMapX = this.canvas.width - miniMapSize - 10;
-        const miniMapY = 10;
-        const scale = miniMapSize / this.mapWidth;
-
-        // Background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
-
-        // Border
-        this.ctx.strokeStyle = '#fff';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(miniMapX, miniMapY, miniMapSize, miniMapSize);
-
-        // Draw major roads on mini-map
-        this.ctx.fillStyle = '#888';
-        // Beecroft Road (vertical)
-        this.ctx.fillRect(miniMapX + 198 * scale, miniMapY, 4 * scale, miniMapSize);
-        // Hannah Street (horizontal)
-        this.ctx.fillRect(miniMapX, miniMapY + 188 * scale, miniMapSize, 4 * scale);
-
-        // Draw player position
-        const playerMapX = miniMapX + this.player.x * scale;
-        const playerMapY = miniMapY + this.player.y * scale;
-        this.ctx.fillStyle = '#ff0000';
-        this.ctx.beginPath();
-        this.ctx.arc(playerMapX, playerMapY, 3, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Draw major landmarks
-        this.ctx.fillStyle = '#00ff00';
-        this.buildings.forEach(building => {
-            if (building.type === 'station' || building.type === 'school') {
-                const bx = miniMapX + (building.x + building.width / 2) * scale;
-                const by = miniMapY + (building.y + building.height / 2) * scale;
-                this.ctx.fillRect(bx - 1, by - 1, 2, 2);
-            }
-        });
-
-        // Label
-        this.ctx.font = 'bold 10px Arial';
-        this.ctx.fillStyle = '#fff';
-        this.ctx.fillText('MAP', miniMapX + 5, miniMapY + 15);
+        // Use map system's minimap renderer with GPS-based markers
+        this.mapSystem.renderMinimap(
+            this.camera.x, this.camera.y,
+            this.player.x, this.player.y,
+            this.markers
+        );
     }
 
     renderLocationIndicator() {
-        // Find nearest building
-        let nearestBuilding = null;
-        let nearestDistance = Infinity;
+        // Find nearest marker using the interactable one first, then any nearby
+        const interactableMarker = this.getNearestMarker();
+        let nearestMarker = interactableMarker;
 
-        this.buildings.forEach(building => {
-            const centerX = building.x + building.width / 2;
-            const centerY = building.y + building.height / 2;
-            const dx = this.player.x - centerX;
-            const dy = this.player.y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        // If no interactable marker nearby, find the closest one overall
+        if (!nearestMarker) {
+            let nearestDistance = Infinity;
+            this.markers.forEach(marker => {
+                const dx = this.player.x - marker.x;
+                const dy = this.player.y - marker.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < nearestDistance && distance < 15) {
-                nearestDistance = distance;
-                nearestBuilding = building;
-            }
-        });
+                if (distance < nearestDistance && distance < 15) {
+                    nearestDistance = distance;
+                    nearestMarker = marker;
+                }
+            });
+        }
 
         // Display location name
-        if (nearestBuilding) {
+        if (nearestMarker) {
             const boxWidth = 300;
             const boxHeight = 40;
             const boxX = (this.canvas.width - boxWidth) / 2;
@@ -4151,7 +4689,7 @@ class Game {
             this.ctx.font = 'bold 14px Arial';
             this.ctx.fillStyle = '#fff';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(`📍 ${nearestBuilding.name}`, this.canvas.width / 2, boxY + 25);
+            this.ctx.fillText(`📍 ${nearestMarker.name}`, this.canvas.width / 2, boxY + 25);
             this.ctx.textAlign = 'left';
         } else {
             // Show general area

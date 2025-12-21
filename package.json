@@ -1,11 +1,12 @@
 {
   "name": "beecroft-valley",
-  "version": "0.1.0",
-  "description": "A web-based farming and life simulation game set in Beecroft, NSW",
+  "version": "0.2.0",
+  "description": "A web-based farming and life simulation game set in Beecroft, NSW with AI-powered NPC conversations",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "dev": "python3 -m http.server 8000"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "static": "python3 -m http.server 8000"
   },
   "keywords": [
     "game",
@@ -13,7 +14,9 @@
     "simulation",
     "beecroft",
     "web-game",
-    "html5"
+    "html5",
+    "ai",
+    "claude"
   ],
   "author": "",
   "license": "MIT",

@@ -190,13 +190,31 @@ class MobileControls {
 
         switch (action) {
             case 'action':
-                // Simulate spacebar - Talk to NPC or enter/exit building
+                // Simulate spacebar - Talk to NPC or interact with marker
                 if (this.game.currentMap === 'overworld') {
-                    const building = this.game.getNearbyBuilding();
-                    if (building && building.canEnter) {
-                        this.game.enterBuilding(building);
-                    } else {
-                        this.game.talkToNearbyNPC();
+                    // First check for nearby NPCs
+                    let foundNPC = false;
+                    const talkDistance = 1.5;
+                    for (let npc of this.game.npcs) {
+                        const dx = this.game.player.x - npc.x;
+                        const dy = this.game.player.y - npc.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < talkDistance) {
+                            this.game.showNPCDialog(npc);
+                            foundNPC = true;
+                            break;
+                        }
+                    }
+
+                    // Then check for nearby markers
+                    if (!foundNPC) {
+                        const marker = this.game.getNearestMarker();
+                        if (marker) {
+                            this.game.interactWithMarker(marker);
+                        } else {
+                            // Fallback to crop harvesting
+                            this.game.talkToNearbyNPC();
+                        }
                     }
                 } else {
                     this.game.exitBuilding();
