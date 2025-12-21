@@ -3824,6 +3824,10 @@ class Game {
                 this.streetLights.forEach(light => {
                     if (light.x >= startX && light.x < endX && light.y >= startY && light.y < endY) {
                         entities.push({ type: 'streetlight', data: light, sortY: light.y, sortX: light.x });
+                    }
+                });
+            }
+
             // Add trees
             if (this.trees) {
                 this.trees.forEach(tree => {
