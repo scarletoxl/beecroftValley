@@ -50,6 +50,7 @@ class Game {
         // Quest system
         this.quests = [];
         this.completedQuests = [];
+        this.initQuests();
 
         // Interior map system
         this.currentMap = 'overworld';
@@ -88,6 +89,10 @@ class Game {
         // Animals
         this.animals = [];
 
+        // Farming system - crops and watered tiles
+        this.crops = []; // { x, y, type, stage, watered, plantedDay }
+        this.wateredTiles = new Set(); // "x,y" keys for watered farmland
+
         // Christmas music audio
         this.christmasAudio = new Audio('media/Christmas this year (2).mp3');
         this.christmasAudio.loop = true;
@@ -97,10 +102,10 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
-        this.initAnimals();
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
+        this.initAnimalSprites();
         this.createUI();
         this.setupEventListeners();
 
@@ -743,6 +748,17 @@ class Game {
                 canEnter: true
             },
             {
+                name: "Beecroft Auto Sales",
+                x: 262, y: 258,
+                width: 10, height: 8,
+                type: "car_dealer",
+                emoji: "🚗",
+                color: "#E3F2FD",
+                hasInterior: true,
+                canEnter: true,
+                isCarDealer: true
+            },
+            {
                 name: "Beecroft Station Parking 1",
                 x: 250, y: 256,
                 width: 8, height: 6,
@@ -1229,6 +1245,121 @@ class Game {
         });
     }
 
+    // ===== QUEST SYSTEM INITIALIZATION =====
+    initQuests() {
+        // Starting quests for new players
+        this.quests = [
+            {
+                id: 'welcome',
+                name: 'Welcome to Beecroft Valley',
+                description: 'Talk to Mrs. Chen at The Beehive Cafe',
+                type: 'talk',
+                target: 'Mrs. Chen',
+                reward: { gold: 50 },
+                completed: false
+            },
+            {
+                id: 'first_crop',
+                name: 'Green Thumb',
+                description: 'Plant and harvest your first crop',
+                type: 'harvest',
+                target: 1,
+                progress: 0,
+                reward: { gold: 100 },
+                completed: false
+            },
+            {
+                id: 'chop_trees',
+                name: 'Lumberjack',
+                description: 'Chop down 5 trees',
+                type: 'chop',
+                target: 5,
+                progress: 0,
+                reward: { gold: 75 },
+                completed: false
+            },
+            {
+                id: 'make_friend',
+                name: 'Making Friends',
+                description: 'Give a gift to any villager',
+                type: 'gift',
+                target: 1,
+                progress: 0,
+                reward: { gold: 30 },
+                completed: false
+            },
+            {
+                id: 'buy_car',
+                name: 'Road Tripper',
+                description: 'Buy a car from Beecroft Auto Sales',
+                type: 'buy_car',
+                reward: { gold: 200 },
+                completed: false
+            }
+        ];
+    }
+
+    checkQuestProgress(questType, value = 1) {
+        this.quests.forEach(quest => {
+            if (quest.completed) return;
+
+            if (quest.type === questType) {
+                if (quest.progress !== undefined) {
+                    quest.progress += value;
+                    if (quest.progress >= quest.target) {
+                        this.completeQuest(quest);
+                    }
+                } else if (quest.type === 'talk' && quest.target === value) {
+                    this.completeQuest(quest);
+                } else if (quest.type === 'buy_car') {
+                    this.completeQuest(quest);
+                }
+            }
+        });
+        this.updateQuestDisplay();
+    }
+
+    completeQuest(quest) {
+        quest.completed = true;
+        this.completedQuests.push(quest.id);
+
+        // Give rewards
+        if (quest.reward) {
+            if (quest.reward.gold) {
+                this.player.gold += quest.reward.gold;
+            }
+        }
+
+        this.showMessage(`Quest completed: ${quest.name}! +$${quest.reward.gold || 0}`);
+        this.updateQuestDisplay();
+        this.updateHUD();
+    }
+
+    updateQuestDisplay() {
+        const questList = document.getElementById('quest-list');
+        if (!questList) return;
+
+        const activeQuests = this.quests.filter(q => !q.completed);
+        if (activeQuests.length === 0) {
+            questList.innerHTML = '<div style="color: #999;">All quests completed!</div>';
+            return;
+        }
+
+        questList.innerHTML = activeQuests.map(quest => {
+            let progressText = '';
+            if (quest.progress !== undefined) {
+                progressText = ` (${quest.progress}/${quest.target})`;
+            }
+            return `
+                <div style="margin-bottom: 8px; padding: 5px; background: #f0f0f0; border-radius: 4px;">
+                    <div style="font-weight: bold; color: #4a7c7e;">📜 ${quest.name}</div>
+                    <div style="font-size: 0.85em; color: #666;">${quest.description}${progressText}</div>
+                    <div style="font-size: 0.8em; color: #888;">Reward: $${quest.reward.gold || 0}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
     // ===== AUSTRALIAN ANIMALS INITIALIZATION =====
     // Ambient wildlife that wanders the map
     initAnimals() {
@@ -1480,8 +1611,8 @@ class Game {
         };
     }
 
-    initAnimals() {
-        // Generate animal sprites
+    initAnimalSprites() {
+        // Generate animal sprites for all animal types
         const animalTypes = ['kookaburra', 'lorikeet', 'lizard', 'magpie', 'cat', 'dog', 'possum'];
         this.animalSprites = {};
 
@@ -1490,40 +1621,17 @@ class Game {
             this.animalSprites[type] = new SpriteSheet(spriteData, 24, 24);
         });
 
-        // Add animals to the world
-        this.addAnimalToWorld('kookaburra', 200, 170, 30);  // Near railway gardens
-        this.addAnimalToWorld('kookaburra', 180, 220, 20);  // Near Beecroft Public School
-        this.addAnimalToWorld('lorikeet', 195, 186, 40);    // Village green
-        this.addAnimalToWorld('lorikeet', 290, 152, 35);    // Chilworth Reserve
-        this.addAnimalToWorld('lorikeet', 50, 170, 30);     // Fearnley Park
-        this.addAnimalToWorld('magpie', 170, 187, 45);      // Village green
-        this.addAnimalToWorld('magpie', 260, 255, 40);      // Booth Park
-        this.addAnimalToWorld('lizard', 190, 175, 15);      // Near paths
-        this.addAnimalToWorld('lizard', 215, 195, 12);      // Near paths
-        this.addAnimalToWorld('cat', 85, 135, 25);          // Residential area (west)
-        this.addAnimalToWorld('cat', 160, 150, 20);         // Residential area
-        this.addAnimalToWorld('dog', 90, 140, 30);          // Residential area (west)
-        this.addAnimalToWorld('dog', 155, 145, 25);         // Residential area
-        this.addAnimalToWorld('possum', 45, 168, 20);       // Fearnley Park (forest)
-        this.addAnimalToWorld('possum', 30, 160, 18);       // Western forest
-    }
-
-    addAnimalToWorld(type, x, y, wanderRadius) {
-        this.animals.push({
-            type,
-            x,
-            y,
-            baseX: x,
-            baseY: y,
-            wanderRadius,
-            targetX: x,
-            targetY: y,
-            speed: type === 'lorikeet' ? 0.08 : type === 'lizard' ? 0.03 : 0.05,
-            moveTimer: 0,
-            standTimer: Math.random() * 3000,
-            frame: 0,
-            frameTimer: 0,
-            sprite: this.animalSprites[type]
+        // Assign sprites to all animals created by initAnimals()
+        this.animals.forEach(animal => {
+            animal.sprite = this.animalSprites[animal.type];
+            // Ensure animation properties exist
+            animal.frame = animal.frame || 0;
+            animal.frameTimer = animal.frameTimer || 0;
+            animal.baseX = animal.baseX || animal.x;
+            animal.baseY = animal.baseY || animal.y;
+            animal.wanderRadius = animal.wanderRadius || (animal.wanderZone ? animal.wanderZone.width / 2 : 20);
+            animal.moveTimer = animal.moveTimer || 0;
+            animal.standTimer = animal.standTimer || Math.random() * 3000;
         });
     }
 
@@ -1836,6 +1944,16 @@ class Game {
 
     // ===== NPC INTERACTION =====
     talkToNearbyNPC() {
+        // First check if there's a mature crop to harvest
+        const tileX = Math.floor(this.player.x);
+        const tileY = Math.floor(this.player.y);
+        const crop = this.crops.find(c => c.x === tileX && c.y === tileY);
+        if (crop && crop.stage >= 4) {
+            this.harvestCrop(tileX, tileY);
+            return;
+        }
+
+        // Then check for NPCs
         const talkDistance = 1.5;
         for (let npc of this.npcs) {
             const dx = this.player.x - npc.x;
@@ -1857,6 +1975,9 @@ class Game {
     showNPCDialog(npc) {
         this.uiState.showingDialog = true;
         this.uiState.currentNPC = npc;
+
+        // Check quest progress for talking
+        this.checkQuestProgress('talk', npc.name);
 
         const dialogBox = document.getElementById('dialog-box');
         const randomDialogue = npc.dialogues[Math.floor(Math.random() * npc.dialogues.length)];
@@ -1946,6 +2067,8 @@ class Game {
             rel.hearts = Math.min(rel.maxHearts, rel.hearts + 0.5);
             rel.giftsToday++;
             this.showMessage(`${npc.name} loved the ${gift.name}! ❤️ +0.5 hearts`);
+            // Check quest progress
+            this.checkQuestProgress('gift');
         } else {
             this.showMessage(`${npc.name} already received a gift today!`);
         }
@@ -1995,12 +2118,20 @@ class Game {
     // ===== SHOP SYSTEM =====
     showShopMenu(building) {
         const items = [
-            { name: 'Seeds', price: 10, emoji: '🌱', type: 'seed' },
-            { name: 'Watering Can Refill', price: 5, emoji: '💧', type: 'consumable' },
+            // Seeds for farming
+            { name: 'Turnip Seeds', price: 20, emoji: '🌱', type: 'seed', cropType: 'turnip' },
+            { name: 'Potato Seeds', price: 30, emoji: '🥔', type: 'seed', cropType: 'potato' },
+            { name: 'Carrot Seeds', price: 25, emoji: '🥕', type: 'seed', cropType: 'carrot' },
+            { name: 'Tomato Seeds', price: 40, emoji: '🍅', type: 'seed', cropType: 'tomato' },
+            { name: 'Corn Seeds', price: 50, emoji: '🌽', type: 'seed', cropType: 'corn' },
+            { name: 'Strawberry Seeds', price: 60, emoji: '🍓', type: 'seed', cropType: 'strawberry' },
+            // Food items
             { name: 'Apple', price: 3, energy: 15, emoji: '🍎', type: 'food' },
             { name: 'Bread', price: 4, energy: 20, emoji: '🍞', type: 'food' },
-            { name: 'Fertilizer', price: 8, emoji: '💩', type: 'tool' },
-            { name: 'Gift Box', price: 20, emoji: '🎁', type: 'gift' }
+            { name: 'Milk', price: 5, energy: 25, emoji: '🥛', type: 'food' },
+            // Other items
+            { name: 'Gift Box', price: 20, emoji: '🎁', type: 'gift' },
+            { name: 'Engagement Ring', price: 500, emoji: '💍', type: 'ring' }
         ];
 
         this.showShopUI(building.name, items, (item) => {
@@ -2062,6 +2193,8 @@ class Game {
                 this.player.carType = car;
                 this.updateHUD();
                 this.showMessage(`Bought ${car.name}! Press C to drive.`);
+                // Check quest progress
+                this.checkQuestProgress('buy_car');
                 this.closeShop();
             } else {
                 this.showMessage("Not enough gold!");
@@ -2214,15 +2347,69 @@ class Game {
         const tileY = Math.floor(this.player.y);
 
         if (this.currentTool === 'hoe') {
+            // Till soil - converts grass to farmland
             if (this.currentMap === 'overworld' && this.map[tileY][tileX] === 0) {
-                this.map[tileY][tileX] = 4;
+                this.map[tileY][tileX] = 4; // Farmland tile
                 this.player.energy = Math.max(0, this.player.energy - 2);
+                this.showMessage('Tilled the soil!');
                 this.updateHUD();
             }
         } else if (this.currentTool === 'axe') {
             this.chopTree();
         } else if (this.currentTool === 'water') {
-            this.showMessage('Watering...');
+            // Water tilled soil or crops
+            if (this.currentMap === 'overworld' && this.map[tileY][tileX] === 4) {
+                const tileKey = `${tileX},${tileY}`;
+                if (!this.wateredTiles.has(tileKey)) {
+                    this.wateredTiles.add(tileKey);
+                    this.player.energy = Math.max(0, this.player.energy - 1);
+
+                    // Check if there's a crop here and water it
+                    const crop = this.crops.find(c => c.x === tileX && c.y === tileY);
+                    if (crop) {
+                        crop.watered = true;
+                        this.showMessage(`Watered the ${crop.type}!`);
+                    } else {
+                        this.showMessage('Watered the soil!');
+                    }
+                    this.updateHUD();
+                } else {
+                    this.showMessage('Already watered!');
+                }
+            } else {
+                this.showMessage('Need to till soil first!');
+            }
+        } else if (this.currentTool === 'seeds') {
+            // Plant seeds on tilled soil
+            if (this.currentMap === 'overworld' && this.map[tileY][tileX] === 4) {
+                // Check if there's already a crop here
+                const existingCrop = this.crops.find(c => c.x === tileX && c.y === tileY);
+                if (existingCrop) {
+                    this.showMessage('Something is already planted here!');
+                } else {
+                    // Check if player has seeds in inventory
+                    const seedIndex = this.inventory.items.findIndex(i => i.type === 'seed');
+                    if (seedIndex >= 0) {
+                        const seed = this.inventory.items[seedIndex];
+                        this.crops.push({
+                            x: tileX,
+                            y: tileY,
+                            type: seed.cropType || 'turnip',
+                            stage: 0, // 0=seed, 1=sprout, 2=growing, 3=mature, 4=harvest-ready
+                            watered: false,
+                            plantedDay: this.time.day
+                        });
+                        this.inventory.items.splice(seedIndex, 1);
+                        this.player.energy = Math.max(0, this.player.energy - 1);
+                        this.showMessage(`Planted ${seed.cropType || 'turnip'} seeds!`);
+                        this.updateHUD();
+                    } else {
+                        this.showMessage('No seeds! Buy some from the shop.');
+                    }
+                }
+            } else {
+                this.showMessage('Need to till soil first!');
+            }
         }
 
         // Work if near employer
@@ -2235,6 +2422,67 @@ class Game {
                 if (distance < 2) {
                     this.doWork();
                 }
+            }
+        }
+    }
+
+    // Harvest mature crops
+    harvestCrop(tileX, tileY) {
+        const cropIndex = this.crops.findIndex(c => c.x === tileX && c.y === tileY);
+        if (cropIndex >= 0) {
+            const crop = this.crops[cropIndex];
+            if (crop.stage >= 4) { // Harvest-ready
+                const cropData = this.getCropData(crop.type);
+                if (this.inventory.items.length < this.inventory.maxSlots) {
+                    this.inventory.items.push({
+                        name: cropData.harvestName,
+                        emoji: cropData.emoji,
+                        type: 'crop',
+                        sellPrice: cropData.sellPrice
+                    });
+                    this.crops.splice(cropIndex, 1);
+                    this.player.gold += cropData.sellPrice;
+                    this.showMessage(`Harvested ${cropData.harvestName}! +$${cropData.sellPrice}`);
+                    // Check quest progress
+                    this.checkQuestProgress('harvest');
+                    this.updateHUD();
+                } else {
+                    this.showMessage('Inventory full!');
+                }
+            } else {
+                this.showMessage('Not ready to harvest yet!');
+            }
+        }
+    }
+
+    getCropData(cropType) {
+        const crops = {
+            turnip: { harvestName: 'Turnip', emoji: '🥬', sellPrice: 60, growthDays: 4 },
+            potato: { harvestName: 'Potato', emoji: '🥔', sellPrice: 80, growthDays: 6 },
+            carrot: { harvestName: 'Carrot', emoji: '🥕', sellPrice: 70, growthDays: 5 },
+            tomato: { harvestName: 'Tomato', emoji: '🍅', sellPrice: 100, growthDays: 8 },
+            corn: { harvestName: 'Corn', emoji: '🌽', sellPrice: 120, growthDays: 10 },
+            strawberry: { harvestName: 'Strawberry', emoji: '🍓', sellPrice: 150, growthDays: 7 }
+        };
+        return crops[cropType] || crops.turnip;
+    }
+
+    growCrops() {
+        let cropsGrown = 0;
+        this.crops.forEach(crop => {
+            // Only grow if watered
+            if (crop.watered && crop.stage < 4) {
+                crop.stage++;
+                cropsGrown++;
+                crop.watered = false; // Reset watered status for new day
+            }
+        });
+
+        if (cropsGrown > 0) {
+            // Check if any crops are ready to harvest
+            const harvestReady = this.crops.filter(c => c.stage >= 4).length;
+            if (harvestReady > 0) {
+                this.showMessage(`${harvestReady} crop(s) ready to harvest!`);
             }
         }
     }
@@ -2261,6 +2509,9 @@ class Game {
                     if (this.inventory.items.length < this.inventory.maxSlots) {
                         this.inventory.items.push({ name: 'Wood', emoji: '🪵', type: 'material' });
                     }
+
+                    // Check quest progress
+                    this.checkQuestProgress('chop');
                 } else {
                     this.showMessage(`Chopping... (${tree.health} hits left)`);
                 }
@@ -2438,6 +2689,12 @@ class Game {
                     rel.giftsToday = 0;
                 });
 
+                // New day - grow crops that were watered
+                this.growCrops();
+
+                // New day - reset watered tiles
+                this.wateredTiles.clear();
+
                 // Change season every 28 days
                 if (this.time.day % 28 === 0) {
                     const seasons = ['spring', 'summer', 'fall', 'winter'];
@@ -2461,7 +2718,9 @@ class Game {
             quests: this.quests,
             completedQuests: this.completedQuests,
             trees: this.trees,
-            map: this.map
+            map: this.map,
+            crops: this.crops,
+            wateredTiles: Array.from(this.wateredTiles)
         };
 
         localStorage.setItem('beecroftValleySave', JSON.stringify(saveData));
@@ -2476,12 +2735,18 @@ class Game {
             this.inventory = data.inventory;
             this.time = data.time;
             this.relationships = data.relationships;
-            this.quests = data.quests || [];
+            // Load quests - restore if saved, otherwise use existing initialized quests
+            if (data.quests && data.quests.length > 0) {
+                this.quests = data.quests;
+            }
             this.completedQuests = data.completedQuests || [];
             if (data.trees) this.trees = data.trees;
             if (data.map) this.map = data.map;
+            if (data.crops) this.crops = data.crops;
+            if (data.wateredTiles) this.wateredTiles = new Set(data.wateredTiles);
 
             this.updateHUD();
+            this.updateQuestDisplay();
             this.showMessage("Game loaded!");
             return true;
         }
@@ -2646,7 +2911,9 @@ class Game {
                         height = -2; // Roads slightly recessed
                         break;
                     case 4: // Farmland
-                        color = '#6b4423';
+                        // Check if this tile is watered (darker if watered)
+                        const farmKey = `${x},${y}`;
+                        color = this.wateredTiles && this.wateredTiles.has(farmKey) ? '#4a2c13' : '#6b4423';
                         break;
                     case 6: // Building (will be drawn separately)
                         color = '#d4a373';
@@ -2720,6 +2987,15 @@ class Game {
                     }
                 });
             }
+
+            // Add crops
+            if (this.crops) {
+                this.crops.forEach(crop => {
+                    if (crop.x >= startX && crop.x < endX && crop.y >= startY && crop.y < endY) {
+                        entities.push({ type: 'crop', data: crop, sortY: crop.y, sortX: crop.x });
+                    }
+                });
+            }
         }
 
         // Add interior NPCs when inside a building
@@ -2760,6 +3036,8 @@ class Game {
                 this.renderInteriorNPC(entity.data);
             } else if (entity.type === 'animal') {
                 this.renderIsometricAnimal(entity.data);
+            } else if (entity.type === 'crop') {
+                this.renderIsometricCrop(entity.data);
             } else if (entity.type === 'player') {
                 this.renderIsometricPlayer(entity.data);
             }
@@ -2812,6 +3090,103 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(screen.x, screen.y - treeHeight - 8, 10, 0, Math.PI * 2);
         this.ctx.fill();
+    }
+
+    renderIsometricCrop(crop) {
+        const screen = this.worldToScreenWithCamera(crop.x + 0.5, crop.y + 0.5, 0);
+        const cropData = this.getCropData(crop.type);
+
+        // Draw watered indicator on tile
+        if (crop.watered) {
+            this.ctx.fillStyle = 'rgba(0, 100, 200, 0.2)';
+            const hw = this.tileWidth / 2;
+            const hh = this.tileHeight / 2;
+            this.ctx.beginPath();
+            this.ctx.moveTo(screen.x, screen.y - hh);
+            this.ctx.lineTo(screen.x + hw, screen.y);
+            this.ctx.lineTo(screen.x, screen.y + hh);
+            this.ctx.lineTo(screen.x - hw, screen.y);
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
+
+        // Render based on growth stage
+        const stage = crop.stage;
+        let cropHeight = 0;
+        let emoji = '';
+        let size = 12;
+
+        if (stage === 0) {
+            // Seed - just dots
+            this.ctx.fillStyle = '#654321';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x - 3, screen.y - 2, 2, 0, Math.PI * 2);
+            this.ctx.arc(screen.x + 3, screen.y - 2, 2, 0, Math.PI * 2);
+            this.ctx.fill();
+            return;
+        } else if (stage === 1) {
+            // Sprout
+            this.ctx.fillStyle = '#228B22';
+            this.ctx.beginPath();
+            this.ctx.moveTo(screen.x, screen.y - 8);
+            this.ctx.lineTo(screen.x - 4, screen.y);
+            this.ctx.lineTo(screen.x + 4, screen.y);
+            this.ctx.closePath();
+            this.ctx.fill();
+            return;
+        } else if (stage === 2) {
+            // Growing
+            this.ctx.fillStyle = '#32CD32';
+            this.ctx.beginPath();
+            this.ctx.moveTo(screen.x, screen.y - 14);
+            this.ctx.lineTo(screen.x - 6, screen.y);
+            this.ctx.lineTo(screen.x + 6, screen.y);
+            this.ctx.closePath();
+            this.ctx.fill();
+            // Add small leaves
+            this.ctx.beginPath();
+            this.ctx.ellipse(screen.x - 4, screen.y - 8, 4, 2, -0.5, 0, Math.PI * 2);
+            this.ctx.ellipse(screen.x + 4, screen.y - 8, 4, 2, 0.5, 0, Math.PI * 2);
+            this.ctx.fill();
+            return;
+        } else if (stage === 3) {
+            // Mature - larger plant
+            this.ctx.fillStyle = '#228B22';
+            this.ctx.beginPath();
+            this.ctx.moveTo(screen.x, screen.y - 20);
+            this.ctx.lineTo(screen.x - 8, screen.y);
+            this.ctx.lineTo(screen.x + 8, screen.y);
+            this.ctx.closePath();
+            this.ctx.fill();
+            // Larger leaves
+            this.ctx.beginPath();
+            this.ctx.ellipse(screen.x - 6, screen.y - 12, 6, 3, -0.5, 0, Math.PI * 2);
+            this.ctx.ellipse(screen.x + 6, screen.y - 12, 6, 3, 0.5, 0, Math.PI * 2);
+            this.ctx.fill();
+            return;
+        } else {
+            // Harvest ready - show emoji
+            emoji = cropData.emoji;
+            size = 18;
+            cropHeight = 24;
+        }
+
+        // Draw harvest-ready crop with emoji
+        if (emoji) {
+            this.ctx.font = `${size}px Arial`;
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(emoji, screen.x, screen.y - cropHeight + size / 2);
+            this.ctx.textAlign = 'left';
+
+            // Add sparkle effect to show it's ready
+            const time = Date.now();
+            if (Math.sin(time / 200) > 0.5) {
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.beginPath();
+                this.ctx.arc(screen.x + 8, screen.y - cropHeight - 4, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
     }
 
     renderChristmasTree(building) {
@@ -3297,4 +3672,7 @@ window.addEventListener('load', () => {
     if (!window.game.loadGame()) {
         window.game.showMessage("Welcome to Beecroft Valley! Press I for inventory, C for car.");
     }
+
+    // Update quest display on start
+    window.game.updateQuestDisplay();
 });
