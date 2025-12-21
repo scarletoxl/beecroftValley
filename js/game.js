@@ -871,6 +871,8 @@ class Game {
         }
 
         console.log(`Initialized ${this.streetLights.length} street lights`);
+    }
+
     // ===== MARKER INITIALIZATION =====
     // Create floating map markers from GPS-based POI data
     initMarkers() {
