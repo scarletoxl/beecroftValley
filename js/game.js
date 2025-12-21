@@ -102,6 +102,7 @@ class Game {
         this.initNPCs();
         this.initBuildings();
         this.initMarkers(); // Create markers from buildings
+        this.clearTreesFromMarkers(); // Keep trees away from buildings
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
@@ -334,6 +335,26 @@ class Game {
             const dy = tree.y - centerY;
             return Math.sqrt(dx * dx + dy * dy) > radius;
         });
+    }
+
+    clearTreesFromMarkers() {
+        // Remove trees that are too close to any marker/building
+        const clearRadius = 8; // Clear trees within 8 tiles of any marker
+        const originalCount = this.trees.length;
+
+        this.trees = this.trees.filter(tree => {
+            for (const marker of this.markers) {
+                const dx = tree.x - marker.x;
+                const dy = tree.y - marker.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < clearRadius) {
+                    return false; // Remove this tree
+                }
+            }
+            return true; // Keep tree
+        });
+
+        console.log(`Cleared ${originalCount - this.trees.length} trees from around markers`);
     }
 
     addParks() {
@@ -2854,6 +2875,16 @@ class Game {
                     }
                 });
             }
+
+            // Add trees
+            if (this.trees) {
+                this.trees.forEach(tree => {
+                    if (tree.x >= startX - 2 && tree.x < endX + 2 &&
+                        tree.y >= startY - 2 && tree.y < endY + 2) {
+                        entities.push({ type: 'tree', data: tree, sortY: tree.y, sortX: tree.x });
+                    }
+                });
+            }
         }
 
         // Add interior NPCs when inside a building
@@ -2914,7 +2945,12 @@ class Game {
     // ===== ISOMETRIC ENTITY RENDERING =====
     renderIsometricTree(tree) {
         const treeHeight = 40; // Height of the tree in pixels
-        const screen = this.worldToScreenWithCamera(tree.x, tree.y, 0);
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            tree.x, tree.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Tree shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
