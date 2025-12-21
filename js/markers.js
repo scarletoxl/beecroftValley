@@ -1,6 +1,215 @@
 // Beecroft Valley - Floating Map Markers System
 // Replaces ugly building rectangles with clean floating pins like Google Maps
 
+// ===== BEECROFT POI DATA =====
+// All POI locations from KML with GPS coordinates
+class BeeccroftPOIData {
+    // Reference point: Beecroft Railway Station
+    static ORIGIN_LAT = -33.7497;
+    static ORIGIN_LNG = 151.0657;
+
+    // Scale factor: degrees to game units (approximately 1 degree ≈ 111km)
+    // At this latitude, 1 degree lat ≈ 111km, 1 degree lng ≈ 93km
+    // We want roughly 1 game unit = ~10 meters, so scale factor ~10000
+    static SCALE_LAT = 10000;
+    static SCALE_LNG = 8500; // Adjusted for longitude compression at this latitude
+
+    // Game origin offset (where station is in game coordinates)
+    static GAME_ORIGIN_X = 250;
+    static GAME_ORIGIN_Y = 250;
+
+    static getPOIs() {
+        return [
+            { name: "Beecroft Railway Station", lat: -33.7497, lng: 151.0657, type: "station", emoji: "🚂", canEnter: true, hasInterior: true },
+            { name: "Beecroft Vet", lat: -33.7487499, lng: 151.0661721, type: "vet", emoji: "🐾", canEnter: true },
+            { name: "HerGP Medical Clinic", lat: -33.7480712, lng: 151.0661727, type: "clinic", emoji: "👩‍⚕️", canEnter: true, hasDoctor: true },
+            { name: "Smart Cookies Early Learning Centre", lat: -33.7481295, lng: 151.0657495, type: "school", emoji: "👶", canEnter: true },
+            { name: "Hannah's Beecroft", lat: -33.7490767, lng: 151.0647043, type: "restaurant", emoji: "🍽️", canEnter: true, isRestaurant: true, hasJobs: true },
+            { name: "Woolworths Beecroft", lat: -33.7492214, lng: 151.0648387, type: "shop", emoji: "🛒", canEnter: true, isShop: true, shopType: "grocery" },
+            { name: "Chargrill Charlie's", lat: -33.7492018, lng: 151.0653654, type: "restaurant", emoji: "🍗", canEnter: true, isRestaurant: true },
+            { name: "Yo Sushi", lat: -33.7487725, lng: 151.0655586, type: "restaurant", emoji: "🍣", canEnter: true, isRestaurant: true },
+            { name: "The Beehive Cafe", lat: -33.7502544, lng: 151.0652775, type: "cafe", emoji: "☕", canEnter: true, isRestaurant: true, hasJobs: true },
+            { name: "Beecroft Village Shopping Centre", lat: -33.748883, lng: 151.06566, type: "shop", emoji: "🏪", canEnter: true, isShop: true },
+            { name: "Beecroft Public School", lat: -33.7521663, lng: 151.0651659, type: "school", emoji: "🏫", canEnter: true, hasJobs: true },
+            { name: "Bridey's Home", lat: -33.7449847, lng: 151.0613656, type: "home", emoji: "🏠", canEnter: true },
+            { name: "My Home", lat: -33.7554966, lng: 151.0641447, type: "home", emoji: "🏡", canEnter: true, isPlayerHome: true },
+            { name: "Beecroft Presbyterian Church", lat: -33.7532228, lng: 151.0645291, type: "church", emoji: "⛪", canEnter: true },
+            { name: "Vintage Cellars", lat: -33.7529669, lng: 151.0652818, type: "shop", emoji: "🍷", canEnter: true, isShop: true, shopType: "liquor" },
+            { name: "Tennis Court 1", lat: -33.7535342, lng: 151.0668467, type: "recreation", emoji: "🎾", canEnter: true },
+            { name: "Tennis Court 2", lat: -33.7535406, lng: 151.0670187, type: "recreation", emoji: "🎾", canEnter: true },
+            { name: "Beecroft Village Green", lat: -33.7528398, lng: 151.0660815, type: "park", emoji: "🌳" },
+            { name: "The Verandah Beecroft", lat: -33.7519795, lng: 151.0636935, type: "cafe", emoji: "☕", canEnter: true, isRestaurant: true },
+            { name: "Beecroft Community Centre", lat: -33.7514305, lng: 151.0654066, type: "community", emoji: "🏘️", canEnter: true },
+            { name: "Fire Station", lat: -33.750685, lng: 151.065238, type: "firestation", emoji: "🚒", canEnter: true },
+            { name: "Railway Station Gardens", lat: -33.7494224, lng: 151.0662239, type: "park", emoji: "🌸" },
+            { name: "Love Pilates Beecroft", lat: -33.7491587, lng: 151.0659203, type: "gym", emoji: "🧘", canEnter: true, hasJobs: true },
+            { name: "Beecroft Station Parking 2", lat: -33.7482448, lng: 151.0665765, type: "parking", emoji: "🅿️" },
+            { name: "Beecroft Station Parking 1", lat: -33.750511, lng: 151.0664253, type: "parking", emoji: "🅿️" },
+            { name: "Cheltenham Oval", lat: -33.7598939, lng: 151.069589, type: "park", emoji: "⚽" },
+            { name: "Cheltenham Early Education", lat: -33.7580781, lng: 151.0743615, type: "school", emoji: "👶", canEnter: true },
+            { name: "Cheltenham Girls' High School", lat: -33.7575657, lng: 151.0732986, type: "school", emoji: "🏫", canEnter: true, hasJobs: true },
+            { name: "Cheltenham Station", lat: -33.7555854, lng: 151.078597, type: "station", emoji: "🚂", canEnter: true },
+            { name: "Malton Road Playground", lat: -33.7510833, lng: 151.0788557, type: "playground", emoji: "🎪" },
+            { name: "Christmas Tree", lat: -33.7493, lng: 151.0655, type: "christmas", emoji: "🎄", isChristmasTree: true },
+            { name: "Beecroft Auto Sales", lat: -33.7505, lng: 151.0670, type: "car_dealer", emoji: "🚗", canEnter: true, isCarDealer: true }
+        ];
+    }
+
+    /**
+     * Convert GPS coordinates to game coordinates
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     * @returns {{x: number, y: number}} Game coordinates
+     */
+    static gpsToGame(lat, lng) {
+        // Calculate offset from origin
+        const dLat = lat - this.ORIGIN_LAT;
+        const dLng = lng - this.ORIGIN_LNG;
+
+        // Convert to game coordinates
+        // Note: Latitude increases going north but Y increases going down in game
+        const x = this.GAME_ORIGIN_X + (dLng * this.SCALE_LNG);
+        const y = this.GAME_ORIGIN_Y - (dLat * this.SCALE_LAT);
+
+        return { x, y };
+    }
+
+    /**
+     * Convert game coordinates to GPS
+     * @param {number} x - Game X coordinate
+     * @param {number} y - Game Y coordinate
+     * @returns {{lat: number, lng: number}} GPS coordinates
+     */
+    static gameToGPS(x, y) {
+        const dX = x - this.GAME_ORIGIN_X;
+        const dY = y - this.GAME_ORIGIN_Y;
+
+        const lng = this.ORIGIN_LNG + (dX / this.SCALE_LNG);
+        const lat = this.ORIGIN_LAT - (dY / this.SCALE_LAT);
+
+        return { lat, lng };
+    }
+
+    /**
+     * Get all POIs with game coordinates
+     * @returns {Array} POIs with x, y game coordinates added
+     */
+    static getPOIsWithGameCoords() {
+        return this.getPOIs().map(poi => {
+            const coords = this.gpsToGame(poi.lat, poi.lng);
+            return {
+                ...poi,
+                x: coords.x,
+                y: coords.y,
+                interactable: poi.canEnter || poi.isShop || poi.isRestaurant || poi.isChristmasTree || poi.isCarDealer
+            };
+        });
+    }
+}
+
+// ===== ROAD AND RAILWAY DATA =====
+// Define roads and railway with GPS coordinates
+class BeeccroftRoadData {
+    /**
+     * Get road segments as GPS coordinate pairs
+     * Each road is an array of {lat, lng} points
+     */
+    static getRoads() {
+        return [
+            // Beecroft Road - Main north-south arterial
+            {
+                name: "Beecroft Road",
+                type: "main",
+                width: 5,
+                points: [
+                    { lat: -33.7400, lng: 151.0657 },
+                    { lat: -33.7650, lng: 151.0657 }
+                ]
+            },
+            // Hannah Street - East-west shopping strip
+            {
+                name: "Hannah Street",
+                type: "main",
+                width: 4,
+                points: [
+                    { lat: -33.7495, lng: 151.0600 },
+                    { lat: -33.7495, lng: 151.0750 }
+                ]
+            },
+            // Chapman Avenue
+            {
+                name: "Chapman Avenue",
+                type: "secondary",
+                width: 3,
+                points: [
+                    { lat: -33.7480, lng: 151.0620 },
+                    { lat: -33.7480, lng: 151.0700 }
+                ]
+            },
+            // Copeland Road
+            {
+                name: "Copeland Road",
+                type: "secondary",
+                width: 3,
+                points: [
+                    { lat: -33.7510, lng: 151.0630 },
+                    { lat: -33.7510, lng: 151.0720 }
+                ]
+            },
+            // Malton Road
+            {
+                name: "Malton Road",
+                type: "secondary",
+                width: 3,
+                points: [
+                    { lat: -33.7505, lng: 151.0657 },
+                    { lat: -33.7505, lng: 151.0800 }
+                ]
+            }
+        ];
+    }
+
+    /**
+     * Get railway line as GPS coordinates
+     */
+    static getRailway() {
+        return {
+            name: "Northern Line",
+            width: 4,
+            points: [
+                { lat: -33.7497, lng: 151.0500 },
+                { lat: -33.7497, lng: 151.0657 }, // Beecroft Station
+                { lat: -33.7555, lng: 151.0786 }, // Cheltenham Station
+                { lat: -33.7600, lng: 151.0900 }
+            ]
+        };
+    }
+
+    /**
+     * Convert road to game coordinates
+     */
+    static roadToGameCoords(road) {
+        return {
+            ...road,
+            points: road.points.map(p => BeeccroftPOIData.gpsToGame(p.lat, p.lng))
+        };
+    }
+
+    /**
+     * Get all roads with game coordinates
+     */
+    static getRoadsWithGameCoords() {
+        return this.getRoads().map(road => this.roadToGameCoords(road));
+    }
+
+    /**
+     * Get railway with game coordinates
+     */
+    static getRailwayWithGameCoords() {
+        return this.roadToGameCoords(this.getRailway());
+    }
+}
+
 // Marker styles by type
 const MARKER_STYLES = {
     station:    { color: '#8B4513', size: 32 },
