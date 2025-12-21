@@ -88,6 +88,11 @@ class Game {
         // Animals
         this.animals = [];
 
+        // Christmas music audio
+        this.christmasAudio = new Audio('media/Christmas this year (2).mp3');
+        this.christmasAudio.loop = true;
+        this.christmasAudioPlaying = false;
+
         // Initialize game
         this.initMap();
         this.initNPCs();
@@ -788,6 +793,19 @@ class Game {
                 emoji: "🌻",
                 color: "#F1F8E9",
                 hasInterior: false
+            },
+
+            // === CHRISTMAS TREE - Interactive holiday decoration ===
+            {
+                name: "Beecroft Christmas Tree",
+                x: 241, y: 241,
+                width: 3, height: 3,
+                type: "christmas_tree",
+                emoji: "🎄",
+                color: "#2E7D32",
+                hasInterior: false,
+                canEnter: false,
+                isChristmasTree: true
             }
         ];
 
@@ -1877,12 +1895,30 @@ class Game {
     }
 
     showBuildingDialog(building) {
-        if (building.isRestaurant) {
+        if (building.isChristmasTree) {
+            this.toggleChristmasMusic();
+        } else if (building.isRestaurant) {
             this.showRestaurantMenu(building);
         } else if (building.isShop) {
             this.showShopMenu(building);
         } else if (building.isCarDealer) {
             this.showCarDealer();
+        }
+    }
+
+    toggleChristmasMusic() {
+        if (this.christmasAudioPlaying) {
+            this.christmasAudio.pause();
+            this.christmasAudioPlaying = false;
+            this.showMessage("🎄 Christmas music stopped. Happy Holidays!");
+        } else {
+            this.christmasAudio.play().then(() => {
+                this.christmasAudioPlaying = true;
+                this.showMessage("🎄 ♪ Merry Christmas! ♪ 🎅");
+            }).catch(err => {
+                console.log('Audio playback failed:', err);
+                this.showMessage("🎄 Press again to hear Christmas music!");
+            });
         }
     }
 
@@ -2778,7 +2814,121 @@ class Game {
         this.ctx.fill();
     }
 
+    renderChristmasTree(building) {
+        const centerX = building.x + building.width / 2;
+        const centerY = building.y + building.height / 2;
+        const screen = this.worldToScreenWithCamera(centerX, centerY, 0);
+        const treeHeight = 100;
+        const time = Date.now();
+
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 8, 35, 18, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Tree trunk
+        this.ctx.fillStyle = '#5D4037';
+        this.ctx.fillRect(screen.x - 8, screen.y - 20, 16, 25);
+
+        // Tree layers (triangular Christmas tree shape)
+        const layers = [
+            { y: -25, width: 60, height: 30 },
+            { y: -50, width: 50, height: 28 },
+            { y: -72, width: 40, height: 26 },
+            { y: -92, width: 28, height: 24 }
+        ];
+
+        layers.forEach((layer, i) => {
+            // Main green layer
+            this.ctx.fillStyle = i % 2 === 0 ? '#1B5E20' : '#2E7D32';
+            this.ctx.beginPath();
+            this.ctx.moveTo(screen.x, screen.y + layer.y - layer.height);
+            this.ctx.lineTo(screen.x + layer.width / 2, screen.y + layer.y);
+            this.ctx.lineTo(screen.x - layer.width / 2, screen.y + layer.y);
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            // Snow on edges
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+        });
+
+        // Twinkling lights (animated)
+        const lightColors = ['#FF0000', '#FFD700', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF'];
+        const lightPositions = [
+            { x: -20, y: -30 }, { x: 15, y: -35 }, { x: -8, y: -28 },
+            { x: -15, y: -55 }, { x: 12, y: -52 }, { x: 0, y: -48 },
+            { x: -10, y: -75 }, { x: 8, y: -70 }, { x: -5, y: -68 },
+            { x: -5, y: -90 }, { x: 5, y: -88 }
+        ];
+
+        lightPositions.forEach((pos, i) => {
+            const twinkle = Math.sin(time / 200 + i * 0.8) * 0.5 + 0.5;
+            const lightSize = 3 + twinkle * 2;
+            const color = lightColors[i % lightColors.length];
+
+            this.ctx.fillStyle = color;
+            this.ctx.globalAlpha = 0.5 + twinkle * 0.5;
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x + pos.x, screen.y + pos.y, lightSize, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Glow effect
+            this.ctx.fillStyle = color;
+            this.ctx.globalAlpha = 0.2 + twinkle * 0.2;
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x + pos.x, screen.y + pos.y, lightSize + 4, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+
+        this.ctx.globalAlpha = 1;
+
+        // Star on top
+        const starY = screen.y - 105;
+        const starPulse = Math.sin(time / 300) * 0.3 + 1;
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+            const radius = 10 * starPulse;
+            const x = screen.x + Math.cos(angle) * radius;
+            const y = starY + Math.sin(angle) * radius;
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Star glow
+        this.ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, starY, 15 * starPulse, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // "Press SPACE" hint when player is nearby
+        const dx = this.player.x - centerX;
+        const dy = this.player.y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 4) {
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.ctx.fillRect(screen.x - 55, screen.y - 130, 110, 22);
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.font = 'bold 12px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('🎵 Press SPACE 🎵', screen.x, screen.y - 114);
+            this.ctx.textAlign = 'left';
+        }
+    }
+
     renderIsometricBuilding(building) {
+        // Special rendering for Christmas tree
+        if (building.isChristmasTree) {
+            this.renderChristmasTree(building);
+            return;
+        }
+
         const buildingHeight = building.height * 20; // Height multiplier
         const screen = this.worldToScreenWithCamera(building.x, building.y, 0);
 
