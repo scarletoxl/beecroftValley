@@ -1,6 +1,5 @@
 // Beecroft Valley - Main Game Engine
 // A realistic recreation of Beecroft, NSW with full game features
-// Version: 2025-12-21 - Fixed all initialization
 
 class Game {
     constructor() {
