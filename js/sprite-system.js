@@ -501,7 +501,7 @@ class ProceduralSpriteGenerator {
     }
 }
 
-// Export for use in game
+// Export for use in game (both Node.js and browser)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         SpriteSheet,
@@ -510,4 +510,11 @@ if (typeof module !== 'undefined' && module.exports) {
         SpriteManager,
         ProceduralSpriteGenerator
     };
+} else if (typeof window !== 'undefined') {
+    // Browser global exports
+    window.SpriteSheet = SpriteSheet;
+    window.Animation = Animation;
+    window.AnimatedSprite = AnimatedSprite;
+    window.SpriteManager = SpriteManager;
+    window.ProceduralSpriteGenerator = ProceduralSpriteGenerator;
 }
