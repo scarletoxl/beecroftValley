@@ -1571,6 +1571,7 @@ class Game {
     initInteriors() {
         // Create simple interior layouts for buildings with NPCs
         this.interiorMaps = {
+            // ===== CAFES & RESTAURANTS =====
             "The Beehive Cafe": {
                 width: 15,
                 height: 12,
@@ -1580,9 +1581,68 @@ class Game {
                 spawnX: 7,
                 spawnY: 10,
                 npcs: [
-                    { name: "Mrs. Chen", x: 7, y: 3, emoji: "👵", role: "cafe owner", greeting: "Welcome! What can I get you?" }
+                    { name: "Mrs. Chen", x: 7, y: 3, emoji: "👵", role: "cafe owner", greeting: "Welcome to The Beehive! Best coffee in Beecroft." },
+                    { name: "Sophie", x: 4, y: 5, emoji: "👩", role: "barista", greeting: "What can I get started for you?" },
+                    { name: "Old Tom", x: 10, y: 6, emoji: "👴", role: "regular customer", greeting: "Been coming here for 30 years. Best scones in Sydney!" }
                 ]
             },
+            "Hannah's Beecroft": {
+                width: 14,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Hannah", x: 7, y: 3, emoji: "👩‍🍳", role: "chef & owner", greeting: "Welcome to Hannah's! We have fresh specials today!" },
+                    { name: "James", x: 4, y: 4, emoji: "👨", role: "waiter", greeting: "I'll be your server today. Menu's on the table." },
+                    { name: "Local Couple", x: 10, y: 5, emoji: "👫", role: "diners", greeting: "The pasta here is amazing!" }
+                ]
+            },
+            "Chargrill Charlie's": {
+                width: 12,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: [
+                    { name: "Charlie", x: 6, y: 3, emoji: "👨‍🍳", role: "grill master", greeting: "Best charcoal chicken in Beecroft! What'll it be?" },
+                    { name: "Kev", x: 3, y: 4, emoji: "👨", role: "kitchen hand", greeting: "Fresh batch coming out of the oven!" }
+                ]
+            },
+            "Yo Sushi": {
+                width: 14,
+                height: 10,
+                tiles: this.createRestaurantInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Takeshi", x: 7, y: 2, emoji: "👨‍🍳", role: "sushi chef", greeting: "Irasshaimase! Welcome! Fresh fish today!" },
+                    { name: "Yuki", x: 4, y: 4, emoji: "👩", role: "waitress", greeting: "Would you like the lunch special? Very popular!" },
+                    { name: "Ken", x: 10, y: 3, emoji: "👨", role: "apprentice chef", greeting: "Learning the art of sushi from the master!" }
+                ]
+            },
+            "The Verandah Beecroft": {
+                width: 14,
+                height: 10,
+                tiles: this.createCafeInterior(),
+                exitX: 7,
+                exitY: 9,
+                spawnX: 7,
+                spawnY: 8,
+                npcs: [
+                    { name: "Melissa", x: 7, y: 3, emoji: "👩", role: "cafe manager", greeting: "Welcome to The Verandah! Lovely day for a coffee." },
+                    { name: "Young Mum", x: 4, y: 5, emoji: "👩‍👧", role: "customer", greeting: "This place is so family friendly. Kids love it!" },
+                    { name: "Book Club Ladies", x: 10, y: 6, emoji: "👵", role: "regulars", greeting: "We meet here every Thursday. Great atmosphere!" }
+                ]
+            },
+
+            // ===== SHOPS =====
             "Woolworths Beecroft": {
                 width: 20,
                 height: 15,
@@ -1592,29 +1652,37 @@ class Game {
                 spawnX: 10,
                 spawnY: 13,
                 npcs: [
-                    { name: "Emma", x: 10, y: 5, emoji: "👩", role: "shopkeeper", greeting: "Let me know if you need help finding anything!" }
+                    { name: "Emma", x: 10, y: 5, emoji: "👩", role: "store manager", greeting: "Welcome to Woolies! Let me know if you need help." },
+                    { name: "Darren", x: 5, y: 7, emoji: "👨", role: "shelf stocker", greeting: "Just restocking the shelves. Fresh stuff in aisle 3!" },
+                    { name: "Linda", x: 15, y: 5, emoji: "👩", role: "checkout operator", greeting: "Ready when you are! Do you have a rewards card?" },
+                    { name: "Shopper", x: 8, y: 10, emoji: "🧓", role: "customer", greeting: "These prices keep going up, don't they?" }
                 ]
             },
-            "Your Farm House": {
+            "Beecroft Village Shopping Centre": {
+                width: 20,
+                height: 15,
+                tiles: this.createShopInterior(),
+                exitX: 10,
+                exitY: 14,
+                spawnX: 10,
+                spawnY: 13,
+                npcs: [
+                    { name: "Security Pete", x: 10, y: 3, emoji: "👮", role: "security guard", greeting: "G'day! Just keeping things safe around here." },
+                    { name: "Shop Owner", x: 5, y: 6, emoji: "👨", role: "boutique owner", greeting: "Have a look around! Everything's on special." },
+                    { name: "Busy Mum", x: 14, y: 8, emoji: "👩", role: "shopper", greeting: "So much to do today! Where's the pharmacy?" }
+                ]
+            },
+            "Vintage Cellars": {
                 width: 12,
                 height: 10,
-                tiles: this.createHomeInterior(),
+                tiles: this.createLiquorStoreInterior(),
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
                 spawnY: 8,
-                npcs: []
-            },
-            "HerGP Medical Clinic": {
-                width: 10,
-                height: 8,
-                tiles: this.createClinicInterior(),
-                exitX: 5,
-                exitY: 7,
-                spawnX: 5,
-                spawnY: 6,
                 npcs: [
-                    { name: "Dr. Shin Li", x: 5, y: 3, emoji: "👩‍⚕️", role: "doctor", greeting: "How can I help you today?" }
+                    { name: "Richard", x: 6, y: 3, emoji: "🧔", role: "sommelier", greeting: "Looking for something special? I can recommend a great drop." },
+                    { name: "Wine Enthusiast", x: 3, y: 5, emoji: "👨", role: "customer", greeting: "The 2019 Shiraz here is exceptional!" }
                 ]
             },
             "Beecroft Auto Sales": {
@@ -1626,31 +1694,217 @@ class Game {
                 spawnX: 9,
                 spawnY: 10,
                 npcs: [
-                    { name: "Marcus", x: 9, y: 4, emoji: "👨", role: "salesman", greeting: "Looking for a new ride?" }
+                    { name: "Marcus", x: 9, y: 4, emoji: "👨", role: "sales manager", greeting: "Looking for a new ride? We've got great deals!" },
+                    { name: "Dave", x: 5, y: 6, emoji: "🧔", role: "mechanic", greeting: "Every car here's been fully inspected. Top quality!" },
+                    { name: "First Car Buyer", x: 13, y: 5, emoji: "👦", role: "customer", greeting: "So nervous! Buying my first car today!" }
                 ]
             },
-            "Hannah's Beecroft": {
-                width: 14,
-                height: 10,
-                tiles: this.createCafeInterior(),
-                exitX: 7,
-                exitY: 9,
-                spawnX: 7,
-                spawnY: 8,
+
+            // ===== MEDICAL & SERVICES =====
+            "HerGP Medical Clinic": {
+                width: 10,
+                height: 8,
+                tiles: this.createClinicInterior(),
+                exitX: 5,
+                exitY: 7,
+                spawnX: 5,
+                spawnY: 6,
                 npcs: [
-                    { name: "Hannah", x: 7, y: 3, emoji: "👩‍🍳", role: "chef", greeting: "Welcome to Hannah's! Take a seat!" }
+                    { name: "Dr. Shin Li", x: 5, y: 3, emoji: "👩‍⚕️", role: "doctor", greeting: "Hello! How are you feeling today?" },
+                    { name: "Nurse Priya", x: 7, y: 4, emoji: "👩‍⚕️", role: "nurse", greeting: "The doctor will see you shortly. Please take a seat." },
+                    { name: "Patient", x: 3, y: 5, emoji: "🤒", role: "waiting patient", greeting: "*cough* Just here for a checkup..." }
                 ]
             },
-            "Chargrill Charlie's": {
+            "Beecroft Vet": {
                 width: 12,
                 height: 10,
-                tiles: this.createCafeInterior(),
+                tiles: this.createVetInterior(),
                 exitX: 6,
                 exitY: 9,
                 spawnX: 6,
                 spawnY: 8,
                 npcs: [
-                    { name: "Charlie", x: 6, y: 3, emoji: "👨‍🍳", role: "grill master", greeting: "Best charcoal chicken in Beecroft!" }
+                    { name: "Dr. Sarah", x: 6, y: 3, emoji: "👩‍⚕️", role: "veterinarian", greeting: "Bring your furry friend in! I'll take good care of them." },
+                    { name: "Vet Nurse Amy", x: 8, y: 4, emoji: "👩", role: "vet nurse", greeting: "Aww, what a cute pet! We'll look after them." },
+                    { name: "Pet Owner", x: 3, y: 6, emoji: "👧", role: "with sick cat", greeting: "My cat hasn't been eating. Hope she'll be okay..." }
+                ]
+            },
+
+            // ===== STATIONS =====
+            "Beecroft Railway Station": {
+                width: 16,
+                height: 12,
+                tiles: this.createStationInterior(),
+                exitX: 8,
+                exitY: 11,
+                spawnX: 8,
+                spawnY: 10,
+                npcs: [
+                    { name: "Station Master Bob", x: 8, y: 2, emoji: "👨‍✈️", role: "station master", greeting: "Next train to Central in 10 minutes. Platform 1!" },
+                    { name: "Ticket Officer", x: 6, y: 3, emoji: "👩", role: "ticket sales", greeting: "Single or return? Opal card works too!" },
+                    { name: "Commuter", x: 4, y: 7, emoji: "👨‍💼", role: "waiting for train", greeting: "Running late again... hope the train's on time." },
+                    { name: "Tourist Family", x: 12, y: 7, emoji: "👨‍👩‍👧", role: "visitors", greeting: "Which way to the Blue Mountains?" }
+                ]
+            },
+            "Cheltenham Station": {
+                width: 16,
+                height: 12,
+                tiles: this.createStationInterior(),
+                exitX: 8,
+                exitY: 11,
+                spawnX: 8,
+                spawnY: 10,
+                npcs: [
+                    { name: "Station Attendant", x: 8, y: 2, emoji: "👨", role: "station staff", greeting: "Trains running on time today. Platform 2 for city." },
+                    { name: "Student", x: 5, y: 7, emoji: "👧", role: "schoolgirl", greeting: "Ugh, Monday mornings..." },
+                    { name: "Retiree Couple", x: 11, y: 7, emoji: "👴", role: "day trippers", greeting: "Off to the city for a show! Haven't been in years." }
+                ]
+            },
+
+            // ===== SCHOOLS & EDUCATION =====
+            "Beecroft Public School": {
+                width: 18,
+                height: 14,
+                tiles: this.createSchoolInterior(),
+                exitX: 9,
+                exitY: 13,
+                spawnX: 9,
+                spawnY: 12,
+                npcs: [
+                    { name: "Principal Morrison", x: 9, y: 2, emoji: "👨‍🏫", role: "principal", greeting: "Welcome to Beecroft Public! Education is our passion." },
+                    { name: "Ms. Thompson", x: 5, y: 4, emoji: "👩‍🏫", role: "year 3 teacher", greeting: "Just preparing for tomorrow's lesson. Love teaching!" },
+                    { name: "School Kids", x: 12, y: 6, emoji: "👦", role: "students", greeting: "Recess is the best! Want to play handball?" },
+                    { name: "Parent Helper", x: 4, y: 8, emoji: "👩", role: "volunteer", greeting: "Helping with the reading program today." }
+                ]
+            },
+            "Cheltenham Girls' High School": {
+                width: 18,
+                height: 14,
+                tiles: this.createSchoolInterior(),
+                exitX: 9,
+                exitY: 13,
+                spawnX: 9,
+                spawnY: 12,
+                npcs: [
+                    { name: "Principal Dr. Wright", x: 9, y: 2, emoji: "👩‍🏫", role: "principal", greeting: "Cheltenham Girls produces the best and brightest!" },
+                    { name: "Science Teacher", x: 5, y: 5, emoji: "👩‍🔬", role: "chemistry teacher", greeting: "Science is everywhere! Today we're doing experiments." },
+                    { name: "Senior Students", x: 12, y: 6, emoji: "👧", role: "year 12 students", greeting: "HSC stress is real... but we'll get through it!" },
+                    { name: "Librarian", x: 14, y: 4, emoji: "🧓", role: "librarian", greeting: "Shh! This is the library. Need help finding a book?" }
+                ]
+            },
+            "Smart Cookies Early Learning Centre": {
+                width: 14,
+                height: 12,
+                tiles: this.createDaycareInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Miss Jenny", x: 7, y: 3, emoji: "👩‍🏫", role: "centre director", greeting: "Welcome! The children are having such a great day!" },
+                    { name: "Miss Kate", x: 4, y: 5, emoji: "👩", role: "early childhood educator", greeting: "We're doing finger painting today! So much fun!" },
+                    { name: "Toddlers", x: 9, y: 5, emoji: "👶", role: "children", greeting: "*giggles and plays*" },
+                    { name: "Anxious Parent", x: 5, y: 8, emoji: "👨", role: "dropping off child", greeting: "First day at daycare... hope they'll be okay!" }
+                ]
+            },
+            "Cheltenham Early Education": {
+                width: 14,
+                height: 12,
+                tiles: this.createDaycareInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Director Paula", x: 7, y: 3, emoji: "👩", role: "director", greeting: "Learning through play is our philosophy!" },
+                    { name: "Educator Tim", x: 4, y: 5, emoji: "👨", role: "educator", greeting: "The kids are building a tower! Want to help?" },
+                    { name: "Little Ones", x: 9, y: 6, emoji: "👶", role: "children", greeting: "*playing with blocks*" }
+                ]
+            },
+
+            // ===== COMMUNITY & RECREATION =====
+            "Beecroft Presbyterian Church": {
+                width: 12,
+                height: 16,
+                tiles: this.createChurchInterior(),
+                exitX: 6,
+                exitY: 15,
+                spawnX: 6,
+                spawnY: 14,
+                npcs: [
+                    { name: "Pastor David", x: 6, y: 2, emoji: "👨‍💼", role: "pastor", greeting: "Welcome! All are welcome here. Peace be with you." },
+                    { name: "Church Warden", x: 3, y: 5, emoji: "👵", role: "warden", greeting: "Been part of this community for 40 years." },
+                    { name: "Choir Member", x: 9, y: 4, emoji: "👩", role: "choir singer", greeting: "Rehearsing for Sunday's service. Do you sing?" }
+                ]
+            },
+            "Beecroft Community Centre": {
+                width: 16,
+                height: 14,
+                tiles: this.createCommunityInterior(),
+                exitX: 8,
+                exitY: 13,
+                spawnX: 8,
+                spawnY: 12,
+                npcs: [
+                    { name: "Centre Manager Jan", x: 8, y: 3, emoji: "👩", role: "manager", greeting: "So many activities on today! Check the noticeboard." },
+                    { name: "Yoga Instructor", x: 5, y: 6, emoji: "🧘", role: "yoga teacher", greeting: "Namaste! Class starts at 10am. Join us!" },
+                    { name: "Art Class Group", x: 11, y: 5, emoji: "👵", role: "painters", greeting: "We meet every Tuesday for watercolors!" },
+                    { name: "Council Worker", x: 4, y: 9, emoji: "👨", role: "maintenance", greeting: "Just making sure everything's in order." }
+                ]
+            },
+            "Fire Station": {
+                width: 20,
+                height: 14,
+                tiles: this.createFireStationInterior(),
+                exitX: 10,
+                exitY: 13,
+                spawnX: 10,
+                spawnY: 12,
+                npcs: [
+                    { name: "Captain Steve", x: 10, y: 3, emoji: "👨‍🚒", role: "fire captain", greeting: "Keeping Beecroft safe! Hope you never need us." },
+                    { name: "Firefighter Mike", x: 5, y: 5, emoji: "👨‍🚒", role: "firefighter", greeting: "Just finished cleaning the truck. Ready for action!" },
+                    { name: "Firefighter Sam", x: 14, y: 5, emoji: "👩‍🚒", role: "firefighter", greeting: "Training hard every day. Safety first!" },
+                    { name: "Fire Dog Rusty", x: 10, y: 8, emoji: "🐕", role: "station dog", greeting: "*wags tail happily*" }
+                ]
+            },
+            "Love Pilates Beecroft": {
+                width: 14,
+                height: 12,
+                tiles: this.createGymInterior(),
+                exitX: 7,
+                exitY: 11,
+                spawnX: 7,
+                spawnY: 10,
+                npcs: [
+                    { name: "Instructor Lisa", x: 7, y: 3, emoji: "🧘‍♀️", role: "pilates instructor", greeting: "Welcome! Ready to strengthen your core?" },
+                    { name: "Regular Client", x: 4, y: 5, emoji: "👩", role: "member", greeting: "I've been coming here for 2 years. Life changing!" },
+                    { name: "Beginner", x: 10, y: 5, emoji: "👩", role: "new member", greeting: "My first class! A bit nervous but excited." }
+                ]
+            },
+
+            // ===== HOMES =====
+            "My Home": {
+                width: 12,
+                height: 10,
+                tiles: this.createHomeInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: []  // Player's home - empty
+            },
+            "Bridey's Home": {
+                width: 12,
+                height: 10,
+                tiles: this.createHomeInterior(),
+                exitX: 6,
+                exitY: 9,
+                spawnX: 6,
+                spawnY: 8,
+                npcs: [
+                    { name: "Bridey", x: 6, y: 4, emoji: "👧", role: "your friend", greeting: "Hey! Come in! Want to hang out?" },
+                    { name: "Bridey's Mum", x: 3, y: 3, emoji: "👩", role: "Bridey's mother", greeting: "Oh hello dear! Would you like some afternoon tea?" },
+                    { name: "Family Cat", x: 8, y: 5, emoji: "🐱", role: "pet cat", greeting: "*purrs and rubs against your leg*" }
                 ]
             }
         };
@@ -1745,6 +1999,195 @@ class Game {
                 interior[y][x] = 7; // Floor
             }
         }
+        return interior;
+    }
+
+    createStationInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 16; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Ticket counter
+        interior[3][6] = 6;
+        interior[3][7] = 6;
+        interior[3][8] = 6;
+        interior[3][9] = 6;
+        // Benches
+        interior[7][3] = 6;
+        interior[7][4] = 6;
+        interior[7][11] = 6;
+        interior[7][12] = 6;
+        return interior;
+    }
+
+    createVetInterior() {
+        const interior = [];
+        for (let y = 0; y < 10; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Examination table
+        interior[3][6] = 6;
+        interior[3][7] = 6;
+        // Waiting area chairs
+        interior[6][2] = 6;
+        interior[6][3] = 6;
+        return interior;
+    }
+
+    createSchoolInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 18; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Desks in rows
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 4; col++) {
+                interior[4 + row * 3][3 + col * 3] = 6;
+            }
+        }
+        // Teacher's desk at front
+        interior[2][8] = 6;
+        interior[2][9] = 6;
+        return interior;
+    }
+
+    createChurchInterior() {
+        const interior = [];
+        for (let y = 0; y < 16; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Pews (benches)
+        for (let row = 0; row < 5; row++) {
+            interior[4 + row * 2][2] = 6;
+            interior[4 + row * 2][3] = 6;
+            interior[4 + row * 2][8] = 6;
+            interior[4 + row * 2][9] = 6;
+        }
+        // Altar
+        interior[1][5] = 6;
+        interior[1][6] = 6;
+        return interior;
+    }
+
+    createFireStationInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 20; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Fire trucks (large obstacles)
+        for (let i = 0; i < 4; i++) {
+            interior[4][3 + i] = 6;
+            interior[5][3 + i] = 6;
+            interior[4][12 + i] = 6;
+            interior[5][12 + i] = 6;
+        }
+        return interior;
+    }
+
+    createGymInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Yoga mats / equipment areas
+        interior[3][3] = 6;
+        interior[3][7] = 6;
+        interior[3][10] = 6;
+        interior[6][3] = 6;
+        interior[6][7] = 6;
+        interior[6][10] = 6;
+        return interior;
+    }
+
+    createCommunityInterior() {
+        const interior = [];
+        for (let y = 0; y < 14; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 16; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Tables for meetings
+        interior[4][4] = 6;
+        interior[4][5] = 6;
+        interior[4][10] = 6;
+        interior[4][11] = 6;
+        interior[8][7] = 6;
+        interior[8][8] = 6;
+        return interior;
+    }
+
+    createRestaurantInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Dining tables
+        interior[3][3] = 6;
+        interior[3][7] = 6;
+        interior[3][10] = 6;
+        interior[6][3] = 6;
+        interior[6][7] = 6;
+        interior[6][10] = 6;
+        // Counter/bar area
+        interior[2][6] = 6;
+        interior[2][7] = 6;
+        return interior;
+    }
+
+    createLiquorStoreInterior() {
+        const interior = [];
+        for (let y = 0; y < 10; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 12; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Wine racks
+        for (let x = 2; x < 10; x += 2) {
+            interior[3][x] = 6;
+            interior[5][x] = 6;
+        }
+        return interior;
+    }
+
+    createDaycareInterior() {
+        const interior = [];
+        for (let y = 0; y < 12; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 14; x++) {
+                interior[y][x] = 7; // Floor
+            }
+        }
+        // Play areas
+        interior[3][3] = 6;
+        interior[3][4] = 6;
+        interior[3][9] = 6;
+        interior[3][10] = 6;
+        // Nap area
+        interior[7][6] = 6;
+        interior[7][7] = 6;
         return interior;
     }
 
