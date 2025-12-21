@@ -92,6 +92,9 @@ class Game {
         // Animals
         this.animals = [];
 
+        // Farm animals (chickens, cows, sheep) - for player's farm
+        this.farmAnimals = [];
+
         // Farming system - crops and watered tiles
         this.crops = []; // { x, y, type, stage, watered, plantedDay }
         this.wateredTiles = new Set(); // "x,y" keys for watered farmland
@@ -105,12 +108,14 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
+        this.initStreetLights();
         this.initMarkers(); // Create markers from buildings
         this.clearTreesFromMarkers(); // Keep trees away from buildings
         this.initInteriors();
         this.initSprites();
         this.initAnimals();
         this.initAnimalSprites();
+        this.initFarmAnimals();
         this.createUI();
         this.setupEventListeners();
         this.setupCanvasResize();
@@ -759,6 +764,31 @@ class Game {
                 hasInterior: false,
                 canEnter: false,
                 isChristmasTree: true
+            },
+
+            // === NEW BUILDINGS ===
+            {
+                name: "Beecroft Carpenter Shop",
+                x: 232, y: 270,
+                width: 6, height: 5,
+                type: "carpenter",
+                emoji: "🔨",
+                color: "#D7CCC8",
+                hasInterior: true,
+                canEnter: true,
+                isCarpenter: true,
+                owner: "Bill the Carpenter"
+            },
+            {
+                name: "Beecroft Mines Entrance",
+                x: 180, y: 300,
+                width: 8, height: 6,
+                type: "mine",
+                emoji: "⛏️",
+                color: "#78909C",
+                hasInterior: true,
+                canEnter: true,
+                isMine: true
             }
         ];
 
@@ -778,6 +808,69 @@ class Game {
         });
     }
 
+    // ===== STREET LIGHTS INITIALIZATION =====
+    // Place street lights every 5-6 tiles along all major roads
+    // Lights glow at night (6pm-6am) with yellow illumination
+    initStreetLights() {
+        this.streetLights = [];
+        const spacing = 6; // Place light every 6 tiles
+
+        // Beecroft Road - North-south at x=250, entire map
+        for (let y = 0; y < this.mapHeight; y += spacing) {
+            this.streetLights.push({ x: 250, y: y });
+        }
+
+        // Hannah Street - East-west at y=255
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 255 });
+        }
+
+        // Chapman Avenue - East-west at y=235
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 235 });
+        }
+
+        // Copeland Road - East-west at y=265
+        for (let x = 200; x < 320; x += spacing) {
+            this.streetLights.push({ x: x, y: 265 });
+        }
+
+        // Railway tracks - East-west at y=250
+        for (let x = 180; x < 350; x += spacing) {
+            this.streetLights.push({ x: x, y: 250 });
+        }
+
+        // Malton Road - East from station
+        for (let x = 260; x < 300; x += spacing) {
+            this.streetLights.push({ x: x, y: 260 });
+        }
+
+        // Wongala Crescent - Curved road (simplified as line segments)
+        for (let x = 260; x < 280; x += spacing) {
+            const y = 250 + (x - 260) * 0.5; // Diagonal approximation
+            this.streetLights.push({ x: x, y: Math.floor(y) });
+        }
+
+        // Albert Road - Near player's home
+        for (let y = 235; y < 245; y += spacing) {
+            this.streetLights.push({ x: 235, y: y });
+        }
+
+        // Welham Street
+        for (let x = 235; x < 245; x += spacing) {
+            this.streetLights.push({ x: x, y: 243 });
+        }
+
+        // Sutherland Road - Diagonal (southeast from Copeland)
+        for (let i = 0; i < 15; i++) {
+            const x = 260 + i * 2;
+            const y = 265 + i * 2;
+            if (x < this.mapWidth && y < this.mapHeight) {
+                this.streetLights.push({ x: x, y: y });
+            }
+        }
+
+        console.log(`Initialized ${this.streetLights.length} street lights`);
     // ===== MARKER INITIALIZATION =====
     // Create floating map markers from GPS-based POI data
     initMarkers() {
@@ -1188,6 +1281,66 @@ class Game {
                 standTimer: 0,
                 baseX: 172,
                 baseY: 188
+            },
+
+            // === NEW NPCS ===
+            {
+                name: "Bill", x: 234, y: 272, emoji: "👨‍🔧",
+                role: "carpenter",
+                greeting: "Need anything built? I'm your man!",
+                dialogues: [
+                    "I can craft furniture from wood.",
+                    "Bring me wood and pebbles for tools.",
+                    "Quality craftsmanship, guaranteed!",
+                    "Been working wood for 30 years."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 234,
+                baseY: 272,
+                isCarpenter: true
+            },
+            {
+                name: "Rocky", x: 182, y: 302, emoji: "⛏️",
+                role: "miner",
+                greeting: "The mines go deep... real deep.",
+                dialogues: [
+                    "Found copper on level 3 yesterday!",
+                    "Bring a good pickaxe down there.",
+                    "Watch out for the critters!",
+                    "Mining's in my blood."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 182,
+                baseY: 302
+            },
+            {
+                name: "Dusty", x: 185, y: 303, emoji: "🪨",
+                role: "mining foreman",
+                greeting: "Stay safe down in the mines!",
+                dialogues: [
+                    "We've got 20 levels so far.",
+                    "Deeper you go, better the ore.",
+                    "Found diamonds on level 18!",
+                    "Don't mine alone, it's dangerous."
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 185,
+                baseY: 303
             }
         ];
 
@@ -1593,6 +1746,120 @@ class Game {
         });
     }
 
+    // ===== FARM ANIMALS INITIALIZATION =====
+    initFarmAnimals() {
+        // Farm animals at player's property (19 Albert Rd at 235, 240)
+        // Positioned around the farm area
+        const farmX = 235;
+        const farmY = 240;
+
+        this.farmAnimals = [
+            // Chickens (3 chickens in coop area)
+            {
+                type: 'chicken',
+                x: farmX - 3,
+                y: farmY + 2,
+                emoji: '🐔',
+                name: 'Henrietta',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1, // 1 day
+                produces: 'egg'
+            },
+            {
+                type: 'chicken',
+                x: farmX - 4,
+                y: farmY + 3,
+                emoji: '🐔',
+                name: 'Clucky',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'egg'
+            },
+            {
+                type: 'chicken',
+                x: farmX - 2,
+                y: farmY + 3,
+                emoji: '🐔',
+                name: 'Pecky',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'egg'
+            },
+
+            // Cows (2 cows in barn area)
+            {
+                type: 'cow',
+                x: farmX + 2,
+                y: farmY + 1,
+                emoji: '🐄',
+                name: 'Bessie',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'milk'
+            },
+            {
+                type: 'cow',
+                x: farmX + 4,
+                y: farmY + 2,
+                emoji: '🐄',
+                name: 'Daisy',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 1,
+                produces: 'milk'
+            },
+
+            // Sheep (3 sheep in pen area)
+            {
+                type: 'sheep',
+                x: farmX - 1,
+                y: farmY - 2,
+                emoji: '🐑',
+                name: 'Fluffy',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3, // 3 days for wool
+                produces: 'wool'
+            },
+            {
+                type: 'sheep',
+                x: farmX + 1,
+                y: farmY - 3,
+                emoji: '🐑',
+                name: 'Woolly',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3,
+                produces: 'wool'
+            },
+            {
+                type: 'sheep',
+                x: farmX - 2,
+                y: farmY - 1,
+                emoji: '🐑',
+                name: 'Baa-rbara',
+                happiness: 100,
+                fedToday: false,
+                lastProduced: 0,
+                productionTime: 3,
+                produces: 'wool'
+            }
+        ];
+
+        console.log(`Initialized ${this.farmAnimals.length} farm animals at player's farm`);
+    }
+
     // ===== INTERIOR MAPS =====
     initInteriors() {
         // Create simple interior layouts for buildings with NPCs
@@ -1697,6 +1964,20 @@ class Game {
                     { name: "Shop Owner", x: 5, y: 6, emoji: "👨", role: "boutique owner", greeting: "Have a look around! Everything's on special." },
                     { name: "Busy Mum", x: 14, y: 8, emoji: "👩", role: "shopper", greeting: "So much to do today! Where's the pharmacy?" }
                 ]
+            },
+            "19 Albert Rd": {
+                width: 20,
+                height: 16,
+                tiles: this.createDetailedHomeInterior(),
+                exitX: 10,
+                exitY: 15,
+                spawnX: 10,
+                spawnY: 14,
+                npcs: [],
+                furniture: this.createHomeFurniture(),
+                hasStove: true,
+                hasBed: true,
+                hasFridge: true
             },
             "Vintage Cellars": {
                 width: 12,
@@ -1990,18 +2271,94 @@ class Game {
         return interior;
     }
 
-    createHomeInterior() {
+    createDetailedHomeInterior() {
+        // 20x16 home with multiple rooms
         const interior = [];
-        for (let y = 0; y < 10; y++) {
+        for (let y = 0; y < 16; y++) {
             interior[y] = [];
-            for (let x = 0; x < 12; x++) {
+            for (let x = 0; x < 20; x++) {
                 interior[y][x] = 7; // Floor
             }
         }
-        // Add bed
-        interior[2][2] = 6;
-        interior[2][3] = 6;
+
+        // === WALLS (using tile 6 for collision) ===
+        // Outer walls
+        for (let x = 0; x < 20; x++) {
+            interior[0][x] = 6; // Top wall
+            interior[15][x] = 6; // Bottom wall (except door)
+        }
+        for (let y = 0; y < 16; y++) {
+            interior[y][0] = 6; // Left wall
+            interior[y][19] = 6; // Right wall
+        }
+
+        // Interior walls creating rooms
+        // Vertical wall separating bedroom/bathroom from living area (x=6)
+        for (let y = 1; y < 8; y++) {
+            interior[y][6] = 6;
+        }
+        // Horizontal wall separating kitchen from living room (y=8)
+        for (let x = 1; x < 19; x++) {
+            interior[8][x] = 6;
+        }
+        // Bedroom/Bathroom divider (y=4)
+        for (let x = 1; x < 6; x++) {
+            interior[4][x] = 6;
+        }
+        // Kitchen/Basement divider (x=13)
+        for (let y = 9; y < 15; y++) {
+            interior[y][13] = 6;
+        }
+
+        // === DOORWAYS (remove walls for doors) ===
+        interior[15][10] = 7; // Front door
+        interior[4][3] = 7; // Bedroom to bathroom
+        interior[7][6] = 7; // Bedroom to living room
+        interior[8][4] = 7; // Living room to kitchen
+        interior[8][10] = 7; // Living room to kitchen
+        interior[11][13] = 7; // Kitchen to basement
+
         return interior;
+    }
+
+    createHomeFurniture() {
+        // Define all furniture pieces with positions and types
+        return [
+            // === BEDROOM (top-left, 1-5, 1-3) ===
+            { x: 2, y: 2, type: 'bed', emoji: '🛏️', name: 'Bed', interactive: true, action: 'sleep' },
+            { x: 4, y: 1, type: 'dresser', emoji: '👗', name: 'Dresser' },
+            { x: 1, y: 1, type: 'wardrobe', emoji: '🚪', name: 'Wardrobe' },
+            { x: 5, y: 2, type: 'nightstand', emoji: '🕯️', name: 'Nightstand' },
+
+            // === BATHROOM (top-left, 1-5, 5-7) ===
+            { x: 2, y: 5, type: 'toilet', emoji: '🚽', name: 'Toilet' },
+            { x: 4, y: 5, type: 'sink', emoji: '🚰', name: 'Sink' },
+            { x: 1, y: 6, type: 'shower', emoji: '🚿', name: 'Shower' },
+            { x: 5, y: 7, type: 'towel', emoji: '🧻', name: 'Towel Rack' },
+
+            // === LIVING ROOM (right side, 7-18, 1-7) ===
+            { x: 10, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
+            { x: 12, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
+            { x: 11, y: 1, type: 'tv', emoji: '📺', name: 'TV', interactive: true, action: 'watch' },
+            { x: 8, y: 5, type: 'bookshelf', emoji: '📚', name: 'Bookshelf' },
+            { x: 11, y: 5, type: 'table', emoji: '🪑', name: 'Coffee Table' },
+            { x: 17, y: 3, type: 'plant', emoji: '🪴', name: 'Potted Plant' },
+
+            // === KITCHEN (middle-right, 7-12, 9-14) ===
+            { x: 8, y: 10, type: 'fridge', emoji: '❄️', name: 'Refrigerator', interactive: true, action: 'storage' },
+            { x: 10, y: 9, type: 'stove', emoji: '🔥', name: 'Stove', interactive: true, action: 'cook' },
+            { x: 12, y: 9, type: 'sink', emoji: '💧', name: 'Kitchen Sink' },
+            { x: 9, y: 12, type: 'table', emoji: '🍽️', name: 'Dining Table' },
+            { x: 8, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
+            { x: 10, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
+            { x: 11, y: 14, type: 'counter', emoji: '🔪', name: 'Counter' },
+
+            // === BASEMENT/WORKSHOP (bottom-right, 14-18, 9-14) ===
+            { x: 15, y: 10, type: 'workbench', emoji: '🔨', name: 'Crafting Table', interactive: true, action: 'craft' },
+            { x: 17, y: 10, type: 'chest', emoji: '📦', name: 'Storage Chest', interactive: true, action: 'storage' },
+            { x: 15, y: 13, type: 'chest', emoji: '📦', name: 'Storage Chest', interactive: true, action: 'storage' },
+            { x: 17, y: 13, type: 'tools', emoji: '🛠️', name: 'Tool Rack' }
+        ];
     }
 
     createClinicInterior() {
@@ -3442,6 +3799,15 @@ class Game {
                 });
             }
 
+            // Add farm animals
+            if (this.farmAnimals) {
+                this.farmAnimals.forEach(animal => {
+                    if (animal.x >= startX && animal.x < endX && animal.y >= startY && animal.y < endY) {
+                        entities.push({ type: 'farmanimal', data: animal, sortY: animal.y, sortX: animal.x });
+                    }
+                });
+            }
+
             // Add crops
             if (this.crops) {
                 this.crops.forEach(crop => {
@@ -3451,6 +3817,11 @@ class Game {
                 });
             }
 
+            // Add street lights
+            if (this.streetLights) {
+                this.streetLights.forEach(light => {
+                    if (light.x >= startX && light.x < endX && light.y >= startY && light.y < endY) {
+                        entities.push({ type: 'streetlight', data: light, sortY: light.y, sortX: light.x });
             // Add trees
             if (this.trees) {
                 this.trees.forEach(tree => {
@@ -3472,6 +3843,17 @@ class Game {
                         data: npc,
                         sortY: npc.y,
                         sortX: npc.x
+                    });
+                });
+            }
+            // Add furniture
+            if (interior && interior.furniture) {
+                interior.furniture.forEach(furniture => {
+                    entities.push({
+                        type: 'furniture',
+                        data: furniture,
+                        sortY: furniture.y,
+                        sortX: furniture.x
                     });
                 });
             }
@@ -3498,10 +3880,16 @@ class Game {
                 this.renderIsometricNPC(entity.data);
             } else if (entity.type === 'interior_npc') {
                 this.renderInteriorNPC(entity.data);
+            } else if (entity.type === 'furniture') {
+                this.renderFurniture(entity.data);
             } else if (entity.type === 'animal') {
                 this.renderIsometricAnimal(entity.data);
+            } else if (entity.type === 'farmanimal') {
+                this.renderFarmAnimal(entity.data);
             } else if (entity.type === 'crop') {
                 this.renderIsometricCrop(entity.data);
+            } else if (entity.type === 'streetlight') {
+                this.renderStreetLight(entity.data);
             } else if (entity.type === 'player') {
                 this.renderIsometricPlayer(entity.data);
             }
@@ -3559,6 +3947,50 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(screen.x, screen.y - treeHeight - 8, 10, 0, Math.PI * 2);
         this.ctx.fill();
+    }
+
+    renderStreetLight(light) {
+        const screen = this.worldToScreenWithCamera(light.x, light.y, 0);
+        const isNight = this.time && (this.time.hour >= 18 || this.time.hour < 6);
+
+        // Street light post (gray pole, 2 tiles high)
+        const postHeight = 50;
+        this.ctx.fillStyle = '#5a5a5a';
+        this.ctx.fillRect(screen.x - 2, screen.y - postHeight, 4, postHeight);
+
+        // Post base
+        this.ctx.fillStyle = '#3a3a3a';
+        this.ctx.fillRect(screen.x - 4, screen.y, 8, 4);
+
+        // Light fixture at top
+        this.ctx.fillStyle = '#7a7a7a';
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x, screen.y - postHeight, 4, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // At night: glow effect
+        if (isNight) {
+            // Bright light at top
+            this.ctx.fillStyle = '#ffffaa';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - postHeight, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Glowing yellow circle of light on ground (radius 3 tiles)
+            const glowRadius = this.tileWidth * 1.5; // About 3 tiles
+            const gradient = this.ctx.createRadialGradient(
+                screen.x, screen.y, 0,
+                screen.x, screen.y, glowRadius
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 170, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 170, 0.15)');
+            gradient.addColorStop(1, 'rgba(255, 255, 170, 0)');
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y, glowRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
     }
 
     renderIsometricCrop(crop) {
@@ -3857,6 +4289,88 @@ class Game {
         this.ctx.textAlign = 'center';
         this.ctx.fillText(building.emoji, centerScreen.x, centerScreen.y + 6);
         this.ctx.textAlign = 'left';
+
+        // Add CLEAR VISIBLE DOOR if building can be entered
+        if (building.canEnter && building.hasInterior) {
+            this.renderBuildingDoor(building);
+        }
+    }
+
+    renderBuildingDoor(building) {
+        // Door at front center-bottom of building
+        const doorX = building.x + Math.floor(building.width / 2);
+        const doorY = building.y + building.height - 1;
+        const doorScreen = this.worldToScreenWithCamera(doorX, doorY, 0);
+
+        // Door background (wooden brown)
+        const doorWidth = 16;
+        const doorHeight = 24;
+        this.ctx.fillStyle = '#5D4037'; // Dark brown
+        this.ctx.fillRect(
+            doorScreen.x - doorWidth / 2,
+            doorScreen.y - doorHeight / 2,
+            doorWidth,
+            doorHeight
+        );
+
+        // Door frame (lighter wood)
+        this.ctx.strokeStyle = '#8D6E63';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2,
+            doorScreen.y - doorHeight / 2,
+            doorWidth,
+            doorHeight
+        );
+
+        // Door panels (detail)
+        this.ctx.strokeStyle = '#4E342E';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2 + 2,
+            doorScreen.y - doorHeight / 2 + 2,
+            doorWidth - 4,
+            doorHeight / 2 - 3
+        );
+        this.ctx.strokeRect(
+            doorScreen.x - doorWidth / 2 + 2,
+            doorScreen.y - 1,
+            doorWidth - 4,
+            doorHeight / 2 - 3
+        );
+
+        // Doorknob (golden brass)
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.beginPath();
+        this.ctx.arc(doorScreen.x + doorWidth / 2 - 4, doorScreen.y, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Doorknob outline
+        this.ctx.strokeStyle = '#B8860B';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+
+        // Check if player is near door for interaction hint
+        if (this.player) {
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - doorX, 2) +
+                Math.pow(this.player.y - doorY, 2)
+            );
+
+            // Show "Press SPACE to enter" if player is close
+            if (dist < 2) {
+                this.ctx.font = '10px Arial';
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 3;
+                this.ctx.textAlign = 'center';
+
+                const text = `Press SPACE to enter ${building.name}`;
+                this.ctx.strokeText(text, doorScreen.x, doorScreen.y - 35);
+                this.ctx.fillText(text, doorScreen.x, doorScreen.y - 35);
+                this.ctx.textAlign = 'left';
+            }
+        }
     }
 
     renderIsometricNPC(npc) {
@@ -4059,6 +4573,56 @@ class Game {
         // Render animal sprite
         if (animal.sprite.loaded) {
             animal.sprite.drawFrame(this.ctx, animal.frame, 0, screen.x, screen.y - 12, 24, 24);
+        }
+    }
+
+    renderFarmAnimal(animal) {
+        const screen = this.worldToScreenWithCamera(animal.x, animal.y, 0);
+
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 2, 10, 5, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Render farm animal emoji (larger than wild animals)
+        this.ctx.font = '28px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(animal.emoji, screen.x, screen.y);
+        this.ctx.textAlign = 'left';
+
+        // Happiness indicator (hearts above animal if happy)
+        if (animal.happiness > 80) {
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('💚', screen.x, screen.y - 20);
+        } else if (animal.happiness < 30) {
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('💔', screen.x, screen.y - 20);
+        }
+
+        // Interactive hint if player nearby
+        if (this.player) {
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - animal.x, 2) +
+                Math.pow(this.player.y - animal.y, 2)
+            );
+
+            if (dist < 1.5) {
+                this.ctx.font = '8px Arial';
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.textAlign = 'center';
+
+                let actionText = `${animal.name} - Press E to Pet`;
+                if (!animal.fedToday) {
+                    actionText = `${animal.name} - Press F to Feed`;
+                }
+
+                this.ctx.strokeText(actionText, screen.x, screen.y - 30);
+                this.ctx.fillText(actionText, screen.x, screen.y - 30);
+                this.ctx.textAlign = 'left';
+            }
         }
     }
 
