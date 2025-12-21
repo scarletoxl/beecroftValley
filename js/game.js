@@ -235,156 +235,23 @@ class Game {
     }
 
     // ===== MAP INITIALIZATION =====
+    // OSM tiles show the real roads/railway - we only track terrain for collision
     initMap() {
         this.map = [];
         this.trees = [];
         this.buildings = [];
 
-        // Fill with grass
+        // Fill with grass - OSM tiles show the real terrain
+        // Map array is only used for collision detection (water, etc.)
         for (let y = 0; y < this.mapHeight; y++) {
             this.map[y] = [];
             for (let x = 0; x < this.mapWidth; x++) {
-                this.map[y][x] = 0;
+                this.map[y][x] = 0; // All walkable grass
             }
         }
-
-        // Generate roads from GPS-based road data
-        this.generateRoadsFromGPS();
-
-        // Generate railway from GPS-based data
-        this.generateRailwayFromGPS();
 
         this.addTreeClusters();
         this.addParks();
-    }
-
-    // Generate roads from GPS coordinate data
-    generateRoadsFromGPS() {
-        const roads = BeeccroftRoadData.getRoadsWithGameCoords();
-
-        roads.forEach(road => {
-            // Draw road segments between points
-            for (let i = 0; i < road.points.length - 1; i++) {
-                const start = road.points[i];
-                const end = road.points[i + 1];
-                this.drawRoadSegment(start.x, start.y, end.x, end.y, road.width, 3);
-            }
-        });
-
-        // Add additional local connector roads for gameplay
-        this.addLocalRoads();
-    }
-
-    // Generate railway from GPS coordinate data
-    generateRailwayFromGPS() {
-        const railway = BeeccroftRoadData.getRailwayWithGameCoords();
-
-        // Draw railway segments between points
-        for (let i = 0; i < railway.points.length - 1; i++) {
-            const start = railway.points[i];
-            const end = railway.points[i + 1];
-            this.drawRoadSegment(start.x, start.y, end.x, end.y, railway.width, 8);
-        }
-    }
-
-    // Draw a road/railway segment between two points
-    drawRoadSegment(x1, y1, x2, y2, width, tileType) {
-        // Use Bresenham-style line algorithm with width
-        const dx = Math.abs(x2 - x1);
-        const dy = Math.abs(y2 - y1);
-        const sx = x1 < x2 ? 1 : -1;
-        const sy = y1 < y2 ? 1 : -1;
-        let err = dx - dy;
-
-        let x = Math.floor(x1);
-        let y = Math.floor(y1);
-        const endX = Math.floor(x2);
-        const endY = Math.floor(y2);
-
-        const halfWidth = Math.floor(width / 2);
-
-        while (true) {
-            // Draw width around the center point
-            for (let wy = -halfWidth; wy <= halfWidth; wy++) {
-                for (let wx = -halfWidth; wx <= halfWidth; wx++) {
-                    const px = x + wx;
-                    const py = y + wy;
-                    if (px >= 0 && px < this.mapWidth && py >= 0 && py < this.mapHeight) {
-                        // Don't overwrite railway with roads
-                        if (tileType === 3 && this.map[py][px] === 8) continue;
-                        this.map[py][px] = tileType;
-                    }
-                }
-            }
-
-            if (x === endX && y === endY) break;
-
-            const e2 = 2 * err;
-            if (e2 > -dy) {
-                err -= dy;
-                x += sx;
-            }
-            if (e2 < dx) {
-                err += dx;
-                y += sy;
-            }
-        }
-    }
-
-    // Add local connector roads for better gameplay navigation
-    addLocalRoads() {
-        // Albert Road - Near player start
-        for (let y = 230; y < 260; y++) {
-            for (let x = 233; x <= 235; x++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
-
-        // Welham Street
-        for (let x = 200; x < 260; x++) {
-            for (let y = 243; y <= 245; y++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
-
-        // North-south connectors
-        for (let y = 180; y < 320; y++) {
-            for (let x = 220; x <= 222; x++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
-
-        for (let y = 200; y < 380; y++) {
-            for (let x = 285; x <= 287; x++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
-
-        // Eastern residential streets
-        for (let x = 280; x < 450; x++) {
-            for (let y = 220; y <= 222; y++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
-
-        // Western residential streets
-        for (let x = 50; x < 240; x++) {
-            for (let y = 200; y <= 202; y++) {
-                if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-                    this.map[y][x] = 3;
-                }
-            }
-        }
     }
 
     addTreeClusters() {
