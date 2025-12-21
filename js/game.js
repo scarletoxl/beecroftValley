@@ -14,6 +14,10 @@ class Game {
         this.mapWidth = 500;
         this.mapHeight = 500;
 
+        // Isometric tile dimensions (for interior rendering)
+        this.tileWidth = 64;
+        this.tileHeight = 32;
+
         // Camera for scrolling (in world coordinates)
         this.camera = { x: 0, y: 0 };
 
@@ -2260,6 +2264,11 @@ class Game {
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         window.addEventListener('keydown', (e) => {
+            // Don't process game keys when dialog is open (except Escape)
+            if (this.uiState.showingDialog && e.key !== 'Escape') {
+                return;
+            }
+
             this.keys[e.key] = true;
 
             // Tool usage
@@ -3319,10 +3328,13 @@ class Game {
         this.camera.x = this.player.x;
         this.camera.y = this.player.y;
 
-        // Clamp camera to map bounds (with some padding)
-        const padding = 10;
-        this.camera.x = Math.max(padding, Math.min(this.getCurrentMapWidth() - padding, this.camera.x));
-        this.camera.y = Math.max(padding, Math.min(this.getCurrentMapHeight() - padding, this.camera.y));
+        // Clamp camera to map bounds (only for overworld, interiors are small)
+        if (this.currentMap === 'overworld') {
+            const padding = 10;
+            this.camera.x = Math.max(padding, Math.min(this.getCurrentMapWidth() - padding, this.camera.x));
+            this.camera.y = Math.max(padding, Math.min(this.getCurrentMapHeight() - padding, this.camera.y));
+        }
+        // For interiors, just let camera follow player directly
 
         // Update NPCs
         this.updateNPCs();
