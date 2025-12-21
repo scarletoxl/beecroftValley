@@ -1814,15 +1814,19 @@ class Game {
                     { name: "Emma", x: 10, y: 5, emoji: "👩", role: "shopkeeper", greeting: "Let me know if you need help finding anything!" }
                 ]
             },
-            "Your Farm House": {
-                width: 12,
-                height: 10,
-                tiles: this.createHomeInterior(),
-                exitX: 6,
-                exitY: 9,
-                spawnX: 6,
-                spawnY: 8,
-                npcs: []
+            "19 Albert Rd": {
+                width: 20,
+                height: 16,
+                tiles: this.createDetailedHomeInterior(),
+                exitX: 10,
+                exitY: 15,
+                spawnX: 10,
+                spawnY: 14,
+                npcs: [],
+                furniture: this.createHomeFurniture(),
+                hasStove: true,
+                hasBed: true,
+                hasFridge: true
             },
             "HerGP Medical Clinic": {
                 width: 10,
@@ -1929,18 +1933,94 @@ class Game {
         return interior;
     }
 
-    createHomeInterior() {
+    createDetailedHomeInterior() {
+        // 20x16 home with multiple rooms
         const interior = [];
-        for (let y = 0; y < 10; y++) {
+        for (let y = 0; y < 16; y++) {
             interior[y] = [];
-            for (let x = 0; x < 12; x++) {
+            for (let x = 0; x < 20; x++) {
                 interior[y][x] = 7; // Floor
             }
         }
-        // Add bed
-        interior[2][2] = 6;
-        interior[2][3] = 6;
+
+        // === WALLS (using tile 6 for collision) ===
+        // Outer walls
+        for (let x = 0; x < 20; x++) {
+            interior[0][x] = 6; // Top wall
+            interior[15][x] = 6; // Bottom wall (except door)
+        }
+        for (let y = 0; y < 16; y++) {
+            interior[y][0] = 6; // Left wall
+            interior[y][19] = 6; // Right wall
+        }
+
+        // Interior walls creating rooms
+        // Vertical wall separating bedroom/bathroom from living area (x=6)
+        for (let y = 1; y < 8; y++) {
+            interior[y][6] = 6;
+        }
+        // Horizontal wall separating kitchen from living room (y=8)
+        for (let x = 1; x < 19; x++) {
+            interior[8][x] = 6;
+        }
+        // Bedroom/Bathroom divider (y=4)
+        for (let x = 1; x < 6; x++) {
+            interior[4][x] = 6;
+        }
+        // Kitchen/Basement divider (x=13)
+        for (let y = 9; y < 15; y++) {
+            interior[y][13] = 6;
+        }
+
+        // === DOORWAYS (remove walls for doors) ===
+        interior[15][10] = 7; // Front door
+        interior[4][3] = 7; // Bedroom to bathroom
+        interior[7][6] = 7; // Bedroom to living room
+        interior[8][4] = 7; // Living room to kitchen
+        interior[8][10] = 7; // Living room to kitchen
+        interior[11][13] = 7; // Kitchen to basement
+
         return interior;
+    }
+
+    createHomeFurniture() {
+        // Define all furniture pieces with positions and types
+        return [
+            // === BEDROOM (top-left, 1-5, 1-3) ===
+            { x: 2, y: 2, type: 'bed', emoji: '🛏️', name: 'Bed', interactive: true, action: 'sleep' },
+            { x: 4, y: 1, type: 'dresser', emoji: '👗', name: 'Dresser' },
+            { x: 1, y: 1, type: 'wardrobe', emoji: '🚪', name: 'Wardrobe' },
+            { x: 5, y: 2, type: 'nightstand', emoji: '🕯️', name: 'Nightstand' },
+
+            // === BATHROOM (top-left, 1-5, 5-7) ===
+            { x: 2, y: 5, type: 'toilet', emoji: '🚽', name: 'Toilet' },
+            { x: 4, y: 5, type: 'sink', emoji: '🚰', name: 'Sink' },
+            { x: 1, y: 6, type: 'shower', emoji: '🚿', name: 'Shower' },
+            { x: 5, y: 7, type: 'towel', emoji: '🧻', name: 'Towel Rack' },
+
+            // === LIVING ROOM (right side, 7-18, 1-7) ===
+            { x: 10, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
+            { x: 12, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
+            { x: 11, y: 1, type: 'tv', emoji: '📺', name: 'TV', interactive: true, action: 'watch' },
+            { x: 8, y: 5, type: 'bookshelf', emoji: '📚', name: 'Bookshelf' },
+            { x: 11, y: 5, type: 'table', emoji: '🪑', name: 'Coffee Table' },
+            { x: 17, y: 3, type: 'plant', emoji: '🪴', name: 'Potted Plant' },
+
+            // === KITCHEN (middle-right, 7-12, 9-14) ===
+            { x: 8, y: 10, type: 'fridge', emoji: '❄️', name: 'Refrigerator', interactive: true, action: 'storage' },
+            { x: 10, y: 9, type: 'stove', emoji: '🔥', name: 'Stove', interactive: true, action: 'cook' },
+            { x: 12, y: 9, type: 'sink', emoji: '💧', name: 'Kitchen Sink' },
+            { x: 9, y: 12, type: 'table', emoji: '🍽️', name: 'Dining Table' },
+            { x: 8, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
+            { x: 10, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
+            { x: 11, y: 14, type: 'counter', emoji: '🔪', name: 'Counter' },
+
+            // === BASEMENT/WORKSHOP (bottom-right, 14-18, 9-14) ===
+            { x: 15, y: 10, type: 'workbench', emoji: '🔨', name: 'Crafting Table', interactive: true, action: 'craft' },
+            { x: 17, y: 10, type: 'chest', emoji: '📦', name: 'Storage Chest', interactive: true, action: 'storage' },
+            { x: 15, y: 13, type: 'chest', emoji: '📦', name: 'Storage Chest', interactive: true, action: 'storage' },
+            { x: 17, y: 13, type: 'tools', emoji: '🛠️', name: 'Tool Rack' }
+        ];
     }
 
     createClinicInterior() {
@@ -3171,6 +3251,17 @@ class Game {
                     });
                 });
             }
+            // Add furniture
+            if (interior && interior.furniture) {
+                interior.furniture.forEach(furniture => {
+                    entities.push({
+                        type: 'furniture',
+                        data: furniture,
+                        sortY: furniture.y,
+                        sortX: furniture.x
+                    });
+                });
+            }
         }
 
         // Add player
@@ -3194,6 +3285,8 @@ class Game {
                 this.renderIsometricNPC(entity.data);
             } else if (entity.type === 'interior_npc') {
                 this.renderInteriorNPC(entity.data);
+            } else if (entity.type === 'furniture') {
+                this.renderFurniture(entity.data);
             } else if (entity.type === 'animal') {
                 this.renderIsometricAnimal(entity.data);
             } else if (entity.type === 'crop') {
@@ -3686,6 +3779,49 @@ class Game {
         this.ctx.fillStyle = '#666';
         this.ctx.fillText(`(${npc.role})`, screen.x, screen.y - 42);
         this.ctx.textAlign = 'left';
+    }
+
+    renderFurniture(furniture) {
+        const screen = this.worldToScreenWithCamera(furniture.x, furniture.y, 0);
+
+        // Shadow for 3D effect
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 2, 12, 6, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Render furniture emoji (large and clear)
+        this.ctx.font = '24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(furniture.emoji, screen.x, screen.y);
+        this.ctx.textAlign = 'left';
+
+        // Interactive hint if player nearby
+        if (furniture.interactive && this.player) {
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - furniture.x, 2) +
+                Math.pow(this.player.y - furniture.y, 2)
+            );
+
+            if (dist < 1.5) {
+                this.ctx.font = '8px Arial';
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.textAlign = 'center';
+
+                let actionText = 'Press E';
+                if (furniture.action === 'sleep') actionText = 'Press E to Sleep';
+                else if (furniture.action === 'cook') actionText = 'Press E to Cook';
+                else if (furniture.action === 'craft') actionText = 'Press E to Craft';
+                else if (furniture.action === 'storage') actionText = 'Press E to Open';
+                else if (furniture.action === 'watch') actionText = 'Press E to Watch TV';
+
+                this.ctx.strokeText(actionText, screen.x, screen.y - 20);
+                this.ctx.fillText(actionText, screen.x, screen.y - 20);
+                this.ctx.textAlign = 'left';
+            }
+        }
     }
 
     renderIsometricPlayer(player) {
