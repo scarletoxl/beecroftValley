@@ -86,15 +86,7 @@ class AIChat {
 
     // End the current conversation
     endConversation() {
-        if (this.conversationId) {
-            // Clear server-side history
-            fetch('/api/chat/clear', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ conversationId: this.conversationId })
-            }).catch(() => {}); // Ignore errors
-        }
-
+        // Just clear client-side state - no server-side history to clear
         this.currentNPC = null;
         this.conversationId = null;
         this.chatHistory = [];

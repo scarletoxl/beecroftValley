@@ -1343,6 +1343,31 @@ class Game {
                 standTimer: 0,
                 baseX: 185,
                 baseY: 303
+            },
+            // === BRIDIE - YOUR BEST FRIEND ===
+            {
+                name: "Bridie", x: 250, y: 253, emoji: "👧",
+                role: "your best friend",
+                greeting: "Hey bestie! Where are we going today?",
+                dialogues: [
+                    "Let's go on an adventure!",
+                    "I found a cool bug earlier, wanna see?",
+                    "Race you to the shops!",
+                    "Being your best friend is the best!",
+                    "Mum said I can stay out until dinner!",
+                    "What should we explore today?"
+                ],
+                canMarry: false,
+                isSick: false,
+                targetX: null,
+                targetY: null,
+                wanderTimer: 0,
+                standTimer: 0,
+                baseX: 250,
+                baseY: 253,
+                followsPlayer: true,
+                followDistance: 2,
+                isChild: true
             }
         ];
 
@@ -2202,7 +2227,7 @@ class Game {
                 spawnY: 8,
                 npcs: []  // Player's home - empty
             },
-            "Bridey's Home": {
+            "Bridie's Home": {
                 width: 12,
                 height: 10,
                 tiles: this.createDetailedHomeInterior(),
@@ -2211,8 +2236,7 @@ class Game {
                 spawnX: 6,
                 spawnY: 8,
                 npcs: [
-                    { name: "Bridey", x: 6, y: 4, emoji: "👧", role: "your friend", greeting: "Hey! Come in! Want to hang out?" },
-                    { name: "Bridey's Mum", x: 3, y: 3, emoji: "👩", role: "Bridey's mother", greeting: "Oh hello dear! Would you like some afternoon tea?" },
+                    { name: "Bridie's Mum", x: 3, y: 3, emoji: "👩", role: "Bridie's mother", greeting: "Oh hello dear! Bridie's outside somewhere - she loves following you around!" },
                     { name: "Family Cat", x: 8, y: 5, emoji: "🐱", role: "pet cat", greeting: "*purrs and rubs against your leg*" }
                 ]
             }
@@ -3407,6 +3431,31 @@ class Game {
     // ===== NPC AI =====
     updateNPCs(deltaTime) {
         this.npcs.forEach(npc => {
+            // Special behavior for NPCs that follow the player (like Bridie)
+            if (npc.followsPlayer && this.currentMap === 'overworld') {
+                const dx = this.player.x - npc.x;
+                const dy = this.player.y - npc.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const followDistance = npc.followDistance || 2;
+
+                // Only follow if player is too far away
+                if (distance > followDistance + 1) {
+                    // Move toward player but stay at follow distance
+                    const targetX = this.player.x - (dx / distance) * followDistance;
+                    const targetY = this.player.y - (dy / distance) * followDistance;
+                    this.moveNPCToward(npc, targetX, targetY);
+                } else if (distance < followDistance - 0.5) {
+                    // Too close, back up a bit
+                    const targetX = this.player.x - (dx / distance) * followDistance;
+                    const targetY = this.player.y - (dy / distance) * followDistance;
+                    this.moveNPCToward(npc, targetX, targetY);
+                }
+                // Update base position to current position for follower NPCs
+                npc.baseX = npc.x;
+                npc.baseY = npc.y;
+                return; // Skip normal wandering AI
+            }
+
             // Random sickness
             if (!npc.isSick && Math.random() < 0.0001) {
                 npc.isSick = true;
@@ -3591,6 +3640,7 @@ class Game {
 
     // ===== SAVE/LOAD =====
     saveGame() {
+        // Only save essential game state - trees and map are regenerated on load
         const saveData = {
             player: this.player,
             inventory: this.inventory,
@@ -3598,38 +3648,50 @@ class Game {
             relationships: this.relationships,
             quests: this.quests,
             completedQuests: this.completedQuests,
-            trees: this.trees,
-            map: this.map,
             crops: this.crops,
             wateredTiles: Array.from(this.wateredTiles)
         };
 
-        localStorage.setItem('beecroftValleySave', JSON.stringify(saveData));
-        this.showMessage("Game saved!");
+        try {
+            localStorage.setItem('beecroftValleySave', JSON.stringify(saveData));
+            this.showMessage("Game saved!");
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                this.showMessage("Save failed - storage full! Try clearing old saves.");
+            } else {
+                this.showMessage("Save failed!");
+            }
+            console.error('Save error:', e);
+        }
     }
 
     loadGame() {
         const saveData = localStorage.getItem('beecroftValleySave');
         if (saveData) {
-            const data = JSON.parse(saveData);
-            this.player = data.player;
-            this.inventory = data.inventory;
-            this.time = data.time;
-            this.relationships = data.relationships;
-            // Load quests - restore if saved, otherwise use existing initialized quests
-            if (data.quests && data.quests.length > 0) {
-                this.quests = data.quests;
-            }
-            this.completedQuests = data.completedQuests || [];
-            if (data.trees) this.trees = data.trees;
-            if (data.map) this.map = data.map;
-            if (data.crops) this.crops = data.crops;
-            if (data.wateredTiles) this.wateredTiles = new Set(data.wateredTiles);
+            try {
+                const data = JSON.parse(saveData);
+                this.player = data.player;
+                this.inventory = data.inventory;
+                this.time = data.time;
+                this.relationships = data.relationships;
+                // Load quests - restore if saved, otherwise use existing initialized quests
+                if (data.quests && data.quests.length > 0) {
+                    this.quests = data.quests;
+                }
+                this.completedQuests = data.completedQuests || [];
+                // Trees and map are not saved - they regenerate on game start
+                if (data.crops) this.crops = data.crops;
+                if (data.wateredTiles) this.wateredTiles = new Set(data.wateredTiles);
 
-            this.updateHUD();
-            this.updateQuestDisplay();
-            this.showMessage("Game loaded!");
-            return true;
+                this.updateHUD();
+                this.updateQuestDisplay();
+                this.showMessage("Game loaded!");
+                return true;
+            } catch (e) {
+                console.error('Load error:', e);
+                this.showMessage("Failed to load save!");
+                return false;
+            }
         }
         return false;
     }
@@ -3956,7 +4018,12 @@ class Game {
     }
 
     renderStreetLight(light) {
-        const screen = this.worldToScreenWithCamera(light.x, light.y, 0);
+        // Use map system for coordinate conversion (consistent with trees/crops)
+        const screen = this.mapSystem.gameToScreen(
+            light.x, light.y,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
         const isNight = this.time && (this.time.hour >= 18 || this.time.hour < 6);
 
         // Street light post (gray pole, 2 tiles high)
