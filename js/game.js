@@ -2929,18 +2929,7 @@ class Game {
             return;
         }
 
-        const buildingHeight = building.height * 20; // Height multiplier
-        const screen = this.worldToScreenWithCamera(building.x, building.y, 0);
-
-        // Building shadow
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-        const shadowWidth = building.width * this.tileWidth / 2;
-        const shadowHeight = building.height * this.tileHeight / 2;
-        this.ctx.beginPath();
-        this.ctx.ellipse(screen.x, screen.y + 10, shadowWidth * 0.8, shadowHeight * 0.5, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Draw building base (floor)
+        // Draw building base tiles (flat, clean look)
         for (let by = 0; by < building.height; by++) {
             for (let bx = 0; bx < building.width; bx++) {
                 const tileScreen = this.worldToScreenWithCamera(
@@ -2952,63 +2941,18 @@ class Game {
             }
         }
 
-        // Draw walls (vertical sides to create height)
-        const frontScreen = this.worldToScreenWithCamera(
+        // Center position for emoji
+        const centerScreen = this.worldToScreenWithCamera(
             building.x + building.width / 2,
-            building.y + building.height,
+            building.y + building.height / 2,
             0
         );
 
-        // Left wall
-        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 0.7);
-        this.ctx.beginPath();
-        this.ctx.moveTo(frontScreen.x - building.width * this.tileWidth / 4, frontScreen.y);
-        this.ctx.lineTo(frontScreen.x - building.width * this.tileWidth / 4, frontScreen.y - buildingHeight);
-        this.ctx.lineTo(frontScreen.x, frontScreen.y - buildingHeight - building.height * this.tileHeight / 4);
-        this.ctx.lineTo(frontScreen.x, frontScreen.y - building.height * this.tileHeight / 4);
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#8B4513';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-
-        // Right wall
-        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 0.85);
-        this.ctx.beginPath();
-        this.ctx.moveTo(frontScreen.x, frontScreen.y - building.height * this.tileHeight / 4);
-        this.ctx.lineTo(frontScreen.x, frontScreen.y - buildingHeight - building.height * this.tileHeight / 4);
-        this.ctx.lineTo(frontScreen.x + building.width * this.tileWidth / 4, frontScreen.y - buildingHeight);
-        this.ctx.lineTo(frontScreen.x + building.width * this.tileWidth / 4, frontScreen.y);
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#8B4513';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-
-        // Roof (top of building)
-        const roofScreen = this.worldToScreenWithCamera(
-            building.x + building.width / 2,
-            building.y + building.height / 2,
-            buildingHeight
-        );
-        this.ctx.fillStyle = this.darkenColor(building.color || '#d4a373', 1.1);
-        this.ctx.beginPath();
-        this.ctx.moveTo(roofScreen.x, roofScreen.y - building.height * this.tileHeight / 2);
-        this.ctx.lineTo(roofScreen.x + building.width * this.tileWidth / 2, roofScreen.y);
-        this.ctx.lineTo(roofScreen.x, roofScreen.y + building.height * this.tileHeight / 2);
-        this.ctx.lineTo(roofScreen.x - building.width * this.tileWidth / 2, roofScreen.y);
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#8B4513';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-
-        // Emoji and name
-        this.ctx.font = '24px Arial';
-        this.ctx.fillText(building.emoji, frontScreen.x - 12, frontScreen.y - buildingHeight / 2);
-        this.ctx.font = '10px Arial';
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillText(building.name, frontScreen.x - building.name.length * 2.5, frontScreen.y - buildingHeight - 10);
+        // Emoji in center
+        this.ctx.font = '20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(building.emoji, centerScreen.x, centerScreen.y + 6);
+        this.ctx.textAlign = 'left';
     }
 
     renderIsometricNPC(npc) {
