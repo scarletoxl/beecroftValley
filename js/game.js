@@ -3361,8 +3361,8 @@ class Game {
         if (this.currentMap === 'overworld') {
             this.mapSystem.render(this.camera.x, this.camera.y);
         } else {
-            // Interior: use old rendering for now
-            this.ctx.fillStyle = '#f5deb3';
+            // Interior: dark background, then render floor tiles
+            this.ctx.fillStyle = '#3a3a3a';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.renderInterior();
         }
@@ -3904,35 +3904,61 @@ class Game {
         const interior = this.interiorMaps[this.currentMap];
         if (!interior || !interior.tiles) return;
 
-        const tileSize = 32;
-
         // Render tiles relative to camera
         for (let y = 0; y < interior.height; y++) {
             for (let x = 0; x < interior.width; x++) {
                 const screen = this.worldToScreenWithCamera(x, y, 0);
                 const tile = interior.tiles[y]?.[x] || 7;
 
-                // Floor tile
+                // Checkerboard floor pattern for visibility
+                const isLight = (x + y) % 2 === 0;
+
                 if (tile === 7) {
-                    this.drawIsometricTile(screen.x, screen.y, '#f5deb3', '#d4a373');
+                    // Floor tile - checkerboard pattern
+                    const floorColor = isLight ? '#e8d4b8' : '#d4c4a8';
+                    this.drawIsometricTile(screen.x, screen.y, floorColor, '#c0a080');
                 } else if (tile === 6) {
-                    // Obstacle (table, shelf, etc.)
+                    // Obstacle (table, shelf, counter, etc.)
                     this.drawIsometricTile(screen.x, screen.y, '#8B4513', '#654321');
+                    // Add a small highlight on top
+                    this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    this.ctx.fillRect(screen.x - 8, screen.y - 10, 16, 4);
                 }
             }
+        }
+
+        // Draw walls around the perimeter
+        this.ctx.fillStyle = '#a08060';
+        for (let x = 0; x < interior.width; x++) {
+            // Top wall
+            const topScreen = this.worldToScreenWithCamera(x, -0.5, 0);
+            this.ctx.fillRect(topScreen.x - this.tileWidth/2, topScreen.y - 30, this.tileWidth, 30);
+        }
+        for (let y = 0; y < interior.height; y++) {
+            // Left wall
+            const leftScreen = this.worldToScreenWithCamera(-0.5, y, 0);
+            this.ctx.fillRect(leftScreen.x - 10, leftScreen.y - 20, 10, 30);
         }
 
         // Draw exit door indicator
         if (interior.exitX !== undefined && interior.exitY !== undefined) {
             const exitScreen = this.worldToScreenWithCamera(interior.exitX, interior.exitY, 0);
-            this.ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
+
+            // Green glow
+            this.ctx.fillStyle = 'rgba(76, 175, 80, 0.4)';
             this.ctx.beginPath();
-            this.ctx.arc(exitScreen.x, exitScreen.y, 15, 0, Math.PI * 2);
+            this.ctx.arc(exitScreen.x, exitScreen.y, 20, 0, Math.PI * 2);
             this.ctx.fill();
-            this.ctx.font = '12px Arial';
-            this.ctx.fillStyle = '#2e7d32';
+
+            // Door icon
+            this.ctx.font = '20px Arial';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('EXIT', exitScreen.x, exitScreen.y + 4);
+            this.ctx.fillText('🚪', exitScreen.x, exitScreen.y + 6);
+
+            // EXIT label
+            this.ctx.font = 'bold 10px Arial';
+            this.ctx.fillStyle = '#2e7d32';
+            this.ctx.fillText('EXIT', exitScreen.x, exitScreen.y + 22);
             this.ctx.textAlign = 'left';
         }
     }
