@@ -1375,7 +1375,17 @@ class Game {
                     "Race you to the shops!",
                     "Being your best friend is the best!",
                     "Mum said I can stay out until dinner!",
-                    "What should we explore today?"
+                    "What should we explore today?",
+                    "Do you think we could find treasure in the park?",
+                    "I heard there's a secret path near the railway!",
+                    "Want to go watch the trains go by?",
+                    "Let's see if anyone's playing tennis!",
+                    "I bet I can climb that tree faster than you!",
+                    "My mum makes the best sandwiches. Want one?",
+                    "We should start a club! Just you and me!",
+                    "I'm so glad we're best friends forever!",
+                    "Let's go say hi to everyone in town!",
+                    "I know all the best hiding spots around here!"
                 ],
                 canMarry: false,
                 isSick: false,
@@ -1387,7 +1397,8 @@ class Game {
                 baseY: 253,
                 followsPlayer: true,
                 followDistance: 2,
-                isChild: true
+                isChild: true,
+                specialFriend: true
             }
         ];
 
@@ -1757,7 +1768,10 @@ class Game {
             "Sarah": { bodyColor: '#A5D6A7', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'adult' },
             "Ben": { bodyColor: '#64B5F6', hairColor: '#4E342E', skinColor: '#FFD7B5', accessory: null, age: 'adult' },
             "Olivia": { bodyColor: '#F48FB1', hairColor: '#FFD700', skinColor: '#FFE0BD', accessory: null, age: 'child' },
-            "Jack": { bodyColor: '#4FC3F7', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'child' }
+            "Jack": { bodyColor: '#4FC3F7', hairColor: '#8D6E63', skinColor: '#FFE0BD', accessory: null, age: 'child' },
+            "Bridie": { bodyColor: '#CE93D8', hairColor: '#D84315', skinColor: '#FFE0BD', accessory: null, age: 'child' },
+            "Coach Tony": { bodyColor: '#FFFFFF', hairColor: '#5D4037', skinColor: '#FFD7B5', accessory: null, age: 'adult' },
+            "Junior Player": { bodyColor: '#4FC3F7', hairColor: '#000000', skinColor: '#FFE0BD', accessory: null, age: 'child' }
         };
 
         return configs[npc.name] || {
@@ -2259,6 +2273,34 @@ class Game {
                     { name: "Bridie's Mum", x: 3, y: 3, emoji: "👩", role: "Bridie's mother", greeting: "Oh hello dear! Bridie's outside somewhere - she loves following you around!" },
                     { name: "Family Cat", x: 8, y: 5, emoji: "🐱", role: "pet cat", greeting: "*purrs and rubs against your leg*" }
                 ]
+            },
+
+            // ===== TENNIS COURTS =====
+            "Tennis Court 1": {
+                width: 16,
+                height: 20,
+                tiles: this.createTennisCourtInterior(),
+                exitX: 8,
+                exitY: 19,
+                spawnX: 8,
+                spawnY: 18,
+                npcs: [
+                    { name: "Coach Tony", x: 8, y: 5, emoji: "🎾", role: "tennis coach", greeting: "G'day! Ready to hit some balls? Tennis is great exercise!" },
+                    { name: "Junior Player", x: 4, y: 10, emoji: "👦", role: "young player", greeting: "I'm practicing my backhand! Want to rally?" }
+                ]
+            },
+            "Tennis Court 2": {
+                width: 16,
+                height: 20,
+                tiles: this.createTennisCourtInterior(),
+                exitX: 8,
+                exitY: 19,
+                spawnX: 8,
+                spawnY: 18,
+                npcs: [
+                    { name: "Ladies Doubles", x: 6, y: 8, emoji: "👩", role: "tennis players", greeting: "Just finishing our doubles match! The courts are lovely." },
+                    { name: "Tennis Dad", x: 12, y: 15, emoji: "👨", role: "watching parent", greeting: "My daughter's training for the junior championships!" }
+                ]
             }
         };
 
@@ -2543,6 +2585,42 @@ class Game {
         interior[6][3] = 6;
         interior[6][7] = 6;
         interior[6][10] = 6;
+        return interior;
+    }
+
+    createTennisCourtInterior() {
+        const interior = [];
+        for (let y = 0; y < 20; y++) {
+            interior[y] = [];
+            for (let x = 0; x < 16; x++) {
+                // Court surface (green like tennis courts)
+                interior[y][x] = 5; // Park/grass tile for court
+            }
+        }
+        // Create tennis court lines (using different tiles for visual effect)
+        // Outer boundary
+        for (let x = 2; x < 14; x++) {
+            interior[2][x] = 7; // Top line
+            interior[14][x] = 7; // Bottom line
+        }
+        for (let y = 2; y < 15; y++) {
+            interior[y][2] = 7; // Left line
+            interior[y][13] = 7; // Right line
+        }
+        // Net (middle line)
+        for (let x = 2; x < 14; x++) {
+            interior[8][x] = 6; // Net as obstacle
+        }
+        // Service boxes
+        interior[5][7] = 7;
+        interior[5][8] = 7;
+        interior[11][7] = 7;
+        interior[11][8] = 7;
+        // Bench seating areas (obstacles on sides)
+        interior[17][2] = 6;
+        interior[17][3] = 6;
+        interior[17][12] = 6;
+        interior[17][13] = 6;
         return interior;
     }
 
@@ -4007,7 +4085,10 @@ class Game {
         if (saveData) {
             try {
                 const data = JSON.parse(saveData);
+                // Preserve sprite reference (not serializable)
+                const playerSprite = this.player.sprite;
                 this.player = data.player;
+                this.player.sprite = playerSprite;
                 this.inventory = data.inventory;
                 this.time = data.time;
                 this.relationships = data.relationships;
