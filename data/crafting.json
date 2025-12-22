@@ -1,0 +1,279 @@
+{
+  "furniture": [
+    {
+      "id": "craftedChair",
+      "name": "Wooden Chair",
+      "icon": "🪑",
+      "materials": {
+        "wood": 5
+      },
+      "result": {
+        "item": "chair",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "craftedTable",
+      "name": "Wooden Table",
+      "icon": "🪑",
+      "materials": {
+        "wood": 12
+      },
+      "result": {
+        "item": "table",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "craftedBed",
+      "name": "Wooden Bed",
+      "icon": "🛏️",
+      "materials": {
+        "wood": 20,
+        "cloth": 3
+      },
+      "result": {
+        "item": "bed",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "craftedBookshelf",
+      "name": "Bookshelf",
+      "icon": "📚",
+      "materials": {
+        "wood": 8
+      },
+      "result": {
+        "item": "bookshelf",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "craftedDresser",
+      "name": "Dresser",
+      "icon": "🗄️",
+      "materials": {
+        "wood": 15,
+        "pebbles": 3
+      },
+      "result": {
+        "item": "dresser",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "craftedWardrobe",
+      "name": "Wardrobe",
+      "icon": "🚪",
+      "materials": {
+        "wood": 25,
+        "pebbles": 5
+      },
+      "result": {
+        "item": "wardrobe",
+        "quantity": 1
+      },
+      "unlocked": false,
+      "unlockedBy": "Bill 4 hearts"
+    },
+    {
+      "id": "craftedChest",
+      "name": "Storage Chest",
+      "icon": "📦",
+      "materials": {
+        "wood": 10,
+        "pebbles": 2
+      },
+      "result": {
+        "item": "chest",
+        "quantity": 1
+      },
+      "unlocked": true
+    }
+  ],
+
+  "tools": [
+    {
+      "id": "betterHoe",
+      "name": "Quality Hoe",
+      "icon": "🔨",
+      "materials": {
+        "wood": 10,
+        "pebbles": 5
+      },
+      "result": {
+        "item": "betterHoe",
+        "quantity": 1,
+        "bonus": "Till 3x3 area"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "sprinkler",
+      "name": "Sprinkler",
+      "icon": "💧",
+      "materials": {
+        "wood": 15,
+        "pebbles": 8,
+        "copperOre": 2
+      },
+      "result": {
+        "item": "sprinkler",
+        "quantity": 1,
+        "bonus": "Auto-waters 3x3 crops daily"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "qualityAxe",
+      "name": "Quality Axe",
+      "icon": "🪓",
+      "materials": {
+        "wood": 20,
+        "pebbles": 15,
+        "ironOre": 3
+      },
+      "result": {
+        "item": "qualityAxe",
+        "quantity": 1,
+        "bonus": "Chops trees in 2 hits"
+      },
+      "unlocked": false,
+      "unlockedBy": "Bill 6 hearts"
+    },
+    {
+      "id": "qualityPickaxe",
+      "name": "Quality Pickaxe",
+      "icon": "⛏️",
+      "materials": {
+        "wood": 20,
+        "pebbles": 15,
+        "ironOre": 3
+      },
+      "result": {
+        "item": "qualityPickaxe",
+        "quantity": 1,
+        "bonus": "Breaks rocks in 2 hits"
+      },
+      "unlocked": false,
+      "unlockedBy": "Bill 6 hearts"
+    },
+    {
+      "id": "qualityWateringCan",
+      "name": "Quality Watering Can",
+      "icon": "🚰",
+      "materials": {
+        "wood": 12,
+        "pebbles": 8,
+        "copperOre": 2
+      },
+      "result": {
+        "item": "qualityWateringCan",
+        "quantity": 1,
+        "bonus": "Waters 3 tiles at once"
+      },
+      "unlocked": false,
+      "unlockedBy": "Bill 4 hearts"
+    }
+  ],
+
+  "farmEquipment": [
+    {
+      "id": "fence",
+      "name": "Fence Piece",
+      "icon": "🪵",
+      "materials": {
+        "wood": 2
+      },
+      "result": {
+        "item": "fence",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "scarecrow",
+      "name": "Scarecrow",
+      "icon": "🌾",
+      "materials": {
+        "wood": 8,
+        "cloth": 2,
+        "hay": 5
+      },
+      "result": {
+        "item": "scarecrow",
+        "quantity": 1,
+        "bonus": "Protects crops from birds"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "beehive",
+      "name": "Bee Hive",
+      "icon": "🐝",
+      "materials": {
+        "wood": 30,
+        "pebbles": 10
+      },
+      "result": {
+        "item": "beehive",
+        "quantity": 1,
+        "bonus": "Produces honey weekly"
+      },
+      "unlocked": false,
+      "unlockedBy": "Beehive Cafe quest"
+    }
+  ],
+
+  "decorations": [
+    {
+      "id": "woodenSign",
+      "name": "Wooden Sign",
+      "icon": "🪧",
+      "materials": {
+        "wood": 3
+      },
+      "result": {
+        "item": "sign",
+        "quantity": 1
+      },
+      "unlocked": true
+    },
+    {
+      "id": "lampPost",
+      "name": "Lamp Post",
+      "icon": "💡",
+      "materials": {
+        "wood": 5,
+        "pebbles": 3,
+        "copperOre": 1
+      },
+      "result": {
+        "item": "lampPost",
+        "quantity": 1,
+        "bonus": "Lights up area at night"
+      },
+      "unlocked": false,
+      "unlockedBy": "Bill 8 hearts"
+    },
+    {
+      "id": "flowerBox",
+      "name": "Flower Box",
+      "icon": "🌺",
+      "materials": {
+        "wood": 4
+      },
+      "result": {
+        "item": "flowerBox",
+        "quantity": 1
+      },
+      "unlocked": true
+    }
+  ]
+}

@@ -38,7 +38,14 @@ class Game {
 
         // Inventory system
         this.inventory = {
-            items: [],
+            items: [
+                // Starting materials for testing
+                { id: 'wood', name: 'Wood', icon: '🪵', quantity: 1 },
+                { id: 'pebbles', name: 'Pebbles', icon: '🪨', quantity: 1 },
+                { id: 'egg', name: 'Egg', icon: '🥚', energy: 10, quantity: 1 },
+                { id: 'tomato', name: 'Tomato', icon: '🍅', energy: 16, quantity: 1 },
+                { id: 'carrot', name: 'Carrot', icon: '🥕', energy: 15, quantity: 1 }
+            ],
             maxSlots: 20
         };
 
@@ -69,10 +76,12 @@ class Game {
             showingShop: false,
             showingMenu: false,
             showingInventory: false,
+            showingSleepMenu: false,
             currentNPC: null,
             currentBuilding: null,
             shopItems: [],
-            menuItems: []
+            menuItems: [],
+            sleepMenuUI: {}
         };
 
         this.keys = {};
@@ -99,6 +108,13 @@ class Game {
         this.crops = []; // { x, y, type, stage, watered, plantedDay }
         this.wateredTiles = new Set(); // "x,y" keys for watered farmland
 
+        // Cooking and Crafting systems
+        this.cookingSystem = new CookingSystem(this);
+        this.craftingSystem = new CraftingSystem(this);
+
+        // Message system for notifications
+        this.message = { text: '', duration: 0 };
+
         // Christmas music audio
         this.christmasAudio = new Audio('media/Christmas this year (2).mp3');
         this.christmasAudio.loop = true;
@@ -119,6 +135,10 @@ class Game {
         this.createUI();
         this.setupEventListeners();
         this.setupCanvasResize();
+
+        // Load cooking and crafting recipes
+        this.cookingSystem.loadRecipes();
+        this.craftingSystem.loadRecipes();
 
         // Validate spawn point is walkable (not inside building or water)
         this.validateSpawnPoint();
@@ -2669,6 +2689,22 @@ class Game {
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         window.addEventListener('keydown', (e) => {
+            // ESC key handling for menus
+            if (e.key === 'Escape') {
+                if (this.uiState.showingSleepMenu) {
+                    this.closeSleepMenu();
+                    return;
+                }
+                if (this.cookingSystem && this.cookingSystem.cookingUI.showing) {
+                    this.cookingSystem.closeCookingMenu();
+                    return;
+                }
+                if (this.craftingSystem && this.craftingSystem.craftingUI.showing) {
+                    this.craftingSystem.closeCraftingMenu();
+                    return;
+                }
+            }
+
             // Don't process game keys when dialog is open (except Escape)
             if (this.uiState.showingDialog && e.key !== 'Escape') {
                 return;
@@ -2724,6 +2760,23 @@ class Game {
                                 break;
                             }
                         }
+
+                        // Check for nearby interactive furniture
+                        if (!foundInteriorNPC && interior.furniture) {
+                            for (let furniture of interior.furniture) {
+                                if (furniture.interactive) {
+                                    const dx = this.player.x - furniture.x;
+                                    const dy = this.player.y - furniture.y;
+                                    const distance = Math.sqrt(dx * dx + dy * dy);
+                                    if (distance < 1.5) {
+                                        this.interactWithFurniture(furniture);
+                                        foundInteriorNPC = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         // Check if at exit
                         if (!foundInteriorNPC) {
                             const exitDist = Math.sqrt(
@@ -2778,6 +2831,59 @@ class Game {
             }
             if (e.target.classList.contains('inventory-close')) {
                 this.closeInventory();
+            }
+        });
+
+        // Canvas click handler for cooking/crafting/sleep UIs
+        this.canvas.addEventListener('click', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Check sleep menu clicks
+            if (this.uiState.showingSleepMenu) {
+                const ui = this.uiState.sleepMenuUI;
+
+                if (ui.napButton) {
+                    const btn = ui.napButton;
+                    if (mouseX >= btn.x && mouseX <= btn.x + btn.width &&
+                        mouseY >= btn.y && mouseY <= btn.y + btn.height) {
+                        this.takeNap();
+                        return;
+                    }
+                }
+
+                if (ui.morningButton) {
+                    const btn = ui.morningButton;
+                    if (mouseX >= btn.x && mouseX <= btn.x + btn.width &&
+                        mouseY >= btn.y && mouseY <= btn.y + btn.height) {
+                        this.sleepUntilMorning();
+                        return;
+                    }
+                }
+
+                if (ui.closeButton) {
+                    const btn = ui.closeButton;
+                    if (mouseX >= btn.x && mouseX <= btn.x + btn.width &&
+                        mouseY >= btn.y && mouseY <= btn.y + btn.height) {
+                        this.closeSleepMenu();
+                        return;
+                    }
+                }
+            }
+
+            // Check cooking UI clicks
+            if (this.cookingSystem && this.cookingSystem.handleClick) {
+                if (this.cookingSystem.handleClick(mouseX, mouseY)) {
+                    return;
+                }
+            }
+
+            // Check crafting UI clicks
+            if (this.craftingSystem && this.craftingSystem.handleClick) {
+                if (this.craftingSystem.handleClick(mouseX, mouseY)) {
+                    return;
+                }
             }
         });
     }
@@ -2889,6 +2995,17 @@ class Game {
         giftBtn.onclick = () => this.giveGift(npc);
         options.appendChild(giftBtn);
 
+        // Carpenter crafting option
+        if (npc.isCarpenter || npc.name === 'Bill') {
+            const craftBtn = document.createElement('button');
+            craftBtn.textContent = '🔨 Craft Items';
+            craftBtn.onclick = () => {
+                this.closeDialog();
+                this.craftingSystem.openCraftingMenu();
+            };
+            options.appendChild(craftBtn);
+        }
+
         // Job option
         if (npc.offersJob) {
             const jobBtn = document.createElement('button');
@@ -2906,6 +3023,226 @@ class Game {
         }
 
         dialogBox.style.display = 'flex';
+    }
+
+    interactWithFurniture(furniture) {
+        if (!furniture || !furniture.action) return;
+
+        switch (furniture.action) {
+            case 'cook':
+                this.cookingSystem.openCookingMenu();
+                break;
+            case 'craft':
+                this.craftingSystem.openCraftingMenu();
+                break;
+            case 'storage':
+                this.showMessage('Storage system coming soon!');
+                break;
+            case 'sleep':
+                this.openSleepMenu();
+                break;
+            default:
+                this.showMessage(`Interacted with ${furniture.name}`);
+        }
+    }
+
+    openSleepMenu() {
+        this.uiState.showingSleepMenu = true;
+        this.uiState.showingMenu = true;
+    }
+
+    closeSleepMenu() {
+        this.uiState.showingSleepMenu = false;
+        this.uiState.showingMenu = false;
+    }
+
+    takeNap() {
+        // Nap for 2 hours, restore 50 energy
+        this.time.hour = (this.time.hour + 2) % 24;
+        if (this.time.hour < 2) {
+            this.time.day++;
+        }
+        this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + 50);
+        this.showMessage('You took a nap! +50 energy, +2 hours');
+        this.closeSleepMenu();
+    }
+
+    sleepUntilMorning() {
+        // Sleep until 6 AM next day
+        this.time.hour = 6;
+        this.time.minute = 0;
+        this.time.day++;
+
+        // Restore full energy
+        this.player.energy = this.player.maxEnergy;
+
+        // Process overnight events
+        this.processOvernightEvents();
+
+        this.showMessage(`Day ${this.time.day}! Fully rested. Energy restored.`);
+        this.closeSleepMenu();
+    }
+
+    setAlarmSleep(wakeHour) {
+        // Sleep until specified hour
+        const currentHour = this.time.hour;
+        let hoursSlept = 0;
+
+        if (wakeHour > currentHour) {
+            hoursSlept = wakeHour - currentHour;
+        } else {
+            hoursSlept = (24 - currentHour) + wakeHour;
+            this.time.day++;
+        }
+
+        this.time.hour = wakeHour;
+        this.time.minute = 0;
+
+        // Restore energy proportional to hours slept (20 per hour, max 100)
+        const energyRestored = Math.min(100, hoursSlept * 20);
+        this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + energyRestored);
+
+        if (this.time.hour === 6 && hoursSlept >= 8) {
+            this.processOvernightEvents();
+        }
+
+        this.showMessage(`Woke up at ${wakeHour}:00! +${energyRestored} energy`);
+        this.closeSleepMenu();
+    }
+
+    processOvernightEvents() {
+        // Process crops growing
+        for (let crop of this.crops) {
+            crop.stage++;
+            crop.watered = false; // Reset watering
+        }
+
+        // Reset watered tiles
+        this.wateredTiles.clear();
+
+        // Farm animals produce
+        for (let animal of this.farmAnimals) {
+            if (animal.fedToday) {
+                // Animal produces product
+                if (animal.type === 'chicken') {
+                    this.addToInventory({ id: 'egg', name: 'Egg', icon: '🥚', energy: 10, type: 'product' });
+                } else if (animal.type === 'cow') {
+                    this.addToInventory({ id: 'milk', name: 'Milk', icon: '🥛', energy: 15, type: 'product' });
+                } else if (animal.type === 'sheep') {
+                    // Sheep produce wool every 3 days
+                    if (this.time.day % 3 === 0) {
+                        this.addToInventory({ id: 'wool', name: 'Wool', icon: '🧶', type: 'product' });
+                    }
+                }
+            }
+            animal.fedToday = false; // Reset feeding
+            animal.happiness = Math.max(0, animal.happiness - 5); // Decrease happiness if not pet
+        }
+
+        // Show overnight summary
+        setTimeout(() => {
+            this.showMessage('Farm products collected! Check your inventory.');
+        }, 1000);
+    }
+
+    renderSleepMenu() {
+        const ctx = this.ctx;
+        const width = 500;
+        const height = 400;
+        const x = (this.canvas.width - width) / 2;
+        const y = (this.canvas.height - height) / 2;
+
+        // Dark overlay
+        ctx.fillStyle = 'rgba(0, 0, 20, 0.8)';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Menu background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(x, y, width, height);
+        ctx.strokeStyle = '#4a5568';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, width, height);
+
+        // Title
+        ctx.fillStyle = '#f7fafc';
+        ctx.font = 'bold 28px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('💤 Sleep Menu 💤', x + width / 2, y + 45);
+
+        // Current status
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#cbd5e0';
+        ctx.fillText(`Current: ${this.time.hour}:${String(this.time.minute).padStart(2, '0')}`, x + width / 2, y + 75);
+        ctx.fillText(`Energy: ${Math.floor(this.player.energy)}/${this.player.maxEnergy}`, x + width / 2, y + 100);
+
+        // Options
+        const buttonWidth = 400;
+        const buttonHeight = 60;
+        const buttonX = x + (width - buttonWidth) / 2;
+        let buttonY = y + 130;
+
+        // Nap button
+        ctx.fillStyle = this.player.energy >= 50 ? '#4a5568' : '#2d3748';
+        ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.strokeStyle = '#718096';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.fillStyle = '#f7fafc';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('Take a Nap', buttonX + 20, buttonY + 30);
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#cbd5e0';
+        ctx.fillText('→ Sleep 2 hours  |  Restore 50 energy', buttonX + 20, buttonY + 48);
+
+        this.uiState.sleepMenuUI.napButton = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+        buttonY += 70;
+
+        // Sleep until morning button
+        ctx.fillStyle = '#2b6cb0';
+        ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.strokeStyle = '#3182ce';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.fillStyle = '#f7fafc';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText('Sleep Until Morning', buttonX + 20, buttonY + 30);
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#cbd5e0';
+        ctx.fillText('→ Wake at 6:00 AM  |  Restore full energy  |  Next day', buttonX + 20, buttonY + 48);
+
+        this.uiState.sleepMenuUI.morningButton = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+        buttonY += 70;
+
+        // Set alarm button (coming soon)
+        ctx.fillStyle = '#4a5568';
+        ctx.globalAlpha = 0.5;
+        ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#718096';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        ctx.fillStyle = '#cbd5e0';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText('Set Alarm (Coming Soon)', buttonX + 20, buttonY + 35);
+
+        // Close button
+        const closeButtonWidth = 100;
+        const closeButtonHeight = 35;
+        const closeX = x + width - closeButtonWidth - 20;
+        const closeY = y + height - closeButtonHeight - 20;
+
+        ctx.fillStyle = '#742a2a';
+        ctx.fillRect(closeX, closeY, closeButtonWidth, closeButtonHeight);
+        ctx.strokeStyle = '#9b2c2c';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(closeX, closeY, closeButtonWidth, closeButtonHeight);
+        ctx.fillStyle = '#f7fafc';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Close', closeX + closeButtonWidth / 2, closeY + 22);
+
+        this.uiState.sleepMenuUI.closeButton = { x: closeX, y: closeY, width: closeButtonWidth, height: closeButtonHeight };
     }
 
     addChatMessage(container, emoji, text, role) {
@@ -3971,6 +4308,19 @@ class Game {
 
         // Apply day/night overlay
         this.applyDayNightOverlay();
+
+        // Render cooking and crafting UIs (on top of everything)
+        if (this.cookingSystem) {
+            this.cookingSystem.renderCookingUI(this.ctx);
+        }
+        if (this.craftingSystem) {
+            this.craftingSystem.renderCraftingUI(this.ctx);
+        }
+
+        // Render sleep menu
+        if (this.uiState.showingSleepMenu) {
+            this.renderSleepMenu();
+        }
     }
 
     // ===== ISOMETRIC ENTITY RENDERING =====
@@ -4853,6 +5203,37 @@ class Game {
         document.getElementById('gold').textContent = Math.floor(this.player.gold);
         document.getElementById('energy').textContent = `${Math.floor(this.player.energy)}/${this.player.maxEnergy}`;
         document.getElementById('day').textContent = `${this.time.day} (${this.time.season}) ${this.time.hour}:${String(this.time.minute).padStart(2, '0')}`;
+    }
+
+    // ===== INVENTORY HELPERS =====
+    getInventoryCount(itemId) {
+        let count = 0;
+        for (const item of this.inventory.items) {
+            if (item && item.id === itemId) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    addToInventory(item) {
+        if (this.inventory.items.length >= this.inventory.maxSlots) {
+            this.showMessage("Inventory full!");
+            return false;
+        }
+        this.inventory.items.push(item);
+        return true;
+    }
+
+    removeFromInventory(itemId, amount = 1) {
+        let removed = 0;
+        for (let i = this.inventory.items.length - 1; i >= 0 && removed < amount; i--) {
+            if (this.inventory.items[i] && this.inventory.items[i].id === itemId) {
+                this.inventory.items.splice(i, 1);
+                removed++;
+            }
+        }
+        return removed === amount;
     }
 
     showMessage(message) {
