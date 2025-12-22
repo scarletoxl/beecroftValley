@@ -1,0 +1,234 @@
+{
+  "basic": [
+    {
+      "id": "friedEgg",
+      "name": "Fried Egg",
+      "icon": "🍳",
+      "ingredients": {
+        "egg": 1
+      },
+      "result": {
+        "energy": 40,
+        "sellPrice": 60
+      },
+      "unlocked": true
+    },
+    {
+      "id": "omelet",
+      "name": "Omelet",
+      "icon": "🍳",
+      "ingredients": {
+        "egg": 2,
+        "milk": 1
+      },
+      "result": {
+        "energy": 70,
+        "sellPrice": 120
+      },
+      "unlocked": true
+    },
+    {
+      "id": "salad",
+      "name": "Salad",
+      "icon": "🥗",
+      "ingredients": {
+        "tomato": 2,
+        "carrot": 1,
+        "lettuce": 1
+      },
+      "result": {
+        "energy": 50,
+        "sellPrice": 90
+      },
+      "unlocked": true
+    },
+    {
+      "id": "bread",
+      "name": "Fresh Bread",
+      "icon": "🍞",
+      "ingredients": {
+        "flour": 3,
+        "milk": 1,
+        "yeast": 1
+      },
+      "result": {
+        "energy": 80,
+        "sellPrice": 100
+      },
+      "unlocked": false,
+      "unlockedBy": "Mom teaches at 2 hearts"
+    },
+    {
+      "id": "soup",
+      "name": "Vegetable Soup",
+      "icon": "🍲",
+      "ingredients": {
+        "tomato": 2,
+        "carrot": 2,
+        "potato": 1,
+        "water": 1
+      },
+      "result": {
+        "energy": 90,
+        "sellPrice": 150
+      },
+      "unlocked": false,
+      "unlockedBy": "Mrs. Chen teaches at 4 hearts"
+    }
+  ],
+
+  "advanced": [
+    {
+      "id": "cake",
+      "name": "Cake",
+      "icon": "🎂",
+      "ingredients": {
+        "flour": 4,
+        "egg": 2,
+        "milk": 2,
+        "sugar": 2
+      },
+      "result": {
+        "energy": 150,
+        "sellPrice": 300
+      },
+      "unlocked": false,
+      "unlockedBy": "Mrs. Chen teaches at 6 hearts"
+    },
+    {
+      "id": "pizza",
+      "name": "Pizza",
+      "icon": "🍕",
+      "ingredients": {
+        "flour": 5,
+        "tomato": 3,
+        "cheese": 2
+      },
+      "result": {
+        "energy": 200,
+        "sellPrice": 400
+      },
+      "unlocked": false,
+      "unlockedBy": "Hannah's Beecroft teaches"
+    },
+    {
+      "id": "strawberryCake",
+      "name": "Strawberry Cake",
+      "icon": "🍰",
+      "ingredients": {
+        "flour": 4,
+        "egg": 2,
+        "milk": 2,
+        "strawberry": 3,
+        "sugar": 2
+      },
+      "result": {
+        "energy": 250,
+        "sellPrice": 600
+      },
+      "unlocked": false,
+      "unlockedBy": "Win Great Bake-Off quest"
+    },
+    {
+      "id": "friedChicken",
+      "name": "Fried Chicken",
+      "icon": "🍗",
+      "ingredients": {
+        "chicken": 1,
+        "flour": 2,
+        "oil": 1
+      },
+      "result": {
+        "energy": 180,
+        "sellPrice": 350
+      },
+      "unlocked": false,
+      "unlockedBy": "Chargrill Charlie teaches at 6 hearts"
+    },
+    {
+      "id": "fishDinner",
+      "name": "Fish Dinner",
+      "icon": "🐟",
+      "ingredients": {
+        "fish": 1,
+        "potato": 2,
+        "butter": 1
+      },
+      "result": {
+        "energy": 160,
+        "sellPrice": 320
+      },
+      "unlocked": false,
+      "unlockedBy": "Complete fishing quest"
+    },
+    {
+      "id": "sushi",
+      "name": "Sushi Roll",
+      "icon": "🍣",
+      "ingredients": {
+        "fish": 1,
+        "rice": 2,
+        "vinegar": 1
+      },
+      "result": {
+        "energy": 140,
+        "sellPrice": 280
+      },
+      "unlocked": false,
+      "unlockedBy": "Yo Sushi teaches at 4 hearts"
+    }
+  ],
+
+  "desserts": [
+    {
+      "id": "cookies",
+      "name": "Homemade Cookies",
+      "icon": "🍪",
+      "ingredients": {
+        "flour": 2,
+        "butter": 1,
+        "sugar": 2,
+        "egg": 1
+      },
+      "result": {
+        "energy": 100,
+        "sellPrice": 180
+      },
+      "unlocked": false,
+      "unlockedBy": "Smart Cookies teaches"
+    },
+    {
+      "id": "applePie",
+      "name": "Apple Pie",
+      "icon": "🥧",
+      "ingredients": {
+        "flour": 3,
+        "apple": 4,
+        "sugar": 2,
+        "butter": 1
+      },
+      "result": {
+        "energy": 220,
+        "sellPrice": 450
+      },
+      "unlocked": false,
+      "unlockedBy": "Mom teaches at 8 hearts"
+    },
+    {
+      "id": "iceCream",
+      "name": "Ice Cream",
+      "icon": "🍦",
+      "ingredients": {
+        "milk": 2,
+        "cream": 1,
+        "sugar": 2
+      },
+      "result": {
+        "energy": 120,
+        "sellPrice": 200
+      },
+      "unlocked": false,
+      "unlockedBy": "Summer event"
+    }
+  ]
+}

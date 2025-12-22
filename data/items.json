@@ -1,0 +1,106 @@
+{
+  "produce": [
+    { "id": "apple", "name": "Apple", "icon": "🍎", "price": 15, "energy": 20, "category": "produce" },
+    { "id": "orange", "name": "Orange", "icon": "🍊", "price": 18, "energy": 22, "category": "produce" },
+    { "id": "banana", "name": "Banana", "icon": "🍌", "price": 12, "energy": 18, "category": "produce" },
+    { "id": "carrot", "name": "Carrot", "icon": "🥕", "price": 10, "energy": 15, "category": "produce" },
+    { "id": "tomato", "name": "Tomato", "icon": "🍅", "price": 14, "energy": 16, "category": "produce" },
+    { "id": "potato", "name": "Potato", "icon": "🥔", "price": 11, "energy": 17, "category": "produce" },
+    { "id": "lettuce", "name": "Lettuce", "icon": "🥬", "price": 13, "energy": 12, "category": "produce" },
+    { "id": "corn", "name": "Corn", "icon": "🌽", "price": 16, "energy": 20, "category": "produce" },
+    { "id": "strawberry", "name": "Strawberry", "icon": "🍓", "price": 25, "energy": 18, "category": "produce" },
+    { "id": "peach", "name": "Peach", "icon": "🍑", "price": 20, "energy": 19, "category": "produce" },
+    { "id": "cherry", "name": "Cherry", "icon": "🍒", "price": 22, "energy": 17, "category": "produce" },
+    { "id": "watermelon", "name": "Watermelon", "icon": "🍉", "price": 30, "energy": 25, "category": "produce" }
+  ],
+
+  "dairy": [
+    { "id": "milk", "name": "Milk", "icon": "🥛", "price": 35, "energy": 15, "category": "dairy" },
+    { "id": "cheese", "name": "Cheese", "icon": "🧀", "price": 45, "energy": 20, "category": "dairy" },
+    { "id": "butter", "name": "Butter", "icon": "🧈", "price": 40, "energy": 18, "category": "dairy" },
+    { "id": "yogurt", "name": "Yogurt", "icon": "🥛", "price": 28, "energy": 16, "category": "dairy" },
+    { "id": "cream", "name": "Cream", "icon": "🥛", "price": 38, "energy": 14, "category": "dairy" }
+  ],
+
+  "bakery": [
+    { "id": "bread", "name": "Bread", "icon": "🍞", "price": 32, "energy": 30, "category": "bakery" },
+    { "id": "flour", "name": "Flour", "icon": "🌾", "price": 25, "energy": 0, "category": "bakery" },
+    { "id": "sugar", "name": "Sugar", "icon": "🧂", "price": 22, "energy": 5, "category": "bakery" },
+    { "id": "salt", "name": "Salt", "icon": "🧂", "price": 8, "energy": 0, "category": "bakery" },
+    { "id": "yeast", "name": "Yeast", "icon": "🧫", "price": 12, "energy": 0, "category": "bakery" }
+  ],
+
+  "meat": [
+    { "id": "chicken", "name": "Chicken (raw)", "icon": "🍗", "price": 50, "energy": 0, "category": "meat" },
+    { "id": "beef", "name": "Beef (raw)", "icon": "🥩", "price": 65, "energy": 0, "category": "meat" },
+    { "id": "fish", "name": "Fish", "icon": "🐟", "price": 45, "energy": 0, "category": "meat" },
+    { "id": "egg", "name": "Egg", "icon": "🥚", "price": 15, "energy": 10, "category": "meat" }
+  ],
+
+  "pantry": [
+    { "id": "rice", "name": "Rice", "icon": "🍚", "price": 28, "energy": 25, "category": "pantry" },
+    { "id": "pasta", "name": "Pasta", "icon": "🍝", "price": 30, "energy": 28, "category": "pantry" },
+    { "id": "oil", "name": "Cooking Oil", "icon": "🛢️", "price": 35, "energy": 0, "category": "pantry" },
+    { "id": "vinegar", "name": "Vinegar", "icon": "🧪", "price": 18, "energy": 0, "category": "pantry" },
+    { "id": "spices", "name": "Spices", "icon": "🌶️", "price": 25, "energy": 0, "category": "pantry" }
+  ],
+
+  "drinks": [
+    { "id": "water", "name": "Water Bottle", "icon": "💧", "price": 10, "energy": 5, "category": "drinks" },
+    { "id": "appleJuice", "name": "Apple Juice", "icon": "🧃", "price": 18, "energy": 12, "category": "drinks" },
+    { "id": "orangeJuice", "name": "Orange Juice", "icon": "🧃", "price": 20, "energy": 14, "category": "drinks" },
+    { "id": "softDrink", "name": "Soft Drink", "icon": "🥤", "price": 15, "energy": 8, "category": "drinks" },
+    { "id": "coffee", "name": "Coffee", "icon": "☕", "price": 25, "energy": 30, "category": "drinks" },
+    { "id": "tea", "name": "Tea", "icon": "🍵", "price": 20, "energy": 15, "category": "drinks" }
+  ],
+
+  "snacks": [
+    { "id": "chips", "name": "Chips", "icon": "🍟", "price": 22, "energy": 15, "category": "snacks" },
+    { "id": "cookies", "name": "Cookies", "icon": "🍪", "price": 24, "energy": 18, "category": "snacks" },
+    { "id": "candy", "name": "Candy", "icon": "🍬", "price": 12, "energy": 10, "category": "snacks" },
+    { "id": "chocolate", "name": "Chocolate", "icon": "🍫", "price": 28, "energy": 20, "category": "snacks" }
+  ],
+
+  "household": [
+    { "id": "cleaningSpray", "name": "Cleaning Spray", "icon": "🧴", "price": 35, "energy": 0, "category": "household" },
+    { "id": "dishSoap", "name": "Dish Soap", "icon": "🧼", "price": 28, "energy": 0, "category": "household" },
+    { "id": "towels", "name": "Towels", "icon": "🧻", "price": 45, "energy": 0, "category": "household" }
+  ],
+
+  "seeds": [
+    { "id": "tomatoSeeds", "name": "Tomato Seeds", "icon": "🌱", "price": 20, "energy": 0, "category": "seeds", "growsInto": "tomato", "growthDays": 4 },
+    { "id": "carrotSeeds", "name": "Carrot Seeds", "icon": "🌱", "price": 18, "energy": 0, "category": "seeds", "growsInto": "carrot", "growthDays": 3 },
+    { "id": "cornSeeds", "name": "Corn Seeds", "icon": "🌱", "price": 25, "energy": 0, "category": "seeds", "growsInto": "corn", "growthDays": 5 },
+    { "id": "wheatSeeds", "name": "Wheat Seeds", "icon": "🌱", "price": 15, "energy": 0, "category": "seeds", "growsInto": "wheat", "growthDays": 4 },
+    { "id": "potatoSeeds", "name": "Potato Seeds", "icon": "🌱", "price": 22, "energy": 0, "category": "seeds", "growsInto": "potato", "growthDays": 4 },
+    { "id": "strawberrySeeds", "name": "Strawberry Seeds", "icon": "🌱", "price": 30, "energy": 0, "category": "seeds", "growsInto": "strawberry", "growthDays": 6, "regrows": true }
+  ],
+
+  "saplings": [
+    { "id": "appleSapling", "name": "Apple Sapling", "icon": "🌳", "price": 500, "energy": 0, "category": "saplings", "growthDays": 7, "fruitValue": 60 },
+    { "id": "orangeSapling", "name": "Orange Sapling", "icon": "🌳", "price": 550, "energy": 0, "category": "saplings", "growthDays": 8, "fruitValue": 70 },
+    { "id": "peachSapling", "name": "Peach Sapling", "icon": "🌳", "price": 600, "energy": 0, "category": "saplings", "growthDays": 9, "fruitValue": 80 },
+    { "id": "cherrySapling", "name": "Cherry Sapling", "icon": "🌳", "price": 650, "energy": 0, "category": "saplings", "growthDays": 10, "fruitValue": 90 }
+  ],
+
+  "farmSupplies": [
+    { "id": "grain", "name": "Grain (animal feed)", "icon": "🌾", "price": 30, "energy": 0, "category": "farmSupplies" },
+    { "id": "hay", "name": "Hay (animal feed)", "icon": "🌿", "price": 25, "energy": 0, "category": "farmSupplies" },
+    { "id": "fertilizer", "name": "Fertilizer", "icon": "💩", "price": 40, "energy": 0, "category": "farmSupplies" },
+    { "id": "wateringCan", "name": "Watering Can", "icon": "🚰", "price": 150, "energy": 0, "category": "farmSupplies", "tool": true },
+    { "id": "hoe", "name": "Hoe", "icon": "🔨", "price": 120, "energy": 0, "category": "farmSupplies", "tool": true }
+  ],
+
+  "furniture": [
+    { "id": "chair", "name": "Chair", "icon": "🪑", "price": 100, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 1} },
+    { "id": "smallTable", "name": "Small Table", "icon": "🪑", "price": 150, "energy": 0, "category": "furniture", "size": {"w": 2, "h": 2} },
+    { "id": "lamp", "name": "Lamp", "icon": "💡", "price": 75, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 1} },
+    { "id": "rug", "name": "Rug", "icon": "🟫", "price": 120, "energy": 0, "category": "furniture", "size": {"w": 3, "h": 2} },
+    { "id": "couch", "name": "Couch", "icon": "🛋️", "price": 250, "energy": 0, "category": "furniture", "size": {"w": 2, "h": 1} },
+    { "id": "tv", "name": "TV", "icon": "📺", "price": 500, "energy": 0, "category": "furniture", "size": {"w": 2, "h": 1} },
+    { "id": "toilet", "name": "Toilet", "icon": "🚽", "price": 200, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 1} },
+    { "id": "shower", "name": "Shower", "icon": "🚿", "price": 300, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 1} },
+    { "id": "bookshelf", "name": "Bookshelf", "icon": "📚", "price": 180, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 2} },
+    { "id": "plant", "name": "Plant Pot", "icon": "🪴", "price": 60, "energy": 0, "category": "furniture", "size": {"w": 1, "h": 1} }
+  ]
+}

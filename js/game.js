@@ -38,7 +38,14 @@ class Game {
 
         // Inventory system
         this.inventory = {
-            items: [],
+            items: [
+                // Starting materials for testing
+                { id: 'wood', name: 'Wood', icon: '🪵', quantity: 1 },
+                { id: 'pebbles', name: 'Pebbles', icon: '🪨', quantity: 1 },
+                { id: 'egg', name: 'Egg', icon: '🥚', energy: 10, quantity: 1 },
+                { id: 'tomato', name: 'Tomato', icon: '🍅', energy: 16, quantity: 1 },
+                { id: 'carrot', name: 'Carrot', icon: '🥕', energy: 15, quantity: 1 }
+            ],
             maxSlots: 20
         };
 
@@ -99,6 +106,13 @@ class Game {
         this.crops = []; // { x, y, type, stage, watered, plantedDay }
         this.wateredTiles = new Set(); // "x,y" keys for watered farmland
 
+        // Cooking and Crafting systems
+        this.cookingSystem = new CookingSystem(this);
+        this.craftingSystem = new CraftingSystem(this);
+
+        // Message system for notifications
+        this.message = { text: '', duration: 0 };
+
         // Christmas music audio
         this.christmasAudio = new Audio('media/Christmas this year (2).mp3');
         this.christmasAudio.loop = true;
@@ -119,6 +133,10 @@ class Game {
         this.createUI();
         this.setupEventListeners();
         this.setupCanvasResize();
+
+        // Load cooking and crafting recipes
+        this.cookingSystem.loadRecipes();
+        this.craftingSystem.loadRecipes();
 
         // Validate spawn point is walkable (not inside building or water)
         this.validateSpawnPoint();
@@ -2669,6 +2687,18 @@ class Game {
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         window.addEventListener('keydown', (e) => {
+            // ESC key handling for menus
+            if (e.key === 'Escape') {
+                if (this.cookingSystem && this.cookingSystem.cookingUI.showing) {
+                    this.cookingSystem.closeCookingMenu();
+                    return;
+                }
+                if (this.craftingSystem && this.craftingSystem.craftingUI.showing) {
+                    this.craftingSystem.closeCraftingMenu();
+                    return;
+                }
+            }
+
             // Don't process game keys when dialog is open (except Escape)
             if (this.uiState.showingDialog && e.key !== 'Escape') {
                 return;
@@ -2724,6 +2754,23 @@ class Game {
                                 break;
                             }
                         }
+
+                        // Check for nearby interactive furniture
+                        if (!foundInteriorNPC && interior.furniture) {
+                            for (let furniture of interior.furniture) {
+                                if (furniture.interactive) {
+                                    const dx = this.player.x - furniture.x;
+                                    const dy = this.player.y - furniture.y;
+                                    const distance = Math.sqrt(dx * dx + dy * dy);
+                                    if (distance < 1.5) {
+                                        this.interactWithFurniture(furniture);
+                                        foundInteriorNPC = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         // Check if at exit
                         if (!foundInteriorNPC) {
                             const exitDist = Math.sqrt(
@@ -2778,6 +2825,27 @@ class Game {
             }
             if (e.target.classList.contains('inventory-close')) {
                 this.closeInventory();
+            }
+        });
+
+        // Canvas click handler for cooking/crafting UIs
+        this.canvas.addEventListener('click', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Check cooking UI clicks
+            if (this.cookingSystem && this.cookingSystem.handleClick) {
+                if (this.cookingSystem.handleClick(mouseX, mouseY)) {
+                    return;
+                }
+            }
+
+            // Check crafting UI clicks
+            if (this.craftingSystem && this.craftingSystem.handleClick) {
+                if (this.craftingSystem.handleClick(mouseX, mouseY)) {
+                    return;
+                }
             }
         });
     }
@@ -2889,6 +2957,17 @@ class Game {
         giftBtn.onclick = () => this.giveGift(npc);
         options.appendChild(giftBtn);
 
+        // Carpenter crafting option
+        if (npc.isCarpenter || npc.name === 'Bill') {
+            const craftBtn = document.createElement('button');
+            craftBtn.textContent = '🔨 Craft Items';
+            craftBtn.onclick = () => {
+                this.closeDialog();
+                this.craftingSystem.openCraftingMenu();
+            };
+            options.appendChild(craftBtn);
+        }
+
         // Job option
         if (npc.offersJob) {
             const jobBtn = document.createElement('button');
@@ -2906,6 +2985,27 @@ class Game {
         }
 
         dialogBox.style.display = 'flex';
+    }
+
+    interactWithFurniture(furniture) {
+        if (!furniture || !furniture.action) return;
+
+        switch (furniture.action) {
+            case 'cook':
+                this.cookingSystem.openCookingMenu();
+                break;
+            case 'craft':
+                this.craftingSystem.openCraftingMenu();
+                break;
+            case 'storage':
+                this.showMessage('Storage system coming soon!');
+                break;
+            case 'sleep':
+                this.showMessage('Sleep system coming soon!');
+                break;
+            default:
+                this.showMessage(`Interacted with ${furniture.name}`);
+        }
     }
 
     addChatMessage(container, emoji, text, role) {
@@ -3971,6 +4071,14 @@ class Game {
 
         // Apply day/night overlay
         this.applyDayNightOverlay();
+
+        // Render cooking and crafting UIs (on top of everything)
+        if (this.cookingSystem) {
+            this.cookingSystem.renderCookingUI(this.ctx);
+        }
+        if (this.craftingSystem) {
+            this.craftingSystem.renderCraftingUI(this.ctx);
+        }
     }
 
     // ===== ISOMETRIC ENTITY RENDERING =====
@@ -4853,6 +4961,37 @@ class Game {
         document.getElementById('gold').textContent = Math.floor(this.player.gold);
         document.getElementById('energy').textContent = `${Math.floor(this.player.energy)}/${this.player.maxEnergy}`;
         document.getElementById('day').textContent = `${this.time.day} (${this.time.season}) ${this.time.hour}:${String(this.time.minute).padStart(2, '0')}`;
+    }
+
+    // ===== INVENTORY HELPERS =====
+    getInventoryCount(itemId) {
+        let count = 0;
+        for (const item of this.inventory.items) {
+            if (item && item.id === itemId) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    addToInventory(item) {
+        if (this.inventory.items.length >= this.inventory.maxSlots) {
+            this.showMessage("Inventory full!");
+            return false;
+        }
+        this.inventory.items.push(item);
+        return true;
+    }
+
+    removeFromInventory(itemId, amount = 1) {
+        let removed = 0;
+        for (let i = this.inventory.items.length - 1; i >= 0 && removed < amount; i--) {
+            if (this.inventory.items[i] && this.inventory.items[i].id === itemId) {
+                this.inventory.items.splice(i, 1);
+                removed++;
+            }
+        }
+        return removed === amount;
     }
 
     showMessage(message) {
