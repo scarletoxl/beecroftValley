@@ -3823,12 +3823,19 @@ class Game {
                     // Tree cut down
                     this.trees.splice(i, 1);
                     this.player.gold += 10;
-                    this.showMessage("Tree chopped! +$10 and wood");
 
-                    // Add wood to inventory
-                    if (this.inventory.items.length < this.inventory.maxSlots) {
-                        this.inventory.items.push({ name: 'Wood', emoji: '🪵', type: 'material' });
+                    // Add wood to inventory (5-8 pieces per tree)
+                    const woodAmount = Math.floor(Math.random() * 4) + 5; // 5-8 wood
+                    for (let w = 0; w < woodAmount; w++) {
+                        this.addToInventory({
+                            id: 'wood',
+                            name: 'Wood',
+                            icon: '🪵',
+                            type: 'material'
+                        });
                     }
+
+                    this.showMessage(`Tree chopped! +$10 and ${woodAmount} wood`);
 
                     // Check quest progress
                     this.checkQuestProgress('chop');
@@ -5291,27 +5298,63 @@ class Game {
         let count = 0;
         for (const item of this.inventory.items) {
             if (item && item.id === itemId) {
-                count++;
+                // Check if item has a quantity field (stacked items)
+                if (item.quantity !== undefined) {
+                    count += item.quantity;
+                } else {
+                    count++;
+                }
             }
         }
         return count;
     }
 
     addToInventory(item) {
+        // Try to stack with existing item of same id
+        const existingItem = this.inventory.items.find(i => i && i.id === item.id);
+
+        if (existingItem) {
+            // Stack with existing item
+            if (existingItem.quantity !== undefined) {
+                existingItem.quantity++;
+            } else {
+                existingItem.quantity = 2; // Convert to quantity-based
+            }
+            return true;
+        }
+
+        // Add new item
         if (this.inventory.items.length >= this.inventory.maxSlots) {
             this.showMessage("Inventory full!");
             return false;
         }
+
+        // Initialize with quantity 1
+        item.quantity = 1;
         this.inventory.items.push(item);
         return true;
     }
 
     removeFromInventory(itemId, amount = 1) {
         let removed = 0;
+
         for (let i = this.inventory.items.length - 1; i >= 0 && removed < amount; i--) {
-            if (this.inventory.items[i] && this.inventory.items[i].id === itemId) {
-                this.inventory.items.splice(i, 1);
-                removed++;
+            const item = this.inventory.items[i];
+            if (item && item.id === itemId) {
+                if (item.quantity !== undefined && item.quantity > 1) {
+                    // Decrease quantity
+                    const removeFromStack = Math.min(item.quantity, amount - removed);
+                    item.quantity -= removeFromStack;
+                    removed += removeFromStack;
+
+                    if (item.quantity <= 0) {
+                        this.inventory.items.splice(i, 1);
+                    }
+                } else {
+                    // Remove entire item
+                    this.inventory.items.splice(i, 1);
+                    removed++;
+                }
             }
         }
         return removed === amount;
