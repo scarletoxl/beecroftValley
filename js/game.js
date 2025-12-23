@@ -3338,19 +3338,31 @@ class Game {
     // ===== RESTAURANT SYSTEM =====
     showRestaurantMenu(building) {
         const menu = [
-            { name: 'Coffee', price: 5, energy: 20, emoji: '☕' },
-            { name: 'Sandwich', price: 8, energy: 35, emoji: '🥪' },
-            { name: 'Cake', price: 12, energy: 50, emoji: '🍰' },
-            { name: 'Salad', price: 10, energy: 30, emoji: '🥗' },
-            { name: 'Pasta', price: 15, energy: 60, emoji: '🍝' }
+            { id: 'coffee', name: 'Coffee', price: 25, energy: 30, icon: '☕' },
+            { id: 'sandwich', name: 'Sandwich', price: 40, energy: 70, icon: '🥪' },
+            { id: 'cake', name: 'Cafe Cake', price: 60, energy: 100, icon: '🍰' },
+            { id: 'salad', name: 'Fresh Salad', price: 35, energy: 50, icon: '🥗' },
+            { id: 'pasta', name: 'Pasta', price: 50, energy: 90, icon: '🍝' },
+            { id: 'tea', name: 'Tea', price: 20, energy: 15, icon: '🍵' }
         ];
 
         this.showShopUI(building.name + " Menu", menu, (item) => {
             if (this.player.gold >= item.price) {
+                // Eat immediately for energy
                 this.player.gold -= item.price;
                 this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + item.energy);
+
+                // Also add one to inventory for later
+                this.addToInventory({
+                    id: item.id,
+                    name: item.name,
+                    icon: item.icon,
+                    energy: item.energy,
+                    type: 'food'
+                });
+
                 this.updateHUD();
-                this.showMessage(`Ate ${item.name}! +${item.energy} energy`);
+                this.showMessage(`Ate ${item.name}! +${item.energy} energy (extra added to inventory)`);
             } else {
                 this.showMessage("Not enough gold!");
             }
@@ -3361,31 +3373,62 @@ class Game {
     showShopMenu(building) {
         const items = [
             // Seeds for farming
-            { name: 'Turnip Seeds', price: 20, emoji: '🌱', type: 'seed', cropType: 'turnip' },
-            { name: 'Potato Seeds', price: 30, emoji: '🥔', type: 'seed', cropType: 'potato' },
-            { name: 'Carrot Seeds', price: 25, emoji: '🥕', type: 'seed', cropType: 'carrot' },
-            { name: 'Tomato Seeds', price: 40, emoji: '🍅', type: 'seed', cropType: 'tomato' },
-            { name: 'Corn Seeds', price: 50, emoji: '🌽', type: 'seed', cropType: 'corn' },
-            { name: 'Strawberry Seeds', price: 60, emoji: '🍓', type: 'seed', cropType: 'strawberry' },
-            // Food items
-            { name: 'Apple', price: 3, energy: 15, emoji: '🍎', type: 'food' },
-            { name: 'Bread', price: 4, energy: 20, emoji: '🍞', type: 'food' },
-            { name: 'Milk', price: 5, energy: 25, emoji: '🥛', type: 'food' },
-            // Other items
-            { name: 'Gift Box', price: 20, emoji: '🎁', type: 'gift' },
-            { name: 'Engagement Ring', price: 500, emoji: '💍', type: 'ring' }
+            { id: 'tomatoSeeds', name: 'Tomato Seeds', price: 20, icon: '🌱', type: 'seed', cropType: 'tomato' },
+            { id: 'carrotSeeds', name: 'Carrot Seeds', price: 18, icon: '🌱', type: 'seed', cropType: 'carrot' },
+            { id: 'cornSeeds', name: 'Corn Seeds', price: 25, icon: '🌱', type: 'seed', cropType: 'corn' },
+            { id: 'wheatSeeds', name: 'Wheat Seeds', price: 15, icon: '🌱', type: 'seed', cropType: 'wheat' },
+            { id: 'potatoSeeds', name: 'Potato Seeds', price: 22, icon: '🌱', type: 'seed', cropType: 'potato' },
+            { id: 'strawberrySeeds', name: 'Strawberry Seeds', price: 30, icon: '🌱', type: 'seed', cropType: 'strawberry' },
+
+            // Food ingredients
+            { id: 'apple', name: 'Apple', price: 15, energy: 20, icon: '🍎', type: 'food' },
+            { id: 'orange', name: 'Orange', price: 18, energy: 22, icon: '🍊', type: 'food' },
+            { id: 'banana', name: 'Banana', price: 12, energy: 18, icon: '🍌', type: 'food' },
+            { id: 'bread', name: 'Bread', price: 32, energy: 30, icon: '🍞', type: 'food' },
+            { id: 'milk', name: 'Milk', price: 35, energy: 15, icon: '🥛', type: 'food' },
+            { id: 'egg', name: 'Egg', price: 15, energy: 10, icon: '🥚', type: 'food' },
+            { id: 'cheese', name: 'Cheese', price: 45, energy: 20, icon: '🧀', type: 'food' },
+            { id: 'butter', name: 'Butter', price: 40, energy: 18, icon: '🧈', type: 'food' },
+
+            // Baking supplies
+            { id: 'flour', name: 'Flour', price: 25, energy: 0, icon: '🌾', type: 'baking' },
+            { id: 'sugar', name: 'Sugar', price: 22, energy: 5, icon: '🧂', type: 'baking' },
+            { id: 'salt', name: 'Salt', price: 8, energy: 0, icon: '🧂', type: 'baking' },
+            { id: 'yeast', name: 'Yeast', price: 12, energy: 0, icon: '🧫', type: 'baking' },
+
+            // Vegetables
+            { id: 'tomato', name: 'Tomato', price: 14, energy: 16, icon: '🍅', type: 'food' },
+            { id: 'carrot', name: 'Carrot', price: 10, energy: 15, icon: '🥕', type: 'food' },
+            { id: 'potato', name: 'Potato', price: 11, energy: 17, icon: '🥔', type: 'food' },
+            { id: 'lettuce', name: 'Lettuce', price: 13, energy: 12, icon: '🥬', type: 'food' },
+
+            // Farm supplies
+            { id: 'grain', name: 'Grain (animal feed)', price: 30, energy: 0, icon: '🌾', type: 'farmSupply' },
+            { id: 'hay', name: 'Hay (animal feed)', price: 25, energy: 0, icon: '🌿', type: 'farmSupply' },
+
+            // Special items
+            { id: 'giftBox', name: 'Gift Box', price: 20, icon: '🎁', type: 'gift' },
+            { id: 'ring', name: 'Engagement Ring', price: 500, icon: '💍', type: 'ring' }
         ];
 
         this.showShopUI(building.name, items, (item) => {
             if (this.player.gold >= item.price) {
-                if (this.inventory.items.length >= this.inventory.maxSlots) {
-                    this.showMessage("Inventory full!");
-                    return;
+                // Use the proper addToInventory function for stacking
+                const added = this.addToInventory({
+                    id: item.id,
+                    name: item.name,
+                    icon: item.icon,
+                    energy: item.energy,
+                    type: item.type,
+                    cropType: item.cropType
+                });
+
+                if (added) {
+                    this.player.gold -= item.price;
+                    this.updateHUD();
+                    this.showMessage(`Bought ${item.name}!`);
                 }
-                this.player.gold -= item.price;
-                this.inventory.items.push(item);
-                this.updateHUD();
-                this.showMessage(`Bought ${item.name}!`);
+                // addToInventory already shows "Inventory full!" message
             } else {
                 this.showMessage("Not enough gold!");
             }
