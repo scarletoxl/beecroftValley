@@ -3745,12 +3745,19 @@ class Game {
                     // Tree cut down
                     this.trees.splice(i, 1);
                     this.player.gold += 10;
-                    this.showMessage("Tree chopped! +$10 and wood");
 
-                    // Add wood to inventory
-                    if (this.inventory.items.length < this.inventory.maxSlots) {
-                        this.inventory.items.push({ name: 'Wood', emoji: '🪵', type: 'material' });
+                    // Add wood to inventory (5-8 pieces per tree)
+                    const woodAmount = Math.floor(Math.random() * 4) + 5; // 5-8 wood
+                    for (let w = 0; w < woodAmount; w++) {
+                        this.addToInventory({
+                            id: 'wood',
+                            name: 'Wood',
+                            icon: '🪵',
+                            type: 'material'
+                        });
                     }
+
+                    this.showMessage(`Tree chopped! +$10 and ${woodAmount} wood`);
 
                     // Check quest progress
                     this.checkQuestProgress('chop');
