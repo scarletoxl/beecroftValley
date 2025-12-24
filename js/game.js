@@ -759,7 +759,8 @@ class Game {
                 emoji: "🏠",
                 color: "#FFF3E0",
                 hasInterior: true,
-                canEnter: true
+                canEnter: true,
+                interiorName: "Bridie's Home"  // Link to Bridie's home interior
             },
 
             // === COMMUNITY GARDEN (near Village Green) ===
@@ -1364,18 +1365,21 @@ class Game {
                 baseX: 185,
                 baseY: 303
             },
-            // === BRIDIE - YOUR BEST FRIEND ===
+            // === BRIDIE - YOUR BEST FRIEND (AGE 8, SAME AS YOU!) ===
             {
                 name: "Bridie", x: 250, y: 253, emoji: "👧",
-                role: "your best friend",
-                greeting: "Hey bestie! Where are we going today?",
+                role: "your best friend (age 8)",
+                age: 8,
+                greeting: "Hey bestie! I'm 8 just like you! Want to go on an adventure together?",
                 dialogues: [
-                    "Let's go on an adventure!",
+                    "Let's explore Beecroft together!",
                     "I found a cool bug earlier, wanna see?",
                     "Race you to the shops!",
                     "Being your best friend is the best!",
                     "Mum said I can stay out until dinner!",
                     "What should we explore today?",
+                    "Can I follow you? Adventures are better together!",
+                    "I'll go wherever you go!"
                     "Do you think we could find treasure in the park?",
                     "I heard there's a secret path near the railway!",
                     "Want to go watch the trains go by?",
@@ -1398,6 +1402,8 @@ class Game {
                 followsPlayer: true,
                 followDistance: 2,
                 isChild: true,
+                hearts: 10,  // Already best friends!
+                canCommand: true  // Can tell her what to do
                 specialFriend: true
             }
         ];
@@ -3073,6 +3079,27 @@ class Game {
         giftBtn.onclick = () => this.giveGift(npc);
         options.appendChild(giftBtn);
 
+        // Bridie's special "Follow me" / "Stay here" toggle
+        if (npc.name === 'Bridie' || npc.canCommand) {
+            const followBtn = document.createElement('button');
+            if (npc.followsPlayer) {
+                followBtn.textContent = '🛑 Stop Following';
+                followBtn.onclick = () => {
+                    npc.followsPlayer = false;
+                    this.showMessage("Bridie: Okay, I'll wait here!");
+                    this.closeDialog();
+                };
+            } else {
+                followBtn.textContent = '🚶‍♀️ Follow Me!';
+                followBtn.onclick = () => {
+                    npc.followsPlayer = true;
+                    this.showMessage("Bridie: Yay! Let's go on an adventure!");
+                    this.closeDialog();
+                };
+            }
+            options.appendChild(followBtn);
+        }
+
         // Carpenter crafting option
         if (npc.isCarpenter || npc.name === 'Bill') {
             const craftBtn = document.createElement('button');
@@ -3415,14 +3442,32 @@ class Game {
 
     // ===== RESTAURANT SYSTEM =====
     showRestaurantMenu(building) {
-        const menu = [
-            { id: 'coffee', name: 'Coffee', price: 25, energy: 30, icon: '☕' },
-            { id: 'sandwich', name: 'Sandwich', price: 40, energy: 70, icon: '🥪' },
-            { id: 'cake', name: 'Cafe Cake', price: 60, energy: 100, icon: '🍰' },
-            { id: 'salad', name: 'Fresh Salad', price: 35, energy: 50, icon: '🥗' },
-            { id: 'pasta', name: 'Pasta', price: 50, energy: 90, icon: '🍝' },
-            { id: 'tea', name: 'Tea', price: 20, energy: 15, icon: '🍵' }
-        ];
+        let menu;
+
+        // Special menu for Yo Sushi
+        if (building.name === "Yo Sushi") {
+            menu = [
+                { id: 'sushiRoll', name: 'Sushi Roll', price: 45, energy: 80, icon: '🍣' },
+                { id: 'salmonNigiri', name: 'Salmon Nigiri', price: 50, energy: 85, icon: '🍣' },
+                { id: 'tunaNigiri', name: 'Tuna Nigiri', price: 55, energy: 90, icon: '🍣' },
+                { id: 'californiaRoll', name: 'California Roll', price: 48, energy: 82, icon: '🍣' },
+                { id: 'sashimiPlatter', name: 'Sashimi Platter', price: 70, energy: 120, icon: '🍱' },
+                { id: 'misoSoup', name: 'Miso Soup', price: 20, energy: 30, icon: '🍜' },
+                { id: 'edamame', name: 'Edamame', price: 15, energy: 25, icon: '🫘' },
+                { id: 'gyoza', name: 'Gyoza', price: 30, energy: 50, icon: '🥟' },
+                { id: 'greenTea', name: 'Green Tea', price: 12, energy: 10, icon: '🍵' }
+            ];
+        } else {
+            // Default cafe/restaurant menu
+            menu = [
+                { id: 'coffee', name: 'Coffee', price: 25, energy: 30, icon: '☕' },
+                { id: 'sandwich', name: 'Sandwich', price: 40, energy: 70, icon: '🥪' },
+                { id: 'cake', name: 'Cafe Cake', price: 60, energy: 100, icon: '🍰' },
+                { id: 'salad', name: 'Fresh Salad', price: 35, energy: 50, icon: '🥗' },
+                { id: 'pasta', name: 'Pasta', price: 50, energy: 90, icon: '🍝' },
+                { id: 'tea', name: 'Tea', price: 20, energy: 15, icon: '🍵' }
+            ];
+        }
 
         this.showShopUI(building.name + " Menu", menu, (item) => {
             if (this.player.gold >= item.price) {
@@ -3611,7 +3656,10 @@ class Game {
 
     // ===== BUILDING INTERIORS =====
     enterBuilding(building) {
-        const interior = this.interiorMaps[building.name];
+        // Use interiorName if specified, otherwise use building name
+        const interiorKey = building.interiorName || building.name;
+        const interior = this.interiorMaps[interiorKey];
+
         if (!interior) {
             this.showMessage(`Can't enter ${building.name} yet!`);
             return;
@@ -3620,8 +3668,8 @@ class Game {
         // Save current position
         this.previousPosition = { x: this.player.x, y: this.player.y };
 
-        // Switch to interior
-        this.currentMap = building.name;
+        // Switch to interior (use the interior key, not building name)
+        this.currentMap = interiorKey;
         this.player.x = interior.spawnX;
         this.player.y = interior.spawnY;
 
