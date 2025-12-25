@@ -1403,7 +1403,7 @@ class Game {
                 followDistance: 2,
                 isChild: true,
                 hearts: 10,  // Already best friends!
-                canCommand: true  // Can tell her what to do
+                canCommand: true,  // Can tell her what to do
                 specialFriend: true
             }
         ];
