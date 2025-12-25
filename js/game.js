@@ -33,7 +33,9 @@ class Game {
             carType: null,
             hasRing: false,
             spouse: null,
-            currentJob: null
+            currentJob: null,
+            sitting: false,
+            sittingFurniture: null
         };
 
         // Inventory system
@@ -2431,8 +2433,8 @@ class Game {
             { x: 5, y: 7, type: 'towel', emoji: '🧻', name: 'Towel Rack' },
 
             // === LIVING ROOM (right side, 7-18, 1-7) ===
-            { x: 10, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
-            { x: 12, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch' },
+            { x: 10, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch', interactive: true, action: 'sit' },
+            { x: 12, y: 3, type: 'couch', emoji: '🛋️', name: 'Couch', interactive: true, action: 'sit' },
             { x: 11, y: 1, type: 'tv', emoji: '📺', name: 'TV', interactive: true, action: 'watch' },
             { x: 8, y: 5, type: 'bookshelf', emoji: '📚', name: 'Bookshelf' },
             { x: 11, y: 5, type: 'table', emoji: '🪑', name: 'Coffee Table' },
@@ -2443,8 +2445,8 @@ class Game {
             { x: 10, y: 9, type: 'stove', emoji: '🔥', name: 'Stove', interactive: true, action: 'cook' },
             { x: 12, y: 9, type: 'sink', emoji: '💧', name: 'Kitchen Sink' },
             { x: 9, y: 12, type: 'table', emoji: '🍽️', name: 'Dining Table' },
-            { x: 8, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
-            { x: 10, y: 12, type: 'chair', emoji: '🪑', name: 'Chair' },
+            { x: 8, y: 12, type: 'chair', emoji: '🪑', name: 'Chair', interactive: true, action: 'sit' },
+            { x: 10, y: 12, type: 'chair', emoji: '🪑', name: 'Chair', interactive: true, action: 'sit' },
             { x: 11, y: 14, type: 'counter', emoji: '🔪', name: 'Counter' },
 
             // === BASEMENT/WORKSHOP (bottom-right, 14-18, 9-14) ===
@@ -2803,6 +2805,12 @@ class Game {
 
             // Talk to NPCs / Interact with markers
             if (e.key === ' ') {
+                // If sitting, stand up first
+                if (this.player.sitting) {
+                    this.standUp();
+                    return;
+                }
+
                 if (this.currentMap === 'overworld') {
                     // First check for nearby NPCs
                     let foundNPC = false;
@@ -3146,6 +3154,9 @@ class Game {
             case 'sleep':
                 this.openSleepMenu();
                 break;
+            case 'sit':
+                this.sitOnFurniture(furniture);
+                break;
             default:
                 this.showMessage(`Interacted with ${furniture.name}`);
         }
@@ -3159,6 +3170,26 @@ class Game {
     closeSleepMenu() {
         this.uiState.showingSleepMenu = false;
         this.uiState.showingMenu = false;
+    }
+
+    sitOnFurniture(furniture) {
+        if (this.player.sitting) {
+            // If already sitting, stand up
+            this.standUp();
+        } else {
+            // Sit down on the furniture
+            this.player.sitting = true;
+            this.player.sittingFurniture = furniture;
+            this.showMessage(`You sit on the ${furniture.name}. Press Space to stand up.`);
+        }
+    }
+
+    standUp() {
+        if (this.player.sitting) {
+            this.player.sitting = false;
+            this.player.sittingFurniture = null;
+            this.showMessage('You stand up.');
+        }
     }
 
     takeNap() {
@@ -4229,25 +4260,28 @@ class Game {
         let moved = false;
         let newDirection = this.player.direction;
 
-        if (this.keys['ArrowUp'] || this.keys['w']) {
-            this.player.y = Math.max(0, this.player.y - moveSpeed);
-            newDirection = 'up';
-            moved = true;
-        }
-        if (this.keys['ArrowDown'] || this.keys['s']) {
-            this.player.y = Math.min(this.getCurrentMapHeight() - 1, this.player.y + moveSpeed);
-            newDirection = 'down';
-            moved = true;
-        }
-        if (this.keys['ArrowLeft'] || this.keys['a']) {
-            this.player.x = Math.max(0, this.player.x - moveSpeed);
-            newDirection = 'left';
-            moved = true;
-        }
-        if (this.keys['ArrowRight'] || this.keys['d']) {
-            this.player.x = Math.min(this.getCurrentMapWidth() - 1, this.player.x + moveSpeed);
-            newDirection = 'right';
-            moved = true;
+        // Prevent movement while sitting
+        if (!this.player.sitting) {
+            if (this.keys['ArrowUp'] || this.keys['w']) {
+                this.player.y = Math.max(0, this.player.y - moveSpeed);
+                newDirection = 'up';
+                moved = true;
+            }
+            if (this.keys['ArrowDown'] || this.keys['s']) {
+                this.player.y = Math.min(this.getCurrentMapHeight() - 1, this.player.y + moveSpeed);
+                newDirection = 'down';
+                moved = true;
+            }
+            if (this.keys['ArrowLeft'] || this.keys['a']) {
+                this.player.x = Math.max(0, this.player.x - moveSpeed);
+                newDirection = 'left';
+                moved = true;
+            }
+            if (this.keys['ArrowRight'] || this.keys['d']) {
+                this.player.x = Math.min(this.getCurrentMapWidth() - 1, this.player.x + moveSpeed);
+                newDirection = 'right';
+                moved = true;
+            }
         }
 
         // Collision detection - only block water (tile 2), not building tiles
@@ -4695,6 +4729,167 @@ class Game {
                 this.ctx.fill();
             }
         }
+    }
+
+    renderFurniture(furniture) {
+        // Use map system for coordinate conversion
+        const screen = this.mapSystem.gameToScreen(
+            furniture.x + 0.5, furniture.y + 0.5,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
+
+        // Check if player is sitting on this furniture
+        const playerSitting = this.player.sitting &&
+                             this.player.sittingFurniture === furniture;
+
+        // Render based on furniture type with 3D appearance
+        switch(furniture.type) {
+            case 'chair':
+                this.renderChair(screen, furniture, playerSitting);
+                break;
+            case 'table':
+                this.renderTable(screen, furniture);
+                break;
+            case 'couch':
+                this.renderCouch(screen, furniture, playerSitting);
+                break;
+            default:
+                // Default rendering for other furniture types
+                this.ctx.font = '24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(furniture.emoji, screen.x, screen.y - 8);
+                this.ctx.textAlign = 'left';
+                break;
+        }
+    }
+
+    renderChair(screen, furniture, playerSitting) {
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 2, 10, 5, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Chair seat (3D box effect)
+        const seatHeight = 10;
+
+        // Seat top (lighter)
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.fillRect(screen.x - 8, screen.y - seatHeight - 2, 16, 8);
+
+        // Seat front (darker for depth)
+        this.ctx.fillStyle = '#654321';
+        this.ctx.fillRect(screen.x - 8, screen.y - seatHeight + 6, 16, 4);
+
+        // Chair legs (4 legs with 3D effect)
+        this.ctx.fillStyle = '#654321';
+        // Front legs
+        this.ctx.fillRect(screen.x - 7, screen.y - seatHeight + 2, 3, seatHeight);
+        this.ctx.fillRect(screen.x + 4, screen.y - seatHeight + 2, 3, seatHeight);
+
+        // Chair back (vertical with depth)
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.fillRect(screen.x - 8, screen.y - seatHeight - 14, 16, 12);
+
+        // Chair back highlight (3D effect)
+        this.ctx.fillStyle = '#A0522D';
+        this.ctx.fillRect(screen.x - 7, screen.y - seatHeight - 13, 2, 10);
+    }
+
+    renderTable(screen, furniture) {
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 4, 16, 8, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        const tableHeight = 15;
+
+        // Table legs (4 corners)
+        this.ctx.fillStyle = '#654321';
+        this.ctx.fillRect(screen.x - 12, screen.y - tableHeight + 2, 3, tableHeight);
+        this.ctx.fillRect(screen.x + 9, screen.y - tableHeight + 2, 3, tableHeight);
+        this.ctx.fillRect(screen.x - 12, screen.y + 6, 3, tableHeight);
+        this.ctx.fillRect(screen.x + 9, screen.y + 6, 3, tableHeight);
+
+        // Table top (with 3D perspective)
+        // Top surface (lighter)
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.beginPath();
+        this.ctx.moveTo(screen.x - 14, screen.y - tableHeight);
+        this.ctx.lineTo(screen.x + 14, screen.y - tableHeight);
+        this.ctx.lineTo(screen.x + 16, screen.y - tableHeight + 4);
+        this.ctx.lineTo(screen.x - 12, screen.y - tableHeight + 4);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Table side (darker for depth)
+        this.ctx.fillStyle = '#654321';
+        this.ctx.beginPath();
+        this.ctx.moveTo(screen.x + 14, screen.y - tableHeight);
+        this.ctx.lineTo(screen.x + 16, screen.y - tableHeight + 4);
+        this.ctx.lineTo(screen.x + 16, screen.y + 8);
+        this.ctx.lineTo(screen.x + 14, screen.y + 4);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Table front edge
+        this.ctx.fillStyle = '#5D4037';
+        this.ctx.fillRect(screen.x - 12, screen.y + 4, 28, 4);
+
+        // Add items on table if it's a dining table
+        if (furniture.name && furniture.name.includes('Dining')) {
+            // Plate
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x - 4, screen.y - tableHeight + 2, 4, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Fork emoji
+            this.ctx.font = '10px Arial';
+            this.ctx.fillText('🍴', screen.x + 2, screen.y - tableHeight + 4);
+        } else if (furniture.name && furniture.name.includes('Coffee')) {
+            // Coffee cup
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('☕', screen.x - 2, screen.y - tableHeight + 4);
+        }
+    }
+
+    renderCouch(screen, furniture, playerSitting) {
+        // Shadow
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(screen.x, screen.y + 4, 14, 7, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        const couchHeight = 12;
+
+        // Couch seat (3D box)
+        this.ctx.fillStyle = '#4169E1'; // Royal blue
+        this.ctx.fillRect(screen.x - 12, screen.y - couchHeight, 24, 12);
+
+        // Couch seat depth
+        this.ctx.fillStyle = '#1E3A8A'; // Darker blue
+        this.ctx.fillRect(screen.x - 12, screen.y, 24, 4);
+
+        // Couch armrests
+        this.ctx.fillStyle = '#4169E1';
+        this.ctx.fillRect(screen.x - 14, screen.y - couchHeight - 4, 4, 16);
+        this.ctx.fillRect(screen.x + 10, screen.y - couchHeight - 4, 4, 16);
+
+        // Couch back
+        this.ctx.fillStyle = '#5B7EC8';
+        this.ctx.fillRect(screen.x - 12, screen.y - couchHeight - 10, 24, 10);
+
+        // Cushion details
+        this.ctx.strokeStyle = '#1E3A8A';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.moveTo(screen.x, screen.y - couchHeight);
+        this.ctx.lineTo(screen.x, screen.y);
+        this.ctx.stroke();
     }
 
     renderChristmasTree(building) {
