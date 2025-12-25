@@ -1379,7 +1379,7 @@ class Game {
                     "Mum said I can stay out until dinner!",
                     "What should we explore today?",
                     "Can I follow you? Adventures are better together!",
-                    "I'll go wherever you go!"
+                    "I'll go wherever you go!",
                     "Do you think we could find treasure in the park?",
                     "I heard there's a secret path near the railway!",
                     "Want to go watch the trains go by?",
