@@ -1367,7 +1367,7 @@ class Game {
             },
             // === BRIDIE - YOUR BEST FRIEND (AGE 8, SAME AS YOU!) ===
             {
-                name: "Bridie", x: 250, y: 253, emoji: "👧",
+                name: "Bridie", x: 245, y: 247, emoji: "👧",
                 role: "your best friend (age 8)",
                 age: 8,
                 greeting: "Hey bestie! I'm 8 just like you! Want to go on an adventure together?",
@@ -1397,9 +1397,9 @@ class Game {
                 targetY: null,
                 wanderTimer: 0,
                 standTimer: 0,
-                baseX: 250,
-                baseY: 253,
-                followsPlayer: true,
+                baseX: 245,
+                baseY: 247,
+                followsPlayer: false,  // Start not following so player can find her
                 followDistance: 2,
                 isChild: true,
                 hearts: 10,  // Already best friends!
