@@ -4564,6 +4564,16 @@ class Game {
                 });
             }
 
+            // Add buildings
+            if (this.buildings) {
+                this.buildings.forEach(building => {
+                    if (building.x >= startX - 2 && building.x < endX + 2 &&
+                        building.y >= startY - 2 && building.y < endY + 2) {
+                        entities.push({ type: 'building', data: building, sortY: building.y + building.height, sortX: building.x });
+                    }
+                });
+            }
+
             // Add trees
             if (this.trees) {
                 this.trees.forEach(tree => {
@@ -4616,6 +4626,8 @@ class Game {
         entities.forEach(entity => {
             if (entity.type === 'tree') {
                 this.renderIsometricTree(entity.data);
+            } else if (entity.type === 'building') {
+                this.renderBuilding(entity.data);
             } else if (entity.type === 'marker') {
                 this.renderMarker(entity.data);
             } else if (entity.type === 'npc') {
