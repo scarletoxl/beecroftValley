@@ -23,7 +23,7 @@ class Game {
 
         // Game state - Initialize with defaults
         this.player = {
-            x: 252, y: 248, // Start near Beecroft Railway Station in the village center
+            x: 243, y: 245, // Start at Woolworths in the village shopping center
             speed: 1,
             energy: 100,
             maxEnergy: 100,
@@ -331,10 +331,10 @@ class Game {
             { x: 280, y: 285, width: 70, height: 60, density: 0.72 }, // Near Cheltenham Girls
             { x: 180, y: 225, width: 55, height: 45, density: 0.65 }, // Near schools
 
-            // Central pockets between buildings (residential street trees)
-            { x: 255, y: 237, width: 35, height: 30, density: 0.5 },
-            { x: 260, y: 268, width: 40, height: 35, density: 0.55 },
-            { x: 230, y: 248, width: 30, height: 28, density: 0.5 },
+            // Central pockets between buildings (residential street trees) - reduced density for better walking
+            { x: 255, y: 237, width: 35, height: 30, density: 0.25 },
+            { x: 260, y: 268, width: 40, height: 35, density: 0.3 },
+            { x: 230, y: 248, width: 30, height: 28, density: 0.25 },
 
             // Northeast corner - Large forested area
             { x: 420, y: 80, width: 70, height: 150, density: 0.65 },
@@ -375,7 +375,7 @@ class Game {
         });
 
         // Clear trees from spawn area and main roads to prevent getting stuck
-        this.clearSpawnArea(270, 260, 5); // Main spawn point on Malton Road
+        this.clearSpawnArea(243, 245, 10); // Main spawn point at Woolworths shopping center
         this.clearSpawnArea(235, 240, 3); // Near farm house
     }
 
@@ -390,7 +390,7 @@ class Game {
 
     clearTreesFromMarkers() {
         // Remove trees that are too close to any marker/building
-        const clearRadius = 8; // Clear trees within 8 tiles of any marker
+        const clearRadius = 12; // Clear trees within 12 tiles of any marker for better walking paths
         const originalCount = this.trees.length;
 
         this.trees = this.trees.filter(tree => {
