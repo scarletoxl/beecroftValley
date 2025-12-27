@@ -4661,7 +4661,7 @@ class Game {
             if (entity.type === 'tree') {
                 this.renderIsometricTree(entity.data);
             } else if (entity.type === 'building') {
-                this.renderBuilding(entity.data);
+                this.renderIsometricBuilding(entity.data);
             } else if (entity.type === 'marker') {
                 this.renderMarker(entity.data);
             } else if (entity.type === 'npc') {
