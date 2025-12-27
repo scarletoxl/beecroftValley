@@ -91,7 +91,9 @@ class Game {
         this.spriteManager = new SpriteManager();
         this.spriteGenerator = new ProceduralSpriteGenerator();
         this.buildingGenerator = new ProceduralBuildingGenerator();
+        this.furnitureGenerator = new ProceduralFurnitureGenerator();
         this.buildingSprites = {};
+        this.furnitureSprites = {};
         this.lastFrameTime = Date.now();
         this.deltaTime = 0;
 
@@ -5265,6 +5267,69 @@ class Game {
         this.ctx.fillStyle = '#666';
         this.ctx.fillText(`(${npc.role})`, screen.x, screen.y - 42);
         this.ctx.textAlign = 'left';
+    }
+
+    renderFurniture(furniture) {
+        // Generate furniture sprite if not already cached
+        if (!furniture.spriteData) {
+            const config = {
+                woodType: furniture.woodType || 'oak',
+                fabricColor: furniture.fabricColor || '#8D6E63',
+                size: furniture.size || 'medium',
+                isOn: furniture.isOn !== false,
+                hasItems: furniture.hasItems !== false,
+                hasComputer: furniture.hasComputer !== false,
+                hasDecor: furniture.hasDecor !== false,
+                beddingColor: furniture.beddingColor || '#BBDEFB',
+                pillowColors: furniture.pillowColors || ['#FFFFFF', '#E3F2FD'],
+                cabinetColor: furniture.cabinetColor || '#FFFFFF',
+                countertopColor: furniture.countertopColor || '#B0BEC5',
+                type: furniture.type || 'electric',
+                color: furniture.color || '#FFFFFF'
+            };
+
+            furniture.spriteData = this.furnitureGenerator.generateFurniture(furniture.type, config);
+        }
+
+        // Get screen position
+        const screen = this.worldToScreenWithCamera(furniture.x, furniture.y, 0);
+
+        // Draw the furniture sprite
+        if (furniture.spriteData && furniture.spriteData.canvas) {
+            const img = new Image();
+            img.src = furniture.spriteData.dataUrl;
+
+            // Draw centered at furniture position
+            const drawX = screen.x - furniture.spriteData.width / 2;
+            const drawY = screen.y - furniture.spriteData.height / 2;
+
+            this.ctx.drawImage(
+                furniture.spriteData.canvas,
+                drawX,
+                drawY
+            );
+        } else {
+            // Fallback to emoji rendering
+            this.ctx.font = '32px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(furniture.emoji || '📦', screen.x, screen.y);
+            this.ctx.textAlign = 'left';
+        }
+
+        // Show name on hover (for debugging/interaction)
+        if (furniture.interactive) {
+            const dx = this.player.x - furniture.x;
+            const dy = this.player.y - furniture.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 2) {
+                this.ctx.font = '10px Arial';
+                this.ctx.fillStyle = '#000';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(furniture.name, screen.x, screen.y - furniture.spriteData.height / 2 - 5);
+                this.ctx.textAlign = 'left';
+            }
+        }
     }
 
     renderInterior() {
