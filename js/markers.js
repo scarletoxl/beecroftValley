@@ -31,7 +31,7 @@ class BeeccroftPOIData {
             { name: "The Beehive Cafe", lat: -33.7502544, lng: 151.0652775, type: "cafe", emoji: "☕", canEnter: true, isRestaurant: true, hasJobs: true },
             { name: "Beecroft Village Shopping Centre", lat: -33.748883, lng: 151.06566, type: "shop", emoji: "🏪", canEnter: true, isShop: true },
             { name: "Beecroft Public School", lat: -33.7521663, lng: 151.0651659, type: "school", emoji: "🏫", canEnter: true, hasJobs: true },
-            { name: "Bridey's Home", lat: -33.7449847, lng: 151.0613656, type: "home", emoji: "🏠", canEnter: true, hasInterior: true, interiorName: "Bridie's Home" },
+            { name: "Bridie's Home", lat: -33.7449847, lng: 151.0613656, type: "home", emoji: "🏠", canEnter: true, hasInterior: true },
             { name: "My Home", lat: -33.7554966, lng: 151.0641447, type: "home", emoji: "🏡", canEnter: true, isPlayerHome: true, hasInterior: true },
             { name: "Beecroft Presbyterian Church", lat: -33.7532228, lng: 151.0645291, type: "church", emoji: "⛪", canEnter: true },
             { name: "Vintage Cellars", lat: -33.7529669, lng: 151.0652818, type: "shop", emoji: "🍷", canEnter: true, isShop: true, shopType: "liquor" },
