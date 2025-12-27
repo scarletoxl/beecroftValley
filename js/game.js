@@ -90,6 +90,8 @@ class Game {
         // Sprite system
         this.spriteManager = new SpriteManager();
         this.spriteGenerator = new ProceduralSpriteGenerator();
+        this.buildingGenerator = new ProceduralBuildingGenerator();
+        this.buildingSprites = {};
         this.lastFrameTime = Date.now();
         this.deltaTime = 0;
 
@@ -124,6 +126,7 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
+        this.initBuildingSprites(); // Generate beautiful isometric building sprites
         this.initStreetLights();
         this.initMarkers(); // Create markers from buildings
         this.clearTreesFromMarkers(); // Keep trees away from buildings
@@ -827,6 +830,159 @@ class Game {
                 }
             }
         });
+    }
+
+    // ===== BUILDING SPRITE GENERATION =====
+    // Generate beautiful isometric sprites for all buildings
+    initBuildingSprites() {
+        console.log('Generating building sprites...');
+
+        this.buildings.forEach(building => {
+            // Skip if building is marked for simple rendering
+            if (building.isChristmasTree || building.useSimpleRendering) {
+                return;
+            }
+
+            // Auto-generate buildingStyle if not specified
+            if (!building.buildingStyle) {
+                building.buildingStyle = this.generateBuildingStyle(building);
+            }
+
+            // Create unique key for this building
+            const spriteKey = `${building.type}_${building.width}_${building.height}_${building.name}`;
+
+            // Check if sprite already exists in cache
+            if (!this.buildingSprites[spriteKey]) {
+                // Generate the building sprite
+                const sprite = this.buildingGenerator.generateBuilding(
+                    building.type,
+                    building.width,
+                    building.height,
+                    building.buildingStyle
+                );
+
+                this.buildingSprites[spriteKey] = sprite;
+            }
+
+            // Assign sprite key to building
+            building.spriteKey = spriteKey;
+        });
+
+        console.log(`Generated ${Object.keys(this.buildingSprites).length} unique building sprites`);
+    }
+
+    // Auto-generate building style configuration based on building properties
+    generateBuildingStyle(building) {
+        const style = {};
+
+        // Set defaults based on building type
+        switch(building.type) {
+            case 'residential':
+            case 'home':
+                style.wallColor = '#E8D5C4';
+                style.roofColor = '#B84545';
+                style.windowCount = 2;
+                style.hasChimney = true;
+                style.hasGarden = true;
+                break;
+
+            case 'station':
+                style.wallColor = '#F5E6D3';
+                style.roofColor = '#2E7D32';
+                style.awningColor = '#4CAF50';
+                style.hasAwning = true;
+                style.hasClock = true;
+                style.signText = 'BEECROFT';
+                style.signEmoji = '🚂';
+                break;
+
+            case 'cafe':
+                style.wallColor = '#FFF8DC';
+                style.roofColor = '#8B4513';
+                style.awningColor = '#FF6347';
+                style.awningStriped = true;
+                style.hasOutdoorSeating = true;
+                style.windowStyle = 'large';
+                style.windowCount = 3;
+                style.signText = building.name.toUpperCase().substring(0, 12);
+                style.signEmoji = building.emoji || '☕';
+                break;
+
+            case 'restaurant':
+                style.wallColor = '#FFEBEE';
+                style.roofColor = '#8B4513';
+                style.awningColor = '#D32F2F';
+                style.awningStriped = true;
+                style.hasOutdoorSeating = true;
+                style.windowCount = 2;
+                style.signText = building.name.toUpperCase().substring(0, 12);
+                style.signEmoji = building.emoji || '🍽️';
+                break;
+
+            case 'shop':
+                if (building.name.includes('Woolworths')) {
+                    style.wallColor = '#FFFFFF';
+                    style.roofColor = '#757575';
+                    style.brandColor = '#4CAF50';
+                    style.signText = 'WOOLWORTHS';
+                    style.signEmoji = '🛒';
+                } else {
+                    style.wallColor = '#F5F5F5';
+                    style.roofColor = '#757575';
+                    style.brandColor = '#2196F3';
+                    style.signText = building.name.toUpperCase().substring(0, 12);
+                    style.signEmoji = building.emoji || '🏪';
+                }
+                style.windowCount = 3;
+                break;
+
+            case 'school':
+                style.wallColor = '#D84315';
+                style.roofColor = '#5D4037';
+                style.windowCount = 4;
+                style.isHeritage = building.name.includes('1897') || building.name.includes('Public');
+                break;
+
+            case 'clinic':
+            case 'vet':
+                style.wallColor = '#E3F2FD';
+                style.roofColor = '#90A4AE';
+                style.windowCount = 2;
+                style.signText = building.type === 'vet' ? 'VET CLINIC' : 'MEDICAL CLINIC';
+                break;
+
+            case 'church':
+                style.wallColor = '#D7CCC8';
+                style.roofColor = '#5D4037';
+                style.windowCount = 2;
+                break;
+
+            case 'community':
+                style.wallColor = '#ECEFF1';
+                style.roofColor = '#607D8B';
+                style.windowCount = 2;
+                break;
+
+            case 'gym':
+                style.wallColor = '#E1BEE7';
+                style.roofColor = '#7B1FA2';
+                style.windowCount = 2;
+                style.signText = building.name.toUpperCase().substring(0, 12);
+                style.signEmoji = building.emoji || '🏋️';
+                break;
+
+            default:
+                // Generic building
+                style.wallColor = building.color || '#D4A373';
+                style.roofColor = '#8B4513';
+                style.windowCount = 2;
+                if (building.emoji) {
+                    style.signEmoji = building.emoji;
+                }
+                break;
+        }
+
+        return style;
     }
 
     // ===== STREET LIGHTS INITIALIZATION =====
@@ -4867,6 +5023,67 @@ class Game {
             return;
         }
 
+        // Try to render with generated sprite first
+        if (building.spriteKey && this.buildingSprites[building.spriteKey]) {
+            this.renderBuildingWithSprite(building);
+        } else {
+            // Fallback to simple rendering if sprite not available
+            this.renderBuildingSimple(building);
+        }
+    }
+
+    renderBuildingWithSprite(building) {
+        const sprite = this.buildingSprites[building.spriteKey];
+        if (!sprite || !sprite.canvas) {
+            this.renderBuildingSimple(building);
+            return;
+        }
+
+        // Calculate center position of building in isometric space
+        const centerX = building.x + building.width / 2;
+        const centerY = building.y + building.height / 2;
+        const centerScreen = this.worldToScreenWithCamera(centerX, centerY, 0);
+
+        // Draw the building sprite centered on the building location
+        this.ctx.save();
+
+        // Draw sprite centered
+        const spriteX = centerScreen.x - sprite.width / 2;
+        const spriteY = centerScreen.y - sprite.height / 2;
+
+        this.ctx.drawImage(
+            sprite.canvas,
+            spriteX,
+            spriteY,
+            sprite.width,
+            sprite.height
+        );
+
+        this.ctx.restore();
+
+        // Show interaction hint if player is near and building is enterable
+        if (building.canEnter && building.hasInterior && this.player) {
+            const doorX = building.x + Math.floor(building.width / 2);
+            const doorY = building.y + building.height - 1;
+            const dist = Math.sqrt(
+                Math.pow(this.player.x - doorX, 2) +
+                Math.pow(this.player.y - doorY, 2)
+            );
+
+            if (dist < 3) {
+                const doorScreen = this.worldToScreenWithCamera(doorX, doorY, 0);
+                this.ctx.save();
+                this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Press SPACE to enter', doorScreen.x, doorScreen.y - 40);
+                this.ctx.restore();
+            }
+        }
+    }
+
+    renderBuildingSimple(building) {
+        // Simple fallback rendering (old method)
         // Draw building base tiles (flat, clean look)
         for (let by = 0; by < building.height; by++) {
             for (let bx = 0; bx < building.width; bx++) {
