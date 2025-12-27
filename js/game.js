@@ -382,8 +382,9 @@ class Game {
         });
 
         // Clear trees from spawn area and main roads to prevent getting stuck
-        this.clearSpawnArea(243, 245, 10); // Main spawn point at Woolworths shopping center
-        this.clearSpawnArea(235, 240, 3); // Near farm house
+        this.clearSpawnArea(243, 245, 20); // Main spawn point at Woolworths shopping center - increased radius
+        this.clearSpawnArea(245, 247, 15); // Bridie's spawn point
+        this.clearSpawnArea(235, 240, 8); // Near farm house
     }
 
     clearSpawnArea(centerX, centerY, radius) {
@@ -5256,9 +5257,9 @@ class Game {
         // Draw the building sprite centered on the building location
         this.ctx.save();
 
-        // Draw sprite centered
-        const spriteX = centerScreen.x - sprite.width / 2;
-        const spriteY = centerScreen.y - sprite.height / 2;
+        // Draw sprite centered - use Math.floor to prevent sub-pixel jitter
+        const spriteX = Math.floor(centerScreen.x - sprite.width / 2);
+        const spriteY = Math.floor(centerScreen.y - sprite.height / 2);
 
         this.ctx.drawImage(
             sprite.canvas,
