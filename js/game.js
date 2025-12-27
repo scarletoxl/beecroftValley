@@ -314,55 +314,23 @@ class Game {
 
     addTreeClusters() {
         const treeAreas = [
-            // Western Beecroft - Dense Blue Gum forest areas (expanded for 500x500 map)
-            { x: 20, y: 340, width: 180, height: 120, density: 0.85 }, // SW forest
-            { x: 30, y: 180, width: 160, height: 100, density: 0.75 }, // W forest
-            { x: 25, y: 40, width: 180, height: 110, density: 0.7 }, // NW forest
+            // Significantly reduced tree density - Only sparse edge forests remain
+            // Western edge - Light forest
+            { x: 20, y: 340, width: 80, height: 60, density: 0.25 }, // SW forest (reduced)
+            { x: 25, y: 40, width: 70, height: 50, density: 0.20 }, // NW forest (reduced)
 
-            // Northern edge forests
-            { x: 220, y: 20, width: 120, height: 80, density: 0.65 },
-            { x: 360, y: 30, width: 100, height: 90, density: 0.7 },
+            // Northern edge - Light forest
+            { x: 360, y: 30, width: 60, height: 40, density: 0.22 },
 
-            // Eastern residential areas - Medium density
-            { x: 310, y: 180, width: 140, height: 100, density: 0.6 },
-            { x: 340, y: 300, width: 120, height: 110, density: 0.65 },
-            { x: 380, y: 220, width: 90, height: 140, density: 0.55 },
+            // Southern edge - Light forest
+            { x: 60, y: 440, width: 80, height: 40, density: 0.23 },
 
-            // Southern areas - Dense eucalyptus
-            { x: 180, y: 370, width: 160, height: 100, density: 0.7 },
-            { x: 300, y: 400, width: 140, height: 80, density: 0.68 },
-            { x: 60, y: 430, width: 180, height: 60, density: 0.75 },
+            // Eastern edge - Light forest
+            { x: 420, y: 100, width: 60, height: 80, density: 0.20 },
 
-            // Around schools - Leafy surroundings
-            { x: 210, y: 270, width: 60, height: 55, density: 0.7 }, // Near Beecroft Public
-            { x: 280, y: 285, width: 70, height: 60, density: 0.72 }, // Near Cheltenham Girls
-            { x: 180, y: 225, width: 55, height: 45, density: 0.65 }, // Near schools
-
-            // Central pockets between buildings (residential street trees) - reduced density for better walking
-            { x: 255, y: 237, width: 35, height: 30, density: 0.25 },
-            { x: 260, y: 268, width: 40, height: 35, density: 0.3 },
-            { x: 230, y: 248, width: 30, height: 28, density: 0.25 },
-
-            // Northeast corner - Large forested area
-            { x: 420, y: 80, width: 70, height: 150, density: 0.65 },
-            { x: 360, y: 120, width: 90, height: 100, density: 0.6 },
-
-            // Southeast corner
-            { x: 400, y: 350, width: 90, height: 140, density: 0.68 },
-
-            // Far edges (very leafy suburb!)
-            { x: 5, y: 10, width: 60, height: 50, density: 0.72 },
-            { x: 440, y: 20, width: 55, height: 70, density: 0.7 },
-            { x: 10, y: 460, width: 80, height: 35, density: 0.75 },
-            { x: 430, y: 450, width: 65, height: 45, density: 0.72 },
-
-            // Additional residential pockets throughout
-            { x: 160, y: 160, width: 40, height: 35, density: 0.6 },
-            { x: 190, y: 200, width: 35, height: 30, density: 0.58 },
-            { x: 270, y: 195, width: 40, height: 35, density: 0.57 },
-            { x: 310, y: 240, width: 45, height: 40, density: 0.6 },
-            { x: 200, y: 310, width: 50, height: 45, density: 0.62 },
-            { x: 350, y: 160, width: 45, height: 40, density: 0.59 }
+            // Just a few scattered trees in far corners
+            { x: 5, y: 10, width: 40, height: 30, density: 0.18 },
+            { x: 440, y: 450, width: 40, height: 35, density: 0.18 }
         ];
 
         treeAreas.forEach(area => {
@@ -5066,7 +5034,11 @@ class Game {
     renderChristmasTree(building) {
         const centerX = building.x + building.width / 2;
         const centerY = building.y + building.height / 2;
-        const screen = this.worldToScreenWithCamera(centerX, centerY, 0);
+        const screen = this.mapSystem.gameToScreen(
+            centerX, centerY,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
         const treeHeight = 100;
         const time = Date.now();
 
@@ -5249,10 +5221,14 @@ class Game {
             return;
         }
 
-        // Calculate center position of building in isometric space
+        // Calculate center position of building using GPS-based map system
         const centerX = building.x + building.width / 2;
         const centerY = building.y + building.height / 2;
-        const centerScreen = this.worldToScreenWithCamera(centerX, centerY, 0);
+        const centerScreen = this.mapSystem.gameToScreen(
+            centerX, centerY,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Draw the building sprite centered on the building location
         this.ctx.save();
@@ -5281,7 +5257,11 @@ class Game {
             );
 
             if (dist < 3) {
-                const doorScreen = this.worldToScreenWithCamera(doorX, doorY, 0);
+                const doorScreen = this.mapSystem.gameToScreen(
+                    doorX, doorY,
+                    this.camera.x, this.camera.y,
+                    this.canvas.width, this.canvas.height
+                );
                 this.ctx.save();
                 this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 this.ctx.font = 'bold 12px Arial';
@@ -5293,24 +5273,26 @@ class Game {
     }
 
     renderBuildingSimple(building) {
-        // Simple fallback rendering (old method)
+        // Simple fallback rendering using GPS-based map system
         // Draw building base tiles (flat, clean look)
         for (let by = 0; by < building.height; by++) {
             for (let bx = 0; bx < building.width; bx++) {
-                const tileScreen = this.worldToScreenWithCamera(
+                const tileScreen = this.mapSystem.gameToScreen(
                     building.x + bx,
                     building.y + by,
-                    0
+                    this.camera.x, this.camera.y,
+                    this.canvas.width, this.canvas.height
                 );
                 this.drawIsometricTile(tileScreen.x, tileScreen.y, building.color || '#d4a373');
             }
         }
 
         // Center position for emoji
-        const centerScreen = this.worldToScreenWithCamera(
+        const centerScreen = this.mapSystem.gameToScreen(
             building.x + building.width / 2,
             building.y + building.height / 2,
-            0
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
         );
 
         // Emoji in center
@@ -5329,7 +5311,11 @@ class Game {
         // Door at front center-bottom of building
         const doorX = building.x + Math.floor(building.width / 2);
         const doorY = building.y + building.height - 1;
-        const doorScreen = this.worldToScreenWithCamera(doorX, doorY, 0);
+        const doorScreen = this.mapSystem.gameToScreen(
+            doorX, doorY,
+            this.camera.x, this.camera.y,
+            this.canvas.width, this.canvas.height
+        );
 
         // Door background (wooden brown)
         const doorWidth = 16;
@@ -5429,18 +5415,41 @@ class Game {
             this.ctx.fill();
         }
 
-        // Sick indicator
-        if (npc.isSick) {
-            this.ctx.font = '16px Arial';
-            this.ctx.fillText('🤢', screen.x + 8, screen.y - 35);
-        }
+        // Special indicator for Bridie - very visible!
+        if (npc.name === 'Bridie') {
+            // Bouncing star above Bridie's head
+            const bounce = Math.sin(Date.now() / 300) * 3;
+            this.ctx.font = '20px Arial';
+            this.ctx.fillText('⭐', screen.x - 10, screen.y - 60 + bounce);
 
-        // Name (smaller, more subtle)
-        this.ctx.font = '7px Arial';
-        this.ctx.fillStyle = '#000';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(npc.name, screen.x, screen.y - 50);
-        this.ctx.textAlign = 'left';
+            // Bright name label with background
+            this.ctx.save();
+            this.ctx.font = 'bold 12px Arial';
+            this.ctx.textAlign = 'center';
+
+            // Name background (bright pink)
+            const textWidth = this.ctx.measureText(npc.name).width;
+            this.ctx.fillStyle = '#FF69B4';
+            this.ctx.fillRect(screen.x - textWidth/2 - 3, screen.y - 58, textWidth + 6, 14);
+
+            // Name text (white)
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.fillText(npc.name, screen.x, screen.y - 48);
+            this.ctx.restore();
+        } else {
+            // Sick indicator for other NPCs
+            if (npc.isSick) {
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText('🤢', screen.x + 8, screen.y - 35);
+            }
+
+            // Name (smaller, more subtle)
+            this.ctx.font = '7px Arial';
+            this.ctx.fillStyle = '#000';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(npc.name, screen.x, screen.y - 50);
+            this.ctx.textAlign = 'left';
+        }
     }
 
     renderInteriorNPC(npc) {
