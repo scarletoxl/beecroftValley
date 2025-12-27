@@ -23,7 +23,7 @@ class Game {
 
         // Game state - Initialize with defaults
         this.player = {
-            x: 270, y: 260, // Start on Malton Road, east of shops (clear of buildings)
+            x: 252, y: 248, // Start near Beecroft Railway Station in the village center
             speed: 1,
             energy: 100,
             maxEnergy: 100,
