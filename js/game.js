@@ -117,6 +117,7 @@ class Game {
         // Cooking and Crafting systems
         this.cookingSystem = new CookingSystem(this);
         this.craftingSystem = new CraftingSystem(this);
+        this.tennisGame = new TennisGame(this);
 
         // Message system for notifications
         this.message = { text: '', duration: 0 };
@@ -717,26 +718,27 @@ class Game {
 
             // === RESIDENTIAL ADDRESSES ===
             {
-                name: "19 Albert Rd",
-                x: 233, y: 238,
-                width: 4, height: 4,
+                name: "My Home",
+                x: 270, y: 303,  // GPS coords from markers converted to game coords
+                width: 5, height: 5,
                 type: "home",
                 emoji: "🏡",
                 color: "#FFEBEE",
                 hasInterior: true,
                 canEnter: true,
-                isPlayerHome: true
+                isPlayerHome: true,
+                interiorName: "My Home"
             },
             {
-                name: "27 Welham St",
-                x: 236, y: 243,
-                width: 4, height: 4,
+                name: "Bridie's Home",
+                x: 219, y: 217,  // GPS coords from markers converted to game coords
+                width: 5, height: 5,
                 type: "home",
                 emoji: "🏠",
                 color: "#FFF3E0",
                 hasInterior: true,
                 canEnter: true,
-                interiorName: "Bridie's Home"  // Link to Bridie's home interior
+                interiorName: "Bridie's Home"
             },
 
             // === COMMUNITY GARDEN (near Village Green) ===
@@ -2394,7 +2396,11 @@ class Game {
                 exitY: 9,
                 spawnX: 6,
                 spawnY: 8,
-                npcs: []  // Player's home - empty
+                npcs: [],  // Player's home - empty
+                furniture: this.createHomeFurniture(),
+                hasBed: true,
+                hasStove: true,
+                hasFridge: true
             },
             "Bridie's Home": {
                 width: 12,
@@ -2407,7 +2413,11 @@ class Game {
                 npcs: [
                     { name: "Bridie's Mum", x: 3, y: 3, emoji: "👩", role: "Bridie's mother", greeting: "Oh hello dear! Bridie's outside somewhere - she loves following you around!" },
                     { name: "Family Cat", x: 8, y: 5, emoji: "🐱", role: "pet cat", greeting: "*purrs and rubs against your leg*" }
-                ]
+                ],
+                furniture: this.createHomeFurniture(),
+                hasBed: true,
+                hasStove: true,
+                hasFridge: true
             },
 
             // ===== TENNIS COURTS =====
@@ -2904,6 +2914,10 @@ class Game {
         window.addEventListener('keydown', (e) => {
             // ESC key handling for menus
             if (e.key === 'Escape') {
+                if (this.tennisGame && this.tennisGame.active) {
+                    this.tennisGame.stop();
+                    return;
+                }
                 if (this.uiState.showingSleepMenu) {
                     this.closeSleepMenu();
                     return;
@@ -2974,7 +2988,12 @@ class Game {
                             const dy = this.player.y - npc.y;
                             const distance = Math.sqrt(dx * dx + dy * dy);
                             if (distance < talkDistance) {
-                                this.showNPCDialog(npc, this.currentMap);
+                                // Check if it's a tennis coach and we're on a tennis court
+                                if (npc.role === 'tennis coach' && this.currentMap.includes('Tennis Court')) {
+                                    this.tennisGame.start();
+                                } else {
+                                    this.showNPCDialog(npc, this.currentMap);
+                                }
                                 foundInteriorNPC = true;
                                 break;
                             }
@@ -4377,6 +4396,13 @@ class Game {
         this.deltaTime = now - this.lastFrameTime;
         this.lastFrameTime = now;
 
+        // Update tennis game if active
+        if (this.tennisGame && this.tennisGame.active) {
+            this.tennisGame.update(this.deltaTime / 1000);
+            this.tennisGame.handleInput(this.keys);
+            return; // Skip normal game updates during tennis
+        }
+
         // Player movement
         const prevX = this.player.x;
         const prevY = this.player.y;
@@ -4667,6 +4693,12 @@ class Game {
         }
         if (this.craftingSystem) {
             this.craftingSystem.renderCraftingUI(this.ctx);
+        }
+
+        // Render tennis game (on top of everything else when active)
+        if (this.tennisGame && this.tennisGame.active) {
+            const interior = this.interiorMaps[this.currentMap];
+            this.tennisGame.render(this.ctx, interior);
         }
 
         // Render sleep menu
