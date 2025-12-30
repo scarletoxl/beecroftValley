@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OC Practice Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box .number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        
+        .stat-box .label {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            color: white;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .test-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .test-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .test-card.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .test-card.green::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .test-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .test-card.orange::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .test-card.pink::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+        
+        .test-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .test-label {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+        }
+        
+        .test-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-meta span {
+            font-size: 0.75em;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #475569;
+        }
+        
+        .test-card .play-icon {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .test-card:hover .play-icon {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .info-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .info-section h3 {
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .info-card h4 {
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .info-card p {
+            color: #94a3b8;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+        
+        .tips-list {
+            color: #94a3b8;
+            font-size: 0.9em;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        
+        .tips-list li {
+            margin-bottom: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85em;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 600px) {
+            .tests-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .stats-row {
+                gap: 15px;
+            }
+            
+            .stat-box {
+                padding: 12px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎯</div>
+            <h1>OC Practice Test Centre</h1>
+            <p>Prepare for the NSW Opportunity Class Placement Test</p>
+            
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="number">20</div>
+                    <div class="label">Practice Tests</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">82</div>
+                    <div class="label">Questions per Test</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">~2hrs</div>
+                    <div class="label">Per Full Test</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>📋 Test Format</h3>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>📖 Reading (40 minutes)</h4>
+                    <p>17 questions across multiple passages. Tests comprehension, inference, vocabulary, and analysis skills.</p>
+                </div>
+                <div class="info-card">
+                    <h4>🔢 Mathematical Reasoning (40 minutes)</h4>
+                    <p>35 questions covering patterns, word problems, fractions, geometry, time, money, and more.</p>
+                </div>
+                <div class="info-card">
+                    <h4>🧩 Thinking Skills (30 minutes)</h4>
+                    <p>30 questions testing logic, analogies, sequences, codes, spatial reasoning, and problem solving.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-title">📝 Select a Practice Test</div>
+        
+        <div class="tests-grid" id="tests-grid">
+            <!-- Tests will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="info-section">
+            <h3>💡 Tips for Success</h3>
+            <ul class="tips-list">
+                <li><strong>Time management:</strong> Don't spend too long on any single question. Skip and come back.</li>
+                <li><strong>Always answer:</strong> There's no penalty for wrong answers, so never leave a question blank.</li>
+                <li><strong>Read carefully:</strong> Many mistakes come from misreading the question.</li>
+                <li><strong>Check your work:</strong> If you finish early, go back and review your answers.</li>
+                <li><strong>Stay calm:</strong> Take a deep breath before starting. You've got this!</li>
+                <li><strong>Practice regularly:</strong> Aim for 2-3 tests per week leading up to the exam.</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>Each test draws from a bank of 300+ questions • Questions shuffle each time</p>
+        </div>
+    </div>
+    
+    <script>
+        const colors = ['blue', 'green', 'purple', 'orange', 'pink'];
+        const grid = document.getElementById('tests-grid');
+        
+        for (let i = 1; i <= 20; i++) {
+            const color = colors[(i - 1) % colors.length];
+            const card = document.createElement('a');
+            card.href = `oc-test-engine.html?test=${i}`;
+            card.className = `test-card ${color}`;
+            card.innerHTML = `
+                <div class="test-number">${i.toString().padStart(2, '0')}</div>
+                <div class="test-label">Practice Test</div>
+                <div class="test-meta">
+                    <span>82 Qs</span>
+                    <span>~110 min</span>
+                </div>
+                <div class="play-icon">▶</div>
+            `;
+            grid.appendChild(card);
+        }
+    </script>
+</body>
+</html>
