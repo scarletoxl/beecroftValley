@@ -46,11 +46,16 @@ class TennisGame {
     }
 
     update(deltaTime) {
-        if (!this.active || this.gameState !== 'playing') return;
+        if (!this.active || (this.gameState !== 'playing' && this.gameState !== 'serving')) return;
+        if (this.gameState === 'serving') return; // Wait during serve delay
 
         // Move ball
         this.ball.x += this.ball.vx * deltaTime * 60;
         this.ball.y += this.ball.vy * deltaTime * 60;
+
+        // Clamp ball to safe bounds (prevent any clipping)
+        this.ball.x = Math.max(1, Math.min(this.courtWidth - 1, this.ball.x));
+        this.ball.y = Math.max(1, Math.min(this.courtHeight - 1, this.ball.y));
 
         // Bounce off side walls
         if (this.ball.x < 2 || this.ball.x > this.courtWidth - 2) {
@@ -62,16 +67,30 @@ class TennisGame {
         if (this.ball.y > this.courtHeight - 2) {
             this.score.opponent++;
             this.rally = 0;
+            // Stop ball immediately
+            this.ball.vx = 0;
+            this.ball.vy = 0;
+            this.ball.x = this.courtWidth / 2;
+            this.ball.y = this.netY;
+            this.gameState = 'serving'; // Pause game state
             this.game.showMessage(`Opponent scores! ${this.score.player}-${this.score.opponent}`);
             this.checkWin();
+            return; // Stop processing this frame
         }
 
         // Check if ball goes past opponent (player scores)
         if (this.ball.y < 2) {
             this.score.player++;
             this.rally = 0;
+            // Stop ball immediately
+            this.ball.vx = 0;
+            this.ball.vy = 0;
+            this.ball.x = this.courtWidth / 2;
+            this.ball.y = this.netY;
+            this.gameState = 'serving'; // Pause game state
             this.game.showMessage(`You score! ${this.score.player}-${this.score.opponent}`);
             this.checkWin();
+            return; // Stop processing this frame
         }
 
         // AI opponent movement

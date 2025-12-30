@@ -131,8 +131,7 @@ class Game {
         this.initMap();
         this.initNPCs();
         this.initBuildings();
-        // Building sprites disabled - using marker system for cleaner visuals
-        // this.initBuildingSprites();
+        this.initBuildingSprites(); // Generate building sprites
         this.initStreetLights();
         this.initMarkers(); // Create markers from buildings
         this.clearTreesFromMarkers(); // Keep trees away from buildings
@@ -4594,8 +4593,15 @@ class Game {
                 });
             }
 
-            // Buildings disabled - using marker system for cleaner visuals
-            // The floating markers provide clear location indicators without visual clutter
+            // Add buildings
+            if (this.buildings) {
+                this.buildings.forEach(building => {
+                    if (building.x >= startX - 2 && building.x < endX + 2 &&
+                        building.y >= startY - 2 && building.y < endY + 2) {
+                        entities.push({ type: 'building', data: building, sortY: building.y + building.height, sortX: building.x });
+                    }
+                });
+            }
 
             // Add trees
             if (this.trees) {
