@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OC Full Mock Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Header */
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .section-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        
+        .section-icon.reading { background: #fecaca; }
+        .section-icon.maths { background: #bbf7d0; }
+        .section-icon.thinking { background: #bfdbfe; }
+        
+        .section-info h2 {
+            font-size: 1.1em;
+            color: #1e293b;
+        }
+        
+        .section-info span {
+            font-size: 0.85em;
+            color: #64748b;
+        }
+        
+        .timer-box {
+            text-align: right;
+        }
+        
+        .timer {
+            font-family: 'Courier New', monospace;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #1e293b;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        
+        .timer.warning { background: #fef3c7; color: #92400e; }
+        .timer.danger { background: #fecaca; color: #dc2626; animation: pulse 1s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .timer-label {
+            font-size: 0.75em;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        /* Progress */
+        .progress-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+        
+        .progress-bar.reading { background: #ef4444; }
+        .progress-bar.maths { background: #22c55e; }
+        .progress-bar.thinking { background: #3b82f6; }
+        
+        .progress-text {
+            font-size: 0.85em;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        
+        /* Passage */
+        .passage-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        
+        .passage-title {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .passage-text {
+            font-size: 0.95em;
+            line-height: 1.8;
+            color: #334155;
+        }
+        
+        .passage-text p {
+            margin-bottom: 12px;
+        }
+        
+        /* Question */
+        .question-box {
+            margin-bottom: 20px;
+        }
+        
+        .question-number {
+            font-size: 0.8em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            color: #1e293b;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        /* Options */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        .option:hover:not(.disabled) {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+        
+        .option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .option.correct {
+            border-color: #22c55e;
+            background: #dcfce7;
+        }
+        
+        .option.incorrect {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .option.show-correct {
+            border-color: #22c55e;
+            background: #dcfce7;
+        }
+        
+        .option.disabled { cursor: default; }
+        
+        .option-letter {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+        
+        .option.selected .option-letter { background: #3b82f6; color: white; }
+        .option.correct .option-letter { background: #22c55e; color: white; }
+        .option.incorrect .option-letter { background: #ef4444; color: white; }
+        .option.show-correct .option-letter { background: #22c55e; color: white; }
+        
+        /* Navigation */
+        .nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: #64748b;
+        }
+        
+        .btn-ghost:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+        
+        .btn-outline {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-outline:hover:not(:disabled) {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            background: #16a34a;
+        }
+        
+        /* Welcome Screen */
+        .welcome {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .welcome-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+        
+        .welcome h1 {
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1.8em;
+        }
+        
+        .welcome-sub {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        
+        .test-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .test-info-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px 15px;
+            text-align: center;
+        }
+        
+        .test-info-card.reading { border-top: 4px solid #ef4444; }
+        .test-info-card.maths { border-top: 4px solid #22c55e; }
+        .test-info-card.thinking { border-top: 4px solid #3b82f6; }
+        
+        .test-info-card .icon {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+        
+        .test-info-card h3 {
+            font-size: 0.9em;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+        
+        .test-info-card .stat {
+            font-size: 0.8em;
+            color: #64748b;
+        }
+        
+        .instructions-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .instructions-box h4 {
+            color: #92400e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .instructions-box ul {
+            color: #78350f;
+            padding-left: 20px;
+            font-size: 0.9em;
+        }
+        
+        .instructions-box li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            font-size: 1.1em;
+            padding: 14px 40px;
+            border-radius: 10px;
+        }
+        
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+        
+        /* Section Intro */
+        .section-intro {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .section-intro .big-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .section-intro h2 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .section-intro .meta {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        
+        .section-intro .info-pills {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .section-intro .pill {
+            background: #f1f5f9;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #475569;
+        }
+        
+        .section-intro .tip {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: #166534;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Question Navigator Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 450px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+        
+        .q-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .q-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        
+        .q-cell:hover {
+            transform: scale(1.1);
+        }
+        
+        .q-cell.answered {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .q-cell.unanswered {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .q-cell.current {
+            outline: 3px solid #3b82f6;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.8em;
+            color: #64748b;
+        }
+        
+        .legend span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .legend-dot.answered { background: #dcfce7; border: 1px solid #166534; }
+        .legend-dot.unanswered { background: #fef2f2; border: 1px solid #dc2626; }
+        
+        /* Results */
+        .results {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .results-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .results h1 {
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .final-score {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #3b82f6;
+            margin: 15px 0;
+        }
+        
+        .final-percent {
+            font-size: 1.3em;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        
+        .time-summary {
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-bottom: 25px;
+        }
+        
+        .score-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .score-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 18px 15px;
+        }
+        
+        .score-card.reading { border-top: 4px solid #ef4444; }
+        .score-card.maths { border-top: 4px solid #22c55e; }
+        .score-card.thinking { border-top: 4px solid #3b82f6; }
+        
+        .score-card-label {
+            font-size: 0.8em;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
+        .score-card-value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        
+        .score-card-pct {
+            font-size: 0.85em;
+            color: #64748b;
+        }
+        
+        .feedback-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        /* Review Section */
+        .review-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .review-tab {
+            padding: 10px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.15s;
+        }
+        
+        .review-tab:hover {
+            border-color: #cbd5e1;
+        }
+        
+        .review-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .review-list {
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .review-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #e2e8f0;
+        }
+        
+        .review-item.correct { border-left-color: #22c55e; }
+        .review-item.incorrect { border-left-color: #ef4444; }
+        
+        .review-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .review-item-q {
+            font-weight: 500;
+            color: #64748b;
+            font-size: 0.85em;
+        }
+        
+        .review-item-status {
+            font-size: 0.8em;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .review-item-status.correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .review-item-status.incorrect {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .review-item-text {
+            color: #334155;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .review-item-answer {
+            font-size: 0.85em;
+            color: #64748b;
+        }
+        
+        .review-item-answer strong {
+            color: #22c55e;
+        }
+        
+        .review-item-explanation {
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            padding: 10px 12px;
+            margin-top: 10px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85em;
+            color: #78350f;
+        }
+        
+        /* Visual elements for questions */
+        .number-sequence {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .seq-box {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        
+        .seq-box.mystery {
+            background: #f59e0b;
+        }
+        
+        .seq-box.blank {
+            background: #e2e8f0;
+            color: #64748b;
+            border: 2px dashed #94a3b8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .test-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .q-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="app"></div>
+    </div>
+
+    <script>
+        // ==================== QUESTION BANKS ====================
+        
+        const passages = {
+            // PASSAGE 1: Fiction/Fantasy
+            dragons: {
+                title: "The Last Dragon Keeper",
+                text: `<p>Mira had always known she was different. While other children in the mountain village played with wooden swords and rag dolls, she spent her time watching the clouds, searching for shapes that might be more than clouds.</p>
+                
+<p>On the morning of her twelfth birthday, she found the egg. It was nestled in the hollow of an ancient oak tree, no bigger than her fist, its shell swirling with colours like oil on water. When she touched it, warmth spread through her fingers and up her arm.</p>
+
+<p>"You shouldn't have found that," said a voice behind her. Mira spun around to see an old woman she'd never noticed in the village before. Her eyes were the same swirling colours as the egg.</p>
+
+<p>"The dragon keepers died out a hundred years ago," the woman continued, her voice neither angry nor kind. "Or so everyone believed. But the dragons knew better. They've been waiting, hiding their eggs in places only a true keeper could find."</p>
+
+<p>Mira looked down at the egg in her hands. It pulsed gently, like a heartbeat. "What do I do?" she whispered.</p>
+
+<p>"You keep it warm. You keep it safe. And when it hatches, you'll discover what you were born to do." The old woman smiled, and for just a moment, Mira thought she saw scales shimmer beneath the wrinkled skin. "The age of dragons isn't over, child. It's just beginning again."</p>`
+            },
+            
+            // PASSAGE 2: Science/Non-fiction
+            octopus: {
+                title: "Masters of Disguise: The Incredible Octopus",
+                text: `<p>If you could have any superpower, you might want to consider those of the octopus. These remarkable sea creatures can change their colour, texture, and even shape in less than a second — faster than you can blink.</p>
+
+<p>An octopus's skin contains thousands of special cells called chromatophores. Each cell is like a tiny bag of coloured pigment surrounded by muscles. When the muscles contract, the bag stretches out and the colour becomes visible. When they relax, the colour disappears. By controlling millions of these cells independently, an octopus can create incredibly complex patterns.</p>
+
+<p>But colour is only part of the trick. Octopuses can also change their skin texture from smooth to bumpy or spiky, allowing them to mimic coral, seaweed, or rocky surfaces. Some species can even alter their body shape to impersonate other sea creatures. The mimic octopus can make itself look like a flatfish, a lionfish, or a sea snake — choosing whichever disguise is most likely to scare away a particular predator.</p>
+
+<p>Scientists have discovered that octopuses are surprisingly intelligent. They can solve puzzles, open jars, and even recognise individual human faces. In laboratory experiments, octopuses have learned to navigate mazes and remember solutions for months.</p>
+
+<p>Perhaps most remarkably, octopuses have three hearts and blue blood. Two hearts pump blood to the gills, while the third pumps it to the rest of the body. Their blood is blue because it contains copper-based molecules instead of the iron-based haemoglobin found in human blood.</p>`
+            },
+            
+            // PASSAGE 3: Letter/Personal
+            letter: {
+                title: "A Letter Home",
+                text: `<p><em>14 Hillside Road<br>Queenstown, New Zealand<br>15th March</em></p>
+
+<p>Dear Grandma,</p>
+
+<p>I know you were worried about me coming so far away for the school exchange program, but I want you to know I'm having the most amazing time. New Zealand is nothing like home — the mountains here are so tall they have snow on top even though it's nearly autumn!</p>
+
+<p>My host family, the Ngatas, have been so welcoming. Mrs Ngata is teaching me to cook traditional Māori food, and yesterday we made something called hāngī, where the food is cooked underground using hot stones. It took hours, but it was delicious — the lamb just fell apart!</p>
+
+<p>The best part was last weekend when we visited a place called Milford Sound. We took a boat through this incredible fjord with waterfalls crashing down the cliffs. A pod of dolphins swam alongside our boat, and I actually cried (don't tell Mum).</p>
+
+<p>I miss your Sunday roasts and our walks in the park. Sometimes at night, I look at the stars and try to find the same ones you might be looking at, but then I remember — the stars are completely different down here! They have a constellation called the Southern Cross that we can't see from home.</p>
+
+<p>Only three more weeks until I'm back. Save me some of your lemon cake?</p>
+
+<p>All my love,<br>Emma</p>
+
+<p>P.S. I've attached a photo of me with a kiwi bird. They're much smaller than I expected!</p>`
+            },
+            
+            // PASSAGE 4: Informational/Historical
+            library: {
+                title: "The Library of Alexandria",
+                text: `<p>Imagine a building that held all the knowledge in the ancient world — every scroll, every book, every discovery. The Library of Alexandria, built in Egypt over 2,300 years ago, aimed to be exactly that.</p>
+
+<p>The library was founded by Ptolemy I, a general who became ruler of Egypt after Alexander the Great's death. Ptolemy wanted Alexandria to be the intellectual centre of the world. He ordered that every ship arriving in the city's harbour must hand over any books on board. Scribes would make copies, returning the copies to the ships while keeping the originals for the library.</p>
+
+<p>At its peak, the library may have held between 400,000 and 700,000 scrolls. Scholars from across the Mediterranean came to study there. The mathematician Euclid developed his theories of geometry within its walls. The astronomer Eratosthenes used the library's resources to calculate the Earth's circumference — and came remarkably close to the actual figure.</p>
+
+<p>The library's fate remains one of history's great mysteries. There was no single moment of destruction. Instead, it likely declined over centuries through fires, wars, and neglect. Some historians blame Julius Caesar, whose soldiers accidentally set fire to the harbour in 48 BCE. Others point to later conflicts. What's certain is that by the time the Arab general Amr ibn al-As conquered Alexandria in 641 CE, the great library had long since faded.</p>
+
+<p>The loss of the Library of Alexandria is often called one of history's greatest tragedies. Countless works of literature, science, and philosophy — many existing nowhere else — vanished forever. We can only wonder what secrets those lost scrolls might have held.</p>`
+            },
+            
+            // PASSAGE 5: Poetry
+            poem: {
+                title: "The Road Not Taken (Excerpt) — Robert Frost",
+                text: `<p style="font-style: italic; line-height: 2;">Two roads diverged in a yellow wood,<br>
+And sorry I could not travel both<br>
+And be one traveler, long I stood<br>
+And looked down one as far as I could<br>
+To where it bent in the undergrowth;</p>
+
+<p style="font-style: italic; line-height: 2;">Then took the other, as just as fair,<br>
+And having perhaps the better claim,<br>
+Because it was grassy and wanted wear;<br>
+Though as for that the passing there<br>
+Had worn them really about the same,</p>
+
+<p style="font-style: italic; line-height: 2;">And both that morning equally lay<br>
+In leaves no step had trodden black.<br>
+Oh, I kept the first for another day!<br>
+Yet knowing how way leads on to way,<br>
+I doubted if I should ever come back.</p>`
+            }
+        };
+
+        // READING QUESTIONS (25 answers across ~14 questions)
+        const readingQuestions = [
+            // Dragons passage (Q1-4)
+            {
+                passageId: "dragons",
+                question: "At what age does Mira find the dragon egg?",
+                options: ["10 years old", "11 years old", "12 years old", "13 years old"],
+                correct: 2,
+                explanation: "The passage states 'On the morning of her twelfth birthday, she found the egg.'"
+            },
+            {
+                passageId: "dragons",
+                question: "What made Mira different from other children in her village?",
+                options: [
+                    "She could talk to dragons",
+                    "She spent time watching clouds instead of playing",
+                    "She lived alone in the mountains",
+                    "She was the oldest child in the village"
+                ],
+                correct: 1,
+                explanation: "The passage says 'While other children played with wooden swords and rag dolls, she spent her time watching the clouds, searching for shapes.'"
+            },
+            {
+                passageId: "dragons",
+                question: "The phrase 'its shell swirling with colours like oil on water' is an example of:",
+                options: ["Personification", "Alliteration", "A simile", "A metaphor"],
+                correct: 2,
+                explanation: "A simile compares two things using 'like' or 'as'. Here, the shell's colours are compared to oil on water using 'like'."
+            },
+            {
+                passageId: "dragons",
+                question: "What does the old woman imply about herself at the end of the passage?",
+                options: [
+                    "She is Mira's grandmother",
+                    "She is a dragon or connected to dragons",
+                    "She is a village elder",
+                    "She found an egg when she was young"
+                ],
+                correct: 1,
+                explanation: "The passage says 'Mira thought she saw scales shimmer beneath the wrinkled skin' — suggesting the woman may be part dragon or a transformed dragon."
+            },
+            
+            // Octopus passage (Q5-8)
+            {
+                passageId: "octopus",
+                question: "What are chromatophores?",
+                options: [
+                    "Octopus tentacles",
+                    "Cells that allow colour change",
+                    "Types of coral",
+                    "Special octopus eyes"
+                ],
+                correct: 1,
+                explanation: "The passage explains that chromatophores are 'special cells' in an octopus's skin that contain 'coloured pigment' and enable colour change."
+            },
+            {
+                passageId: "octopus",
+                question: "How does the mimic octopus protect itself from predators?",
+                options: [
+                    "By spraying ink",
+                    "By changing into shapes of dangerous animals",
+                    "By hiding in shells",
+                    "By swimming very fast"
+                ],
+                correct: 1,
+                explanation: "The passage states the mimic octopus 'can make itself look like a flatfish, a lionfish, or a sea snake — choosing whichever disguise is most likely to scare away a particular predator.'"
+            },
+            {
+                passageId: "octopus",
+                question: "Why is an octopus's blood blue?",
+                options: [
+                    "They live in cold water",
+                    "It contains copper instead of iron",
+                    "They eat blue sea creatures",
+                    "It helps them change colour"
+                ],
+                correct: 1,
+                explanation: "The passage states 'Their blood is blue because it contains copper-based molecules instead of the iron-based haemoglobin found in human blood.'"
+            },
+            {
+                passageId: "octopus",
+                question: "The word 'impersonate' in paragraph 3 most likely means:",
+                options: ["To swim like", "To eat", "To pretend to be", "To hide from"],
+                correct: 2,
+                explanation: "In context, 'impersonate' means to copy or pretend to be something else — the octopus changes its shape to look like other sea creatures."
+            },
+            
+            // Letter passage (Q9-11)
+            {
+                passageId: "letter",
+                question: "Where is Emma writing from?",
+                options: ["Australia", "England", "New Zealand", "Scotland"],
+                correct: 2,
+                explanation: "The address at the top of the letter shows 'Queenstown, New Zealand' and Emma mentions it throughout."
+            },
+            {
+                passageId: "letter",
+                question: "What made Emma cry during her trip?",
+                options: [
+                    "Missing her grandmother",
+                    "Seeing dolphins at Milford Sound",
+                    "The difficulty of cooking hāngī",
+                    "Looking at different stars"
+                ],
+                correct: 1,
+                explanation: "Emma writes 'A pod of dolphins swam alongside our boat, and I actually cried (don't tell Mum).'"
+            },
+            {
+                passageId: "letter",
+                question: "Based on the letter, how would you describe Emma's feelings about her exchange trip?",
+                options: [
+                    "She is homesick and wants to leave",
+                    "She is enjoying it but also misses home",
+                    "She wants to stay forever",
+                    "She is bored and disappointed"
+                ],
+                correct: 1,
+                explanation: "Emma describes having 'the most amazing time' but also says she misses her grandmother's roasts and walks. She's enjoying the trip while also looking forward to going home."
+            },
+            
+            // Library passage (Q12-14)
+            {
+                passageId: "library",
+                question: "How did Ptolemy I acquire books for the library?",
+                options: [
+                    "He bought them from merchants",
+                    "He took books from ships and kept the originals",
+                    "Scholars donated their collections",
+                    "He wrote them himself"
+                ],
+                correct: 1,
+                explanation: "The passage states that ships 'must hand over any books on board. Scribes would make copies, returning the copies to the ships while keeping the originals.'"
+            },
+            {
+                passageId: "library",
+                question: "What mathematical achievement is mentioned in the passage?",
+                options: [
+                    "Discovering pi",
+                    "Calculating Earth's circumference",
+                    "Inventing algebra",
+                    "Measuring the pyramids"
+                ],
+                correct: 1,
+                explanation: "The passage mentions that 'Eratosthenes used the library's resources to calculate the Earth's circumference.'"
+            },
+            {
+                passageId: "library",
+                question: "According to the passage, what happened to the Library of Alexandria?",
+                options: [
+                    "It was destroyed in a single fire",
+                    "It was moved to Rome",
+                    "It declined gradually over centuries",
+                    "It still exists today"
+                ],
+                correct: 2,
+                explanation: "The passage states 'There was no single moment of destruction. Instead, it likely declined over centuries through fires, wars, and neglect.'"
+            },
+            
+            // Poem passage (Q15-17)
+            {
+                passageId: "poem",
+                question: "What is the setting of this poem?",
+                options: [
+                    "A beach in summer",
+                    "A forest in autumn",
+                    "A mountain in winter",
+                    "A garden in spring"
+                ],
+                correct: 1,
+                explanation: "The poem mentions 'a yellow wood' and 'leaves' — yellow leaves indicate autumn/fall. The diverging roads are in a forest."
+            },
+            {
+                passageId: "poem",
+                question: "Why did the speaker choose the second road?",
+                options: [
+                    "It was shorter",
+                    "Someone recommended it",
+                    "It seemed slightly less worn",
+                    "It was clearly safer"
+                ],
+                correct: 2,
+                explanation: "The speaker says they took the other road 'Because it was grassy and wanted wear' — meaning it appeared slightly less used."
+            },
+            {
+                passageId: "poem",
+                question: "What does the speaker doubt at the end of the excerpt?",
+                options: [
+                    "Whether the road is safe",
+                    "Whether they chose correctly",
+                    "Whether they'll return to try the other road",
+                    "Whether anyone else has been there"
+                ],
+                correct: 2,
+                explanation: "The speaker says 'I kept the first for another day! Yet knowing how way leads on to way, I doubted if I should ever come back.'"
+            }
+        ];
+
+        // MATHS QUESTIONS (35 questions)
+        const mathsQuestions = [
+            // Basic operations
+            { question: "What is 456 + 378?", options: ["824", "834", "814", "844"], correct: 1, explanation: "456 + 378 = 834. Add carefully: 6+8=14 (carry 1), 5+7+1=13 (carry 1), 4+3+1=8." },
+            { question: "What is 803 - 457?", options: ["346", "356", "446", "336"], correct: 0, explanation: "803 - 457 = 346. You need to borrow: 803 = 790 + 13, then subtract." },
+            { question: "What is 37 × 8?", options: ["286", "296", "306", "276"], correct: 1, explanation: "37 × 8 = (30 × 8) + (7 × 8) = 240 + 56 = 296." },
+            { question: "What is 432 ÷ 6?", options: ["62", "72", "82", "52"], correct: 1, explanation: "432 ÷ 6 = 72. Check: 72 × 6 = 432 ✓" },
+            
+            // Patterns
+            { question: "What comes next in the pattern?\n5, 10, 20, 40, ?", options: ["60", "70", "80", "100"], correct: 2, explanation: "Each number doubles (×2). So 40 × 2 = 80." },
+            { question: "What comes next?\n1, 4, 9, 16, 25, ?", options: ["30", "36", "34", "49"], correct: 1, explanation: "These are square numbers: 1², 2², 3², 4², 5², 6² = 36." },
+            { question: "What is the missing number?\n2, 5, 11, 23, ?", options: ["35", "47", "46", "34"], correct: 1, explanation: "Pattern: ×2+1. So 2×2+1=5, 5×2+1=11, 11×2+1=23, 23×2+1=47." },
+            { question: "Complete the pattern:\n3, 6, 12, 24, 48, ?", options: ["72", "96", "84", "60"], correct: 1, explanation: "Each number doubles. 48 × 2 = 96." },
+            
+            // Fractions and decimals
+            { question: "What fraction is equivalent to 4/6?", options: ["2/4", "8/10", "2/3", "3/4"], correct: 2, explanation: "4/6 simplifies to 2/3 (divide both by 2). 4÷2=2, 6÷2=3." },
+            { question: "What is 3/4 + 1/2?", options: ["4/6", "1 1/4", "5/4", "1"], correct: 1, explanation: "Convert to same denominator: 3/4 + 2/4 = 5/4 = 1 1/4." },
+            { question: "What is 2/5 of 45?", options: ["9", "18", "22.5", "15"], correct: 1, explanation: "2/5 of 45 = (45 ÷ 5) × 2 = 9 × 2 = 18." },
+            { question: "Which is smallest: 0.4, 3/8, 0.35, 2/5?", options: ["0.4", "3/8", "0.35", "2/5"], correct: 2, explanation: "Convert all: 0.4=0.40, 3/8=0.375, 0.35=0.35, 2/5=0.40. Smallest is 0.35." },
+            
+            // Word problems
+            { question: "A cinema has 24 rows with 18 seats in each row. How many seats are there in total?", options: ["432", "412", "422", "442"], correct: 0, explanation: "24 × 18 = 432 seats. Calculate: 24 × 18 = 24 × 20 - 24 × 2 = 480 - 48 = 432." },
+            { question: "Sam has $50. He buys 3 books at $8.50 each. How much money does he have left?", options: ["$24.50", "$25.50", "$23.50", "$26.50"], correct: 1, explanation: "3 × $8.50 = $25.50 spent. $50 - $25.50 = $24.50. Wait, let me recalculate: $50.00 - $25.50 = $24.50. That's option A." },
+            { question: "A recipe uses 250g of flour. How much flour is needed to make 4 batches?", options: ["750g", "1kg", "1.25kg", "900g"], correct: 1, explanation: "250g × 4 = 1000g = 1kg." },
+            { question: "A train leaves at 9:45 AM and arrives at 1:20 PM. How long is the journey?", options: ["3 hours 35 min", "3 hours 25 min", "4 hours 35 min", "3 hours 45 min"], correct: 0, explanation: "9:45 to 1:20: 9:45→12:45 is 3 hours, 12:45→1:20 is 35 min. Total: 3 hours 35 min." },
+            
+            // Time
+            { question: "If today is Wednesday, what day will it be in 30 days?", options: ["Thursday", "Friday", "Saturday", "Wednesday"], correct: 1, explanation: "30 ÷ 7 = 4 remainder 2. So 30 days from Wednesday is 2 days later = Friday." },
+            { question: "A movie is 2 hours 15 minutes long. If it starts at 4:50 PM, when does it end?", options: ["7:05 PM", "6:55 PM", "7:15 PM", "6:05 PM"], correct: 0, explanation: "4:50 + 2 hours = 6:50. 6:50 + 15 min = 7:05 PM." },
+            
+            // Geometry
+            { question: "What is the perimeter of a rectangle with length 15cm and width 8cm?", options: ["46cm", "120cm", "23cm", "56cm"], correct: 0, explanation: "Perimeter = 2 × (length + width) = 2 × (15 + 8) = 2 × 23 = 46cm." },
+            { question: "A square has a perimeter of 36cm. What is the length of one side?", options: ["6cm", "9cm", "12cm", "18cm"], correct: 1, explanation: "A square has 4 equal sides. 36 ÷ 4 = 9cm per side." },
+            { question: "What is the area of a triangle with base 12cm and height 8cm?", options: ["96cm²", "48cm²", "20cm²", "40cm²"], correct: 1, explanation: "Area of triangle = (base × height) ÷ 2 = (12 × 8) ÷ 2 = 96 ÷ 2 = 48cm²." },
+            
+            // Money
+            { question: "How many 35-cent stamps can you buy with $5?", options: ["12", "13", "14", "15"], correct: 2, explanation: "$5 = 500 cents. 500 ÷ 35 = 14 remainder 10. You can buy 14 stamps." },
+            { question: "Jake earns $12.50 per hour. How much does he earn in 6 hours?", options: ["$72", "$75", "$65", "$78"], correct: 1, explanation: "$12.50 × 6 = $75.00." },
+            
+            // Statistics
+            { question: "The ages of 5 children are: 8, 10, 9, 12, 11. What is the mean (average) age?", options: ["9", "10", "11", "9.5"], correct: 1, explanation: "Mean = (8+10+9+12+11) ÷ 5 = 50 ÷ 5 = 10." },
+            { question: "In a class, 12 students walk to school, 8 take the bus, and 5 are driven. What fraction walk?", options: ["12/25", "12/20", "12/24", "1/2"], correct: 0, explanation: "Total students = 12+8+5 = 25. Fraction walking = 12/25." },
+            
+            // Place value
+            { question: "In the number 47,392, what is the value of the digit 7?", options: ["7", "70", "700", "7,000"], correct: 3, explanation: "The 7 is in the thousands place, so its value is 7,000." },
+            { question: "Round 3,847 to the nearest hundred.", options: ["3,800", "3,850", "3,900", "4,000"], correct: 0, explanation: "3,847 → look at tens digit (4). Since 4 < 5, round down to 3,800." },
+            
+            // More complex problems
+            { question: "If 5 apples cost $3.75, how much do 8 apples cost?", options: ["$6.00", "$5.50", "$6.25", "$5.75"], correct: 0, explanation: "One apple = $3.75 ÷ 5 = $0.75. Eight apples = $0.75 × 8 = $6.00." },
+            { question: "A pool is being filled at 50 litres per minute. How many litres in 2.5 hours?", options: ["7,500L", "125L", "750L", "3,000L"], correct: 0, explanation: "2.5 hours = 150 minutes. 50 × 150 = 7,500 litres." },
+            { question: "What is 15% of 80?", options: ["12", "15", "8", "10"], correct: 0, explanation: "15% of 80 = (15/100) × 80 = 0.15 × 80 = 12." },
+            { question: "A shirt costs $45. It is reduced by 20%. What is the new price?", options: ["$40", "$36", "$38", "$35"], correct: 1, explanation: "20% of $45 = $9. New price = $45 - $9 = $36." },
+            
+            // Order of operations
+            { question: "What is 6 + 4 × 3?", options: ["30", "18", "22", "42"], correct: 1, explanation: "Multiply first: 4 × 3 = 12. Then add: 6 + 12 = 18." },
+            { question: "What is (8 + 4) × 5 - 10?", options: ["50", "60", "52", "42"], correct: 0, explanation: "Brackets first: 8+4=12. Then multiply: 12×5=60. Then subtract: 60-10=50." },
+            
+            // More patterns
+            { question: "Find the rule: 3→7, 5→11, 8→17. What does 10 become?", options: ["19", "21", "23", "20"], correct: 1, explanation: "Rule: multiply by 2, add 1. So 10×2+1 = 21." },
+            { question: "In a sequence, each term is 7 more than the previous. If the first term is 4, what is the 6th term?", options: ["39", "32", "35", "42"], correct: 0, explanation: "Terms: 4, 11, 18, 25, 32, 39. The 6th term is 39." }
+        ];
+        
+        // Fix the maths question about Sam's books
+        mathsQuestions[13] = { question: "Sam has $50. He buys 3 books at $8.50 each. How much money does he have left?", options: ["$24.50", "$25.50", "$23.50", "$26.50"], correct: 0, explanation: "3 × $8.50 = $25.50 spent. $50.00 - $25.50 = $24.50 remaining." };
+
+        // THINKING SKILLS QUESTIONS (30 questions)
+        const thinkingQuestions = [
+            // Analogies
+            { question: "BIRD is to NEST as BEE is to:", options: ["Honey", "Hive", "Flower", "Wing"], correct: 1, explanation: "A bird lives in a nest. A bee lives in a hive. Both are homes for the creatures." },
+            { question: "BOOK is to READ as SONG is to:", options: ["Dance", "Listen", "Sing", "Music"], correct: 1, explanation: "You read a book (consume it). You listen to a song (consume it). Both are ways of experiencing the thing." },
+            { question: "HAND is to GLOVE as FOOT is to:", options: ["Leg", "Toe", "Sock", "Walk"], correct: 2, explanation: "A glove covers a hand. A sock covers a foot." },
+            { question: "AUTHOR is to BOOK as COMPOSER is to:", options: ["Music", "Instrument", "Orchestra", "Song"], correct: 0, explanation: "An author creates books. A composer creates music." },
+            
+            // Logic
+            { question: "All cats have tails. Fluffy is a cat. What can we conclude?", options: ["Fluffy likes fish", "Fluffy has four legs", "Fluffy has a tail", "Fluffy can climb trees"], correct: 2, explanation: "If ALL cats have tails, and Fluffy IS a cat, then Fluffy must have a tail. This is logical deduction." },
+            { question: "No reptiles have fur. A snake is a reptile. Therefore:", options: ["Snakes are cold", "Snakes have no legs", "Snakes have no fur", "Snakes lay eggs"], correct: 2, explanation: "If NO reptiles have fur, and a snake IS a reptile, then snakes have no fur." },
+            { question: "If all Zings are Zangs, and all Zangs are Zungs, which MUST be true?", options: ["All Zungs are Zings", "All Zings are Zungs", "Some Zungs are Zangs", "No Zings are Zungs"], correct: 1, explanation: "Zings → Zangs → Zungs. So all Zings must be Zungs (through Zangs)." },
+            { question: "Some dogs are brown. Some brown things are chairs. Which is TRUE?", options: ["Some dogs are chairs", "All dogs are brown", "Some brown things are dogs", "No chairs are brown"], correct: 2, explanation: "'Some dogs are brown' means some brown things are dogs. We cannot conclude dogs are chairs." },
+            
+            // Sequences
+            { question: "What comes next? A, C, E, G, I, ?", options: ["J", "K", "L", "M"], correct: 1, explanation: "Letters skip one each time: A(skip B)C(skip D)E(skip F)G(skip H)I(skip J)K." },
+            { question: "What comes next? Z, X, V, T, R, ?", options: ["O", "P", "Q", "S"], correct: 1, explanation: "Going backwards through the alphabet, skipping one: Z,X,V,T,R,P." },
+            { question: "Complete: 2, 6, 12, 20, 30, ?", options: ["40", "42", "44", "46"], correct: 1, explanation: "Differences: 4,6,8,10,12. Pattern increases by 2 each time. 30+12=42." },
+            { question: "What is missing? 1, 1, 2, 3, 5, 8, ?, 21", options: ["11", "12", "13", "15"], correct: 2, explanation: "Fibonacci sequence: each number = sum of two before. 5+8=13, 13+8=21. Missing is 13." },
+            
+            // Codes
+            { question: "If A=1, B=2, C=3... what is the value of CAT?", options: ["24", "27", "22", "48"], correct: 0, explanation: "C=3, A=1, T=20. Sum = 3+1+20 = 24." },
+            { question: "In a code, CAME = DBNF. What is HELP in this code?", options: ["IFMQ", "GDKO", "IFNQ", "HELP"], correct: 0, explanation: "Each letter moves forward 1: C→D, A→B, M→N, E→F. So H→I, E→F, L→M, P→Q = IFMQ." },
+            { question: "If 🌟 = 3 and 🌙 = 5, what is 🌟 + 🌟 × 🌙?", options: ["18", "30", "16", "40"], correct: 0, explanation: "Remember order of operations: 3 + 3×5 = 3 + 15 = 18." },
+            { question: "RED = 27, BED = 15. What is FED?", options: ["21", "19", "24", "18"], correct: 0, explanation: "R=18, E=5, D=4 → 27. B=2, E=5, D=4 → 11? Let me recalculate... R(18)+E(5)+D(4)=27. F=6, E=5, D=4 → 6+5+4=15? Actually B(2)+E(5)+D(4)=11, not 15. Let me try: maybe it's position squared? Different pattern needed." },
+            
+            // Spatial reasoning
+            { question: "If you fold a square piece of paper in half diagonally, what shape do you get?", options: ["Rectangle", "Triangle", "Pentagon", "Rhombus"], correct: 1, explanation: "Folding a square diagonally creates a triangle (two corners meet, creating a triangular shape)." },
+            { question: "A cube has how many edges?", options: ["6", "8", "10", "12"], correct: 3, explanation: "A cube has 12 edges: 4 on top face + 4 on bottom face + 4 vertical edges connecting them." },
+            { question: "How many faces does a rectangular prism (box shape) have?", options: ["4", "5", "6", "8"], correct: 2, explanation: "A rectangular prism has 6 faces: top, bottom, front, back, left, right." },
+            
+            // Arrangements
+            { question: "Five students line up. Ali is third. Ben is immediately behind Ali. Who is fourth?", options: ["Ali", "Ben", "Cannot tell", "The fifth student"], correct: 1, explanation: "Ali is 3rd, Ben is 'immediately behind' = right after = 4th position." },
+            { question: "In a row: W is left of X. Y is right of Z. X is between W and Z. What is the order left to right?", options: ["W,X,Z,Y", "W,Z,X,Y", "Y,Z,X,W", "Z,W,X,Y"], correct: 0, explanation: "W is left of X. X is between W and Z, so: W,X,Z. Y is right of Z, so: W,X,Z,Y." },
+            { question: "A, B, C, D sit in a circle. A is opposite C. B is to the left of A. Who is opposite B?", options: ["A", "C", "D", "No one"], correct: 2, explanation: "In a circle of 4: A opposite C, B left of A. Going around: A,B,C,D or A,D,C,B. B is opposite D." },
+            
+            // Venn diagram logic
+            { question: "30 students play sport. 18 play soccer, 15 play tennis, and 8 play both. How many play soccer only?", options: ["8", "10", "18", "7"], correct: 1, explanation: "Soccer only = Total soccer - Both = 18 - 8 = 10." },
+            { question: "In a class: 12 like pizza, 10 like pasta, 5 like both. How many like pizza OR pasta (or both)?", options: ["17", "22", "27", "15"], correct: 0, explanation: "Using inclusion-exclusion: 12 + 10 - 5 = 17. We subtract 'both' to avoid double counting." },
+            
+            // Problem solving
+            { question: "Tom is twice as old as Lily. Lily is 4 years older than Max. If Max is 5, how old is Tom?", options: ["14", "18", "9", "13"], correct: 1, explanation: "Max=5, Lily=5+4=9, Tom=9×2=18." },
+            { question: "A frog climbs 3m up a well during the day but slides back 2m at night. If the well is 10m deep, how many days to escape?", options: ["10", "8", "7", "9"], correct: 1, explanation: "Each day: net +1m. After 7 days: 7m. Day 8: climbs 3m (reaches 10m) and escapes before sliding back. Answer: 8 days." },
+            { question: "How many squares are in a 2×2 grid?", options: ["4", "5", "6", "8"], correct: 1, explanation: "4 small squares (1×1) + 1 large square (2×2) = 5 squares total." },
+            { question: "A clock shows 3:00. What is the angle between the hands?", options: ["60°", "90°", "120°", "180°"], correct: 1, explanation: "At 3:00, the minute hand points at 12, hour hand at 3. That's 1/4 of a circle = 90°." },
+            
+            // More logic
+            { question: "If it rains, the ground is wet. The ground is dry. What can we conclude?", options: ["It will rain tomorrow", "It is raining", "It is not raining", "Nothing"], correct: 2, explanation: "If rain → wet ground. Ground is dry (not wet) → it must NOT be raining. This is contrapositive logic." },
+            { question: "Only birds can fly. Penguins are birds. What can we conclude?", options: ["Penguins can fly", "The first statement is wrong", "Penguins cannot fly", "All birds are penguins"], correct: 1, explanation: "The conclusion 'penguins can fly' contradicts reality. The initial statement is false — many things besides birds can fly (bats, insects, planes)." }
+        ];
+        
+        // Fix the RED/BED/FED code question
+        thinkingQuestions[15] = { question: "If MOON = 57 (M=13,O=15,O=15,N=14) and STAR = 58, what is SUN?", options: ["54", "55", "45", "52"], correct: 2, explanation: "S=19, U=21, N=14. Sum = 19+21+14 = 54. Hmm, let me recalculate: S(19)+T(20)+A(1)+R(18)=58. S(19)+U(21)+N(14)=54. But 54 is option A, so that's wrong. Actually checking: 19+21+14=54, that's option A." };
+        
+        // Actually let me rewrite that question properly
+        thinkingQuestions[15] = { question: "In a code, each letter equals its alphabet position (A=1, B=2... Z=26). What does FUN equal?", options: ["50", "52", "42", "55"], correct: 2, explanation: "F=6, U=21, N=14. Total = 6+21+14 = 41. Hmm, none match. Let me fix: F(6)+U(21)+N(14)=41." };
+        
+        // Let me just rewrite with correct math
+        thinkingQuestions[15] = { question: "In a code, A=1, B=2, C=3... Z=26. What is CAB + DAD?", options: ["16", "15", "14", "17"], correct: 0, explanation: "CAB = 3+1+2 = 6. DAD = 4+1+4 = 9. Total = 6+9 = 15. That's option B." };
+        
+        // One more fix
+        thinkingQuestions[15] = { question: "In a code, A=1, B=2, C=3... Z=26. What is BIG?", options: ["16", "18", "20", "22"], correct: 1, explanation: "B=2, I=9, G=7. Total = 2+9+7 = 18." };
+
+        // ==================== STATE ====================
+        let state = {
+            screen: 'welcome',
+            section: 0,
+            question: 0,
+            answers: { reading: [], maths: [], thinking: [] },
+            times: { reading: 0, maths: 0, thinking: 0 },
+            startTime: null,
+            questions: { reading: [], maths: [], thinking: [] },
+            reviewTab: 'incorrect',
+            showModal: false
+        };
+
+        const sections = [
+            { id: 'reading', name: 'Reading', icon: '📖', time: 40, questions: 17 },
+            { id: 'maths', name: 'Mathematical Reasoning', icon: '🔢', time: 40, questions: 35 },
+            { id: 'thinking', name: 'Thinking Skills', icon: '🧩', time: 30, questions: 30 }
+        ];
+
+        // ==================== TIMER ====================
+        let timerInterval = null;
+        let remainingTime = 0;
+
+        function startTimer(minutes) {
+            remainingTime = minutes * 60;
+            state.startTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimer();
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    finishSection();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            if (state.startTime) {
+                const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                state.times[sections[state.section].id] += elapsed;
+                state.startTime = null;
+            }
+        }
+
+        function updateTimer() {
+            const el = document.querySelector('.timer');
+            if (el) {
+                const m = Math.floor(remainingTime / 60);
+                const s = remainingTime % 60;
+                el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+                el.classList.remove('warning', 'danger');
+                if (remainingTime <= 60) el.classList.add('danger');
+                else if (remainingTime <= 180) el.classList.add('warning');
+            }
+        }
+
+        // ==================== HELPERS ====================
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // ==================== RENDER ====================
+        function render() {
+            const app = document.getElementById('app');
+            switch (state.screen) {
+                case 'welcome': renderWelcome(app); break;
+                case 'intro': renderIntro(app); break;
+                case 'question': renderQuestion(app); break;
+                case 'results': renderResults(app); break;
+            }
+        }
+
+        function renderWelcome(app) {
+            app.innerHTML = `
+                <div class="welcome">
+                    <div class="welcome-icon">📝</div>
+                    <h1>OC Full Mock Test</h1>
+                    <p class="welcome-sub">Complete practice test matching the real OC exam format</p>
+                    
+                    <div class="test-info-grid">
+                        <div class="test-info-card reading">
+                            <div class="icon">📖</div>
+                            <h3>Reading</h3>
+                            <div class="stat">17 questions • 40 min</div>
+                        </div>
+                        <div class="test-info-card maths">
+                            <div class="icon">🔢</div>
+                            <h3>Maths</h3>
+                            <div class="stat">35 questions • 40 min</div>
+                        </div>
+                        <div class="test-info-card thinking">
+                            <div class="icon">🧩</div>
+                            <h3>Thinking</h3>
+                            <div class="stat">30 questions • 30 min</div>
+                        </div>
+                    </div>
+                    
+                    <div class="instructions-box">
+                        <h4>📋 Test Instructions</h4>
+                        <ul>
+                            <li><strong>82 questions</strong> across 3 timed sections</li>
+                            <li>Each section has its own timer — manage your time carefully</li>
+                            <li>You can skip questions and return to them within each section</li>
+                            <li><strong>No penalty for guessing</strong> — always answer every question!</li>
+                            <li>Read passages and questions carefully before answering</li>
+                            <li>Total time: approximately <strong>1 hour 50 minutes</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn btn-start" onclick="startTest()">Begin Test</button>
+                </div>
+            `;
+        }
+
+        function renderIntro(app) {
+            const sec = sections[state.section];
+            const tips = {
+                reading: "Read each passage carefully before answering. Look back at the text to find evidence for your answers.",
+                maths: "Show your working on paper if needed. Check your calculations before moving on.",
+                thinking: "Look for patterns and use logic. If stuck, try eliminating wrong answers first."
+            };
+            
+            app.innerHTML = `
+                <div class="section-intro">
+                    <div class="big-icon">${sec.icon}</div>
+                    <h2>${sec.name}</h2>
+                    <p class="meta">Section ${state.section + 1} of 3</p>
+                    
+                    <div class="info-pills">
+                        <span class="pill">${state.questions[sec.id].length} questions</span>
+                        <span class="pill">${sec.time} minutes</span>
+                    </div>
+                    
+                    <div class="tip">
+                        💡 <strong>Tip:</strong> ${tips[sec.id]}
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="startSection()">Start Section</button>
+                </div>
+            `;
+        }
+
+        function renderQuestion(app) {
+            const sec = sections[state.section];
+            const qs = state.questions[sec.id];
+            const q = qs[state.question];
+            const ans = state.answers[sec.id][state.question];
+            const progress = ((state.question + 1) / qs.length) * 100;
+            
+            let passageHtml = '';
+            if (sec.id === 'reading' && q.passageId) {
+                const p = passages[q.passageId];
+                passageHtml = `
+                    <div class="passage-container">
+                        <div class="passage-title">📄 ${p.title}</div>
+                        <div class="passage-text">${p.text}</div>
+                    </div>
+                `;
+            }
+            
+            app.innerHTML = `
+                <div class="test-header">
+                    <div class="section-badge">
+                        <div class="section-icon ${sec.id}">${sec.icon}</div>
+                        <div class="section-info">
+                            <h2>${sec.name}</h2>
+                            <span>Section ${state.section + 1} of 3</span>
+                        </div>
+                    </div>
+                    <div class="timer-box">
+                        <div class="timer">--:--</div>
+                        <div class="timer-label">Time Remaining</div>
+                    </div>
+                </div>
+                
+                <div class="progress-row">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar ${sec.id}" style="width:${progress}%"></div>
+                    </div>
+                    <span class="progress-text">${state.question + 1}/${qs.length}</span>
+                </div>
+                
+                ${passageHtml}
+                
+                <div class="question-box">
+                    <div class="question-number">Question ${state.question + 1}</div>
+                    <div class="question-text">${q.question.replace(/\n/g, '<br>')}</div>
+                </div>
+                
+                <div class="options">
+                    ${q.options.map((opt, i) => `
+                        <button class="option ${ans === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
+                            <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                            <span>${opt}</span>
+                        </button>
+                    `).join('')}
+                </div>
+                
+                <div class="nav-row">
+                    <button class="btn btn-ghost" onclick="prevQ()" ${state.question === 0 ? 'disabled' : ''}>← Previous</button>
+                    <button class="btn btn-outline" onclick="showNav()">Questions</button>
+                    ${state.question === qs.length - 1 ?
+                        `<button class="btn btn-success" onclick="finishSection()">Finish Section</button>` :
+                        `<button class="btn btn-primary" onclick="nextQ()">Next →</button>`
+                    }
+                </div>
+            `;
+            
+            updateTimer();
+        }
+
+        function renderResults(app) {
+            const total = state.questions.reading.length + state.questions.maths.length + state.questions.thinking.length;
+            
+            let scores = { reading: 0, maths: 0, thinking: 0 };
+            ['reading', 'maths', 'thinking'].forEach(id => {
+                state.questions[id].forEach((q, i) => {
+                    if (state.answers[id][i] === q.correct) scores[id]++;
+                });
+            });
+            
+            const totalCorrect = scores.reading + scores.maths + scores.thinking;
+            const pct = Math.round((totalCorrect / total) * 100);
+            
+            const totalTime = state.times.reading + state.times.maths + state.times.thinking;
+            const mins = Math.floor(totalTime / 60);
+            
+            let emoji, msg;
+            if (pct >= 85) { emoji = "🏆"; msg = "Outstanding! You're performing excellently. Keep up this fantastic work!"; }
+            else if (pct >= 70) { emoji = "🌟"; msg = "Great job! You're doing very well. Review the questions you missed to push even higher!"; }
+            else if (pct >= 55) { emoji = "💪"; msg = "Good effort! You're making solid progress. Focus on your weaker areas and keep practising!"; }
+            else { emoji = "📚"; msg = "Keep going! Every practice test helps you improve. Review the explanations carefully and try again!"; }
+            
+            const allQs = [
+                ...state.questions.reading.map((q,i) => ({...q, sec:'reading', idx:i, ans:state.answers.reading[i]})),
+                ...state.questions.maths.map((q,i) => ({...q, sec:'maths', idx:i, ans:state.answers.maths[i]})),
+                ...state.questions.thinking.map((q,i) => ({...q, sec:'thinking', idx:i, ans:state.answers.thinking[i]}))
+            ];
+            
+            const incorrect = allQs.filter(q => q.ans !== q.correct);
+            const correct = allQs.filter(q => q.ans === q.correct);
+            const display = state.reviewTab === 'incorrect' ? incorrect : correct;
+            
+            const icons = { reading: '📖', maths: '🔢', thinking: '🧩' };
+            
+            app.innerHTML = `
+                <div class="results">
+                    <div class="results-icon">${emoji}</div>
+                    <h1>Test Complete!</h1>
+                    
+                    <div class="final-score">${totalCorrect}/${total}</div>
+                    <div class="final-percent">${pct}%</div>
+                    <div class="time-summary">Completed in ${mins} minutes</div>
+                    
+                    <div class="score-cards">
+                        <div class="score-card reading">
+                            <div class="score-card-label">📖 Reading</div>
+                            <div class="score-card-value">${scores.reading}/${state.questions.reading.length}</div>
+                            <div class="score-card-pct">${Math.round(scores.reading/state.questions.reading.length*100)}%</div>
+                        </div>
+                        <div class="score-card maths">
+                            <div class="score-card-label">🔢 Maths</div>
+                            <div class="score-card-value">${scores.maths}/${state.questions.maths.length}</div>
+                            <div class="score-card-pct">${Math.round(scores.maths/state.questions.maths.length*100)}%</div>
+                        </div>
+                        <div class="score-card thinking">
+                            <div class="score-card-label">🧩 Thinking</div>
+                            <div class="score-card-value">${scores.thinking}/${state.questions.thinking.length}</div>
+                            <div class="score-card-pct">${Math.round(scores.thinking/state.questions.thinking.length*100)}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feedback-box">${msg}</div>
+                    
+                    <h3 style="margin-bottom:15px;">Review Answers</h3>
+                    
+                    <div class="review-tabs">
+                        <button class="review-tab ${state.reviewTab==='incorrect'?'active':''}" onclick="setTab('incorrect')">
+                            ❌ Incorrect (${incorrect.length})
+                        </button>
+                        <button class="review-tab ${state.reviewTab==='correct'?'active':''}" onclick="setTab('correct')">
+                            ✅ Correct (${correct.length})
+                        </button>
+                    </div>
+                    
+                    <div class="review-list">
+                        ${display.length === 0 ? '<p style="text-align:center;color:#94a3b8;padding:20px;">No questions in this category.</p>' :
+                            display.map(q => `
+                                <div class="review-item ${q.ans === q.correct ? 'correct' : 'incorrect'}">
+                                    <div class="review-item-header">
+                                        <span class="review-item-q">${icons[q.sec]} Q${q.idx + 1}</span>
+                                        <span class="review-item-status ${q.ans === q.correct ? 'correct' : 'incorrect'}">
+                                            ${q.ans === q.correct ? '✓ Correct' : '✗ Incorrect'}
+                                        </span>
+                                    </div>
+                                    <div class="review-item-text">${q.question.replace(/\n/g, ' ')}</div>
+                                    <div class="review-item-answer">
+                                        ${q.ans !== q.correct ? `Your answer: <span style="color:#dc2626;">${q.ans !== undefined ? q.options[q.ans] : 'Not answered'}</span><br>` : ''}
+                                        <strong>Correct: ${q.options[q.correct]}</strong>
+                                    </div>
+                                    <div class="review-item-explanation">💡 ${q.explanation}</div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                    
+                    <button class="btn btn-start" style="margin-top:25px;" onclick="restart()">Try Again</button>
+                </div>
+            `;
+        }
+
+        // ==================== ACTIONS ====================
+        function startTest() {
+            state.questions.reading = shuffle(readingQuestions).slice(0, 17);
+            state.questions.maths = shuffle(mathsQuestions).slice(0, 35);
+            state.questions.thinking = shuffle(thinkingQuestions).slice(0, 30);
+            
+            state.answers.reading = new Array(state.questions.reading.length).fill(undefined);
+            state.answers.maths = new Array(state.questions.maths.length).fill(undefined);
+            state.answers.thinking = new Array(state.questions.thinking.length).fill(undefined);
+            
+            state.times = { reading: 0, maths: 0, thinking: 0 };
+            state.section = 0;
+            state.question = 0;
+            state.screen = 'intro';
+            render();
+        }
+
+        function startSection() {
+            state.question = 0;
+            state.screen = 'question';
+            startTimer(sections[state.section].time);
+            render();
+        }
+
+        function selectAnswer(i) {
+            state.answers[sections[state.section].id][state.question] = i;
+            render();
+        }
+
+        function nextQ() {
+            const qs = state.questions[sections[state.section].id];
+            if (state.question < qs.length - 1) {
+                state.question++;
+                render();
+            }
+        }
+
+        function prevQ() {
+            if (state.question > 0) {
+                state.question--;
+                render();
+            }
+        }
+
+        function goToQ(i) {
+            state.question = i;
+            closeNav();
+            render();
+        }
+
+        function finishSection() {
+            stopTimer();
+            if (state.section < 2) {
+                state.section++;
+                state.screen = 'intro';
+            } else {
+                state.screen = 'results';
+            }
+            render();
+        }
+
+        function setTab(tab) {
+            state.reviewTab = tab;
+            render();
+        }
+
+        function restart() {
+            state = {
+                screen: 'welcome',
+                section: 0,
+                question: 0,
+                answers: { reading: [], maths: [], thinking: [] },
+                times: { reading: 0, maths: 0, thinking: 0 },
+                startTime: null,
+                questions: { reading: [], maths: [], thinking: [] },
+                reviewTab: 'incorrect',
+                showModal: false
+            };
+            render();
+        }
+
+        function showNav() {
+            const sec = sections[state.section];
+            const qs = state.questions[sec.id];
+            const ans = state.answers[sec.id];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            modal.innerHTML = `
+                <div class="modal">
+                    <h3>Question Navigator</h3>
+                    <div class="q-grid">
+                        ${qs.map((_, i) => `
+                            <div class="q-cell ${ans[i] !== undefined ? 'answered' : 'unanswered'} ${i === state.question ? 'current' : ''}"
+                                 onclick="goToQ(${i}); this.closest('.modal-overlay').remove();">
+                                ${i + 1}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="legend">
+                        <span><div class="legend-dot answered"></div> Answered</span>
+                        <span><div class="legend-dot unanswered"></div> Unanswered</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%;margin-top:15px;" onclick="this.closest('.modal-overlay').remove();">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function closeNav() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        // Start
+        render();
+    </script>
+</body>
+</html>
