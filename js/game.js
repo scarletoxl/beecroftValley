@@ -5223,6 +5223,16 @@ class Game {
             this.showShopMenu(b);
         } else if (b.isCarDealer) {
             this.showCarDealer();
+        } else if (b.type === 'school') {
+            // Open OC Practice Test for schools
+            this.showMessage(`📚 Welcome to ${marker.name}! Time to practice!`);
+            setTimeout(() => {
+                if (window.ocTest) {
+                    window.ocTest.open();
+                } else {
+                    this.showMessage('⏳ OC Practice loading...');
+                }
+            }, 300);
         } else if (b.canEnter) {
             this.enterBuilding(b);
         } else {
