@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beecroft Valley - OC Practice Demo</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        /* OC Practice Test Styles */
+        .oc-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .oc-modal.active { display: flex; }
+        
+        .oc-modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .oc-header {
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .oc-header h2 {
+            margin: 0;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .oc-close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .oc-close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .oc-body {
+            padding: 25px;
+            color: #e2e8f0;
+            overflow-y: auto;
+            max-height: calc(90vh - 80px);
+        }
+        
+        .oc-section { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .oc-subtitle {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        
+        .oc-section-cards {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .oc-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 5px 15px;
+        }
+        .oc-card:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        .oc-card-emoji {
+            font-size: 2rem;
+            grid-row: 1 / 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .oc-card-title {
+            font-weight: bold;
+            color: white;
+        }
+        .oc-card-desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .oc-card-score {
+            color: #fbbf24;
+            font-size: 0.85rem;
+        }
+        
+        .oc-options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .oc-options input { width: 18px; height: 18px; }
+        
+        .oc-total-stats {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px 20px;
+        }
+        .oc-total-stats h4 {
+            margin: 0 0 10px 0;
+            color: #a5b4fc;
+        }
+        
+        /* Question styles */
+        .oc-question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        #oc-timer {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        #oc-timer.warning {
+            background: #ef4444;
+            color: white;
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .oc-passage {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.7;
+        }
+        .oc-passage h4 {
+            margin: 0 0 10px 0;
+            color: #a5b4fc;
+        }
+        
+        .oc-question-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .oc-options-list {
+            display: grid;
+            gap: 10px;
+        }
+        .oc-option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: #e2e8f0;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .oc-option-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        .oc-option-btn.selected {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: #6366f1;
+        }
+        .oc-option-btn.correct {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+        }
+        .oc-option-btn.incorrect {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+        
+        .oc-feedback {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .oc-correct { color: #10b981; font-weight: bold; font-size: 1.1rem; }
+        .oc-incorrect { color: #ef4444; font-weight: bold; font-size: 1.1rem; }
+        
+        .oc-btn {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+        .oc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+        .oc-btn-primary {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        /* Results */
+        .oc-results-content {
+            text-align: center;
+        }
+        .oc-results-score {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .oc-results-emoji { font-size: 3rem; }
+        .oc-results-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .oc-results-percent { color: #94a3b8; font-size: 1.5rem; }
+        .oc-results-message { font-size: 1.2rem; color: #a5b4fc; }
+        .oc-results-gold { color: #fbbf24; font-size: 1.1rem; margin-top: 15px; }
+        
+        .oc-results-breakdown {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .oc-results-breakdown h4 { margin: 0 0 10px 0; color: #94a3b8; }
+        .oc-result-item {
+            display: inline-flex;
+            gap: 5px;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .oc-result-item.correct { background: rgba(16, 185, 129, 0.2); }
+        .oc-result-item.incorrect { background: rgba(239, 68, 68, 0.2); }
+        
+        .oc-results-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Demo page styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            margin: 0;
+            color: #e2e8f0;
+        }
+        
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .demo-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .demo-header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        
+        .school-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .school-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .school-card:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.3);
+        }
+        .school-card-emoji {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        .school-card-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .school-card-desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .demo-info {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        .demo-info h3 {
+            color: #a5b4fc;
+            margin-top: 0;
+        }
+        .demo-info ul {
+            line-height: 1.8;
+            color: #94a3b8;
+        }
+        .demo-info li strong {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <header class="demo-header">
+            <h1>🏫 Beecroft Valley - OC Practice</h1>
+            <p>Click on a school to start practicing for the Opportunity Class exam!</p>
+        </header>
+
+        <div class="school-cards">
+            <div class="school-card" onclick="window.ocTest && window.ocTest.open()">
+                <div class="school-card-emoji">🏫</div>
+                <div class="school-card-name">Beecroft Public School</div>
+                <div class="school-card-desc">Primary school with full OC practice tests</div>
+            </div>
+            
+            <div class="school-card" onclick="window.ocTest && window.ocTest.open()">
+                <div class="school-card-emoji">👶</div>
+                <div class="school-card-name">Smart Cookies Learning Centre</div>
+                <div class="school-card-desc">Early learning with thinking skills practice</div>
+            </div>
+            
+            <div class="school-card" onclick="window.ocTest && window.ocTest.open()">
+                <div class="school-card-emoji">🎓</div>
+                <div class="school-card-name">Cheltenham Girls' High</div>
+                <div class="school-card-desc">Advanced maths and reasoning challenges</div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h3>✨ Features</h3>
+            <ul>
+                <li><strong>Infinite Questions:</strong> Procedural generation creates fresh questions every time</li>
+                <li><strong>Three Sections:</strong> Reading Comprehension, Mathematical Reasoning, Thinking Skills</li>
+                <li><strong>Timed Mode:</strong> Optional 30-second timer per question</li>
+                <li><strong>Progress Tracking:</strong> Scores saved between sessions</li>
+                <li><strong>Game Rewards:</strong> Earn 10 gold for each correct answer!</li>
+            </ul>
+            
+            <h3>📚 Question Types</h3>
+            <ul>
+                <li><strong>Reading:</strong> Passages with comprehension, inference, and vocabulary questions</li>
+                <li><strong>Maths:</strong> Patterns, word problems, fractions, time, geometry, averages</li>
+                <li><strong>Thinking:</strong> Logic puzzles, analogies, codes, sequences, spatial reasoning</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include the OC Practice scripts -->
+    <script src="js/oc-procedural.js"></script>
+    <script src="js/oc-practice.js"></script>
+    <script src="js/oc-integration.js"></script>
+    
+    <!-- Mock game object for demo -->
+    <script>
+        // Create a mock game object for the demo
+        window.game = {
+            player: { gold: 100 },
+            updateHUD: function() {
+                console.log('Gold:', this.player.gold);
+            },
+            showMessage: function(msg) {
+                console.log('Game Message:', msg);
+            }
+        };
+        
+        // Log when OC test is ready
+        const checkOCTest = setInterval(() => {
+            if (window.ocTest) {
+                console.log('✅ OC Practice System Ready!');
+                clearInterval(checkOCTest);
+            }
+        }, 100);
+    </script>
+</body>
+</html>
