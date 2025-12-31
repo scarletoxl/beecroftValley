@@ -264,7 +264,12 @@
                 </div>
             </div>
         </div>
-        
+
+        <div class="info-section" id="progress-section" style="display:none;">
+            <h3>📊 Your Progress</h3>
+            <div id="progress-content"></div>
+        </div>
+
         <div class="info-section">
             <h3>📋 Test Format</h3>
             <div class="info-grid">
@@ -309,22 +314,72 @@
     <script>
         const colors = ['blue', 'green', 'purple', 'orange', 'pink'];
         const grid = document.getElementById('tests-grid');
-        
+
+        // Load score history and show completed tests
+        const scoreHistory = JSON.parse(localStorage.getItem('ocTestScoreHistory') || '[]');
+        const completedTests = new Set(scoreHistory.map(s => s.testNumber));
+
         for (let i = 1; i <= 20; i++) {
             const color = colors[(i - 1) % colors.length];
             const card = document.createElement('a');
             card.href = `oc-test-engine.html?test=${i}`;
             card.className = `test-card ${color}`;
+
+            // Check if test was completed and get best score
+            const testScores = scoreHistory.filter(s => s.testNumber === i);
+            const bestScore = testScores.length > 0 ? Math.max(...testScores.map(s => s.percentage)) : null;
+
             card.innerHTML = `
                 <div class="test-number">${i.toString().padStart(2, '0')}</div>
                 <div class="test-label">Practice Test</div>
                 <div class="test-meta">
                     <span>82 Qs</span>
-                    <span>~110 min</span>
+                    ${bestScore !== null ? `<span style="color: ${bestScore >= 70 ? '#22c55e' : bestScore >= 50 ? '#eab308' : '#ef4444'}">Best: ${bestScore}%</span>` : '<span>~110 min</span>'}
                 </div>
-                <div class="play-icon">▶</div>
+                <div class="play-icon">${completedTests.has(i) ? '✓' : '▶'}</div>
             `;
+            if (completedTests.has(i)) {
+                card.querySelector('.play-icon').style.background = bestScore >= 70 ? '#22c55e' : bestScore >= 50 ? '#eab308' : '#ef4444';
+                card.querySelector('.play-icon').style.color = 'white';
+            }
             grid.appendChild(card);
+        }
+
+        // Show progress section if there's history
+        if (scoreHistory.length > 0) {
+            const progressSection = document.getElementById('progress-section');
+            const progressContent = document.getElementById('progress-content');
+            progressSection.style.display = 'block';
+
+            const recentScores = scoreHistory.slice(-5).reverse();
+            const avgScore = Math.round(scoreHistory.reduce((sum, s) => sum + s.percentage, 0) / scoreHistory.length);
+            const testsCompleted = new Set(scoreHistory.map(s => s.testNumber)).size;
+
+            progressContent.innerHTML = `
+                <div class="info-grid" style="margin-bottom: 15px;">
+                    <div class="info-card" style="text-align: center;">
+                        <div style="font-size: 2em; color: #60a5fa;">${testsCompleted}</div>
+                        <p style="margin: 5px 0 0 0;">Tests Completed</p>
+                    </div>
+                    <div class="info-card" style="text-align: center;">
+                        <div style="font-size: 2em; color: ${avgScore >= 70 ? '#4ade80' : avgScore >= 50 ? '#facc15' : '#f87171'};">${avgScore}%</div>
+                        <p style="margin: 5px 0 0 0;">Average Score</p>
+                    </div>
+                    <div class="info-card" style="text-align: center;">
+                        <div style="font-size: 2em; color: #60a5fa;">${scoreHistory.length}</div>
+                        <p style="margin: 5px 0 0 0;">Total Attempts</p>
+                    </div>
+                </div>
+                <h4 style="color: #94a3b8; font-size: 0.9em; margin: 15px 0 10px 0;">Recent Tests</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${recentScores.map(s => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px;">
+                            <span style="color: white;">Test ${s.testNumber} <span style="color: #64748b; font-size: 0.85em;">• ${s.date}</span></span>
+                            <span style="color: ${s.percentage >= 70 ? '#4ade80' : s.percentage >= 50 ? '#facc15' : '#f87171'}; font-weight: bold; font-size: 1.1em;">${s.score}/${s.total} (${s.percentage}%)</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
     </script>
 </body>

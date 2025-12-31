@@ -3764,6 +3764,125 @@ class Game {
         this.uiState.showingShop = false;
     }
 
+    // ===== SCHOOL SYSTEM =====
+    showSchoolMenu(schoolName) {
+        // Remove any existing school menu
+        const existingMenu = document.getElementById('school-menu-modal');
+        if (existingMenu) existingMenu.remove();
+
+        // Get score history from localStorage
+        const scoreHistory = JSON.parse(localStorage.getItem('ocTestScoreHistory') || '[]');
+        const recentScores = scoreHistory.slice(-5).reverse(); // Last 5 scores, most recent first
+
+        const modal = document.createElement('div');
+        modal.id = 'school-menu-modal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); display: flex; align-items: center;
+            justify-content: center; z-index: 10000; font-family: 'Segoe UI', sans-serif;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); border-radius: 16px; padding: 25px; max-width: 450px; width: 90%; box-shadow: 0 15px 50px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.1);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">🏫</div>
+                    <h2 style="color: white; margin: 0; font-size: 1.5em;">${schoolName}</h2>
+                    <p style="color: #94a3b8; margin: 5px 0 0 0;">OC Practice Centre</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <button id="school-tips-btn" style="
+                        background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;
+                        border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer;
+                        font-size: 1em; display: flex; align-items: center; gap: 12px;
+                        transition: transform 0.15s, box-shadow 0.15s;
+                    ">
+                        <span style="font-size: 1.5em;">💡</span>
+                        <span style="text-align: left;">
+                            <strong style="display: block;">Quick Practice</strong>
+                            <span style="font-size: 0.85em; opacity: 0.9;">5 questions per section, in-game</span>
+                        </span>
+                    </button>
+
+                    <button id="school-fulltest-btn" style="
+                        background: linear-gradient(135deg, #22c55e, #16a34a); color: white;
+                        border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer;
+                        font-size: 1em; display: flex; align-items: center; gap: 12px;
+                        transition: transform 0.15s, box-shadow 0.15s;
+                    ">
+                        <span style="font-size: 1.5em;">📝</span>
+                        <span style="text-align: left;">
+                            <strong style="display: block;">Full Practice Test</strong>
+                            <span style="font-size: 0.85em; opacity: 0.9;">82 questions, timed sections (opens new tab)</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <h4 style="color: white; margin: 0 0 10px 0; font-size: 0.95em;">📊 Recent Scores</h4>
+                    ${recentScores.length > 0 ? `
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            ${recentScores.map(s => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px;">
+                                    <span style="color: #94a3b8; font-size: 0.85em;">Test ${s.testNumber} - ${s.date}</span>
+                                    <span style="color: ${s.percentage >= 70 ? '#4ade80' : s.percentage >= 50 ? '#facc15' : '#f87171'}; font-weight: bold;">${s.score}/${s.total} (${s.percentage}%)</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p style="color: #64748b; font-size: 0.9em; margin: 0; text-align: center;">No tests completed yet. Take a full test to track your progress!</p>
+                    `}
+                </div>
+
+                <button id="school-close-btn" style="
+                    width: 100%; background: rgba(255,255,255,0.1); color: #94a3b8;
+                    border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 8px;
+                    cursor: pointer; font-size: 0.95em; transition: background 0.15s;
+                ">Close</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Event handlers
+        document.getElementById('school-tips-btn').onclick = () => {
+            modal.remove();
+            if (window.ocTest) {
+                window.ocTest.open();
+            } else {
+                this.showMessage('⏳ Loading practice questions...');
+            }
+        };
+
+        document.getElementById('school-fulltest-btn').onclick = () => {
+            modal.remove();
+            window.open('oc.html', '_blank');
+            this.showMessage('📝 Full test opened in new tab!');
+        };
+
+        document.getElementById('school-close-btn').onclick = () => {
+            modal.remove();
+        };
+
+        // Close on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+
+        // Hover effects
+        const buttons = modal.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.onmouseenter = () => {
+                btn.style.transform = 'translateY(-2px)';
+                btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+            };
+            btn.onmouseleave = () => {
+                btn.style.transform = 'translateY(0)';
+                btn.style.boxShadow = 'none';
+            };
+        });
+    }
+
     // ===== CAR DEALER =====
     showCarDealer() {
         const cars = [
@@ -5218,15 +5337,8 @@ class Game {
         } else if (b.isCarDealer) {
             this.showCarDealer();
         } else if (b.type === 'school') {
-            // Open OC Practice Test for schools
-            this.showMessage(`📚 Welcome to ${marker.name}! Time to practice!`);
-            setTimeout(() => {
-                if (window.ocTest) {
-                    window.ocTest.open();
-                } else {
-                    this.showMessage('⏳ OC Practice loading...');
-                }
-            }, 300);
+            // Show school menu with OC Test options
+            this.showSchoolMenu(marker.name);
         } else if (b.canEnter) {
             this.enterBuilding(b);
         } else {
