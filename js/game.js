@@ -3973,7 +3973,10 @@ class Game {
         this.player.x = interior.spawnX;
         this.player.y = interior.spawnY;
 
-        this.showMessage(`Entered ${building.name}. Press Space to exit.`);
+        // Show mobile-appropriate exit hint
+        const isTouchDevice = MobileControls && MobileControls.isTouchDevice && MobileControls.isTouchDevice();
+        const exitHint = isTouchDevice ? 'TAP 🚪 near exit to leave' : 'Press Space to exit';
+        this.showMessage(`Entered ${building.name}. ${exitHint}`);
     }
 
     exitBuilding() {
@@ -5417,7 +5420,10 @@ class Game {
                 this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 this.ctx.font = 'bold 12px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText('Press SPACE to enter', doorScreen.x, doorScreen.y - 40);
+                // Show mobile-appropriate hint
+                const isTouchDevice = MobileControls && MobileControls.isTouchDevice && MobileControls.isTouchDevice();
+                const hintText = isTouchDevice ? 'TAP 🚪 to enter' : 'Press SPACE to enter';
+                this.ctx.fillText(hintText, doorScreen.x, doorScreen.y - 40);
                 this.ctx.restore();
             }
         }

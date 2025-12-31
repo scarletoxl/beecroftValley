@@ -291,17 +291,20 @@ class MarkerRenderer {
             ctx.fillText(labelText, screenX, labelY);
         }
 
-        // === Draw "SPACE" prompt badge above marker when interactable ===
+        // === Draw interaction prompt badge above marker when interactable ===
         if (isInteractable) {
             const badgeY = bubbleY - baseSize / 2 - 16;
-            const badgeText = 'SPACE';
+            // Show "TAP" on mobile/touch devices, "SPACE" on desktop
+            const isTouchDevice = MobileControls && MobileControls.isTouchDevice && MobileControls.isTouchDevice();
+            const badgeText = isTouchDevice ? 'TAP' : 'SPACE';
 
             ctx.font = 'bold 10px Arial';
             const textWidth = ctx.measureText(badgeText).width;
 
-            // Pulsing background
+            // Pulsing background - use green for TAP to make it more visible
             const pulseAlpha = 0.7 + Math.sin(time / 150) * 0.3;
-            ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+            const bgColor = isTouchDevice ? `rgba(76, 175, 80, ${pulseAlpha})` : `rgba(255, 215, 0, ${pulseAlpha})`;
+            ctx.fillStyle = bgColor;
             const padding = 4;
             const bgWidth = textWidth + padding * 2;
             const bgHeight = 14;
@@ -314,10 +317,10 @@ class MarkerRenderer {
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Text
+            // Text - white on mobile for better contrast
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = isTouchDevice ? '#fff' : '#000';
             ctx.fillText(badgeText, screenX, badgeY);
         }
 
