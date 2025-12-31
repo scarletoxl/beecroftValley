@@ -316,26 +316,36 @@ class TennisGame {
         // AI behavior varies significantly by difficulty
         let targetX = this.ball.x;
 
-        // Only predict trajectory at higher difficulties
+        // Trajectory prediction improves with difficulty
         if (this.difficulty >= 3 && this.ball.vy < 0) {
             const timeToReach = (this.opponent.y - this.ball.y) / Math.abs(this.ball.vy * 60);
-            const predictionAccuracy = Math.min(0.8, (this.difficulty - 2) * 0.2); // 0 at diff 2, 0.8 at diff 6
+            // Diff 3: 0.3, Diff 4: 0.6, Diff 5: 0.95
+            const predictionAccuracy = Math.min(0.95, (this.difficulty - 2) * 0.3);
             targetX = this.ball.x + this.ball.vx * 60 * timeToReach * predictionAccuracy;
         }
 
         const diff = targetX - this.opponent.x;
 
-        // Much slower AI at low difficulties
-        // Diff 1: 0.04, Diff 2: 0.065, Diff 3: 0.09, Diff 4: 0.115, Diff 5: 0.14
-        const baseSpeed = 0.015 + this.difficulty * 0.025;
+        // AI speed scales more aggressively at higher difficulties
+        // Diff 1: 0.04, Diff 2: 0.07, Diff 3: 0.10, Diff 4: 0.16, Diff 5: 0.24
+        let baseSpeed;
+        if (this.difficulty <= 3) {
+            baseSpeed = 0.01 + this.difficulty * 0.03;
+        } else {
+            // Difficulty 4-5 get a big speed boost
+            baseSpeed = 0.10 + (this.difficulty - 3) * 0.07;
+        }
         const speed = baseSpeed * deltaTime * 60;
 
-        // More imperfection at lower difficulties
-        const imperfectionAmount = Math.max(0.2, 1.5 - this.difficulty * 0.25);
+        // Imperfection decreases at higher difficulties
+        // Diff 1: 1.25, Diff 2: 1.0, Diff 3: 0.75, Diff 4: 0.3, Diff 5: 0.1
+        const imperfectionAmount = this.difficulty >= 4
+            ? Math.max(0.1, 0.7 - (this.difficulty - 3) * 0.3)
+            : Math.max(0.5, 1.5 - this.difficulty * 0.25);
         const imperfection = Math.sin(Date.now() * 0.001) * imperfectionAmount;
 
-        // At low difficulties, AI sometimes hesitates
-        const hesitation = this.difficulty < 3 ? Math.random() < 0.15 : false;
+        // Hesitation only at difficulty 1-2
+        const hesitation = this.difficulty < 3 ? Math.random() < 0.12 : false;
 
         if (Math.abs(diff) > 0.3 && !hesitation) {
             this.opponent.x += Math.sign(diff + imperfection) * Math.min(Math.abs(diff), speed);
@@ -409,7 +419,8 @@ class TennisGame {
         if (this.score.player >= winScore) {
             this.gameState = 'won';
             this.totalWins++;
-            this.difficulty = Math.min(5, this.difficulty + 0.5);
+            // Full difficulty increase per win for clear progression
+            this.difficulty = Math.min(5, this.difficulty + 1);
             this.createVictoryStars();
             this.game.showMessage("🏆 You won the match!");
         } else if (this.score.opponent >= winScore) {
@@ -659,84 +670,162 @@ class TennisGame {
     }
 
     renderPaddles(ctx) {
-        // Player paddle
+        // Player (facing up/away from camera)
         const playerX = this.gameToScreenX(this.player.x);
         const playerY = this.gameToScreenY(this.player.y);
-        const paddleWidth = 60;
-        const paddleHeight = 14;
+        this.drawTennisPlayer(ctx, playerX, playerY, 'player', false);
 
-        // Paddle shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.beginPath();
-        ctx.roundRect(playerX - paddleWidth/2 + 3, playerY - paddleHeight/2 + 3, paddleWidth, paddleHeight, 4);
-        ctx.fill();
-
-        // Player paddle gradient
-        const playerGradient = ctx.createLinearGradient(playerX - paddleWidth/2, playerY - paddleHeight/2,
-                                                        playerX - paddleWidth/2, playerY + paddleHeight/2);
-        playerGradient.addColorStop(0, '#42A5F5');
-        playerGradient.addColorStop(0.5, '#1976D2');
-        playerGradient.addColorStop(1, '#0D47A1');
-        ctx.fillStyle = playerGradient;
-        ctx.beginPath();
-        ctx.roundRect(playerX - paddleWidth/2, playerY - paddleHeight/2, paddleWidth, paddleHeight, 4);
-        ctx.fill();
-
-        // Paddle highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.beginPath();
-        ctx.roundRect(playerX - paddleWidth/2 + 2, playerY - paddleHeight/2 + 2, paddleWidth - 4, 4, 2);
-        ctx.fill();
-
-        // Player paddle border
-        ctx.strokeStyle = '#0D47A1';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(playerX - paddleWidth/2, playerY - paddleHeight/2, paddleWidth, paddleHeight, 4);
-        ctx.stroke();
-
-        // Power indicator around player paddle
+        // Power indicator around player
         if (this.powerLevel > 0.3 && this.isPowerHit) {
             ctx.strokeStyle = `rgba(255, 152, 0, ${this.powerLevel})`;
             ctx.lineWidth = 3 + this.powerLevel * 2;
             ctx.beginPath();
-            ctx.roundRect(playerX - paddleWidth/2 - 4, playerY - paddleHeight/2 - 4, paddleWidth + 8, paddleHeight + 8, 6);
+            ctx.arc(playerX, playerY - 15, 30 + this.powerLevel * 5, 0, Math.PI * 2);
             ctx.stroke();
         }
 
-        // Opponent paddle
+        // Opponent (facing down/toward camera)
         const opponentX = this.gameToScreenX(this.opponent.x);
         const opponentY = this.gameToScreenY(this.opponent.y);
+        this.drawTennisPlayer(ctx, opponentX, opponentY, 'opponent', true);
+    }
 
-        // Paddle shadow
+    drawTennisPlayer(ctx, x, y, type, facingDown) {
+        const scale = 1.8;
+        const isPlayer = type === 'player';
+
+        // Colors
+        const skinColor = '#FFDAB9';
+        const shirtColor = isPlayer ? '#1976D2' : '#D32F2F';
+        const shirtDark = isPlayer ? '#0D47A1' : '#B71C1C';
+        const shortsColor = isPlayer ? '#1565C0' : '#C62828';
+        const hairColor = isPlayer ? '#4A3728' : '#2C2C2C';
+        const racketHandle = '#8B4513';
+        const racketHead = '#90EE90';
+        const racketFrame = '#FFD700';
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
-        ctx.roundRect(opponentX - paddleWidth/2 + 3, opponentY - paddleHeight/2 + 3, paddleWidth, paddleHeight, 4);
+        ctx.ellipse(0, 18, 12, 4, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Opponent paddle gradient
-        const opponentGradient = ctx.createLinearGradient(opponentX - paddleWidth/2, opponentY - paddleHeight/2,
-                                                          opponentX - paddleWidth/2, opponentY + paddleHeight/2);
-        opponentGradient.addColorStop(0, '#EF5350');
-        opponentGradient.addColorStop(0.5, '#D32F2F');
-        opponentGradient.addColorStop(1, '#B71C1C');
-        ctx.fillStyle = opponentGradient;
+        // Legs
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(-6, 8, 4, 10);
+        ctx.fillRect(2, 8, 4, 10);
+
+        // Shoes
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-7, 16, 5, 3);
+        ctx.fillRect(2, 16, 5, 3);
+
+        // Shorts
+        ctx.fillStyle = shortsColor;
+        ctx.fillRect(-8, 4, 16, 6);
+
+        // Body/Shirt
+        ctx.fillStyle = shirtColor;
+        ctx.fillRect(-9, -8, 18, 14);
+
+        // Shirt collar detail
+        ctx.fillStyle = shirtDark;
+        ctx.fillRect(-9, -8, 18, 2);
+
+        // Arms
+        ctx.fillStyle = skinColor;
+        // Left arm
+        ctx.fillRect(-13, -6, 4, 10);
+        // Right arm (holding racket, extended)
+        ctx.save();
+        ctx.translate(11, -4);
+        ctx.rotate(facingDown ? 0.3 : -0.3);
+        ctx.fillRect(0, 0, 4, 12);
+
+        // Racket
+        // Handle
+        ctx.fillStyle = racketHandle;
+        ctx.fillRect(1, 10, 2, 8);
+
+        // Racket head frame
+        ctx.fillStyle = racketFrame;
         ctx.beginPath();
-        ctx.roundRect(opponentX - paddleWidth/2, opponentY - paddleHeight/2, paddleWidth, paddleHeight, 4);
+        ctx.ellipse(2, 22, 7, 10, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Paddle highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        // Racket strings area
+        ctx.fillStyle = racketHead;
         ctx.beginPath();
-        ctx.roundRect(opponentX - paddleWidth/2 + 2, opponentY - paddleHeight/2 + 2, paddleWidth - 4, 4, 2);
+        ctx.ellipse(2, 22, 5, 8, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Opponent paddle border
-        ctx.strokeStyle = '#B71C1C';
-        ctx.lineWidth = 2;
+        // Racket strings
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 0.5;
+        for (let i = -4; i <= 4; i += 2) {
+            ctx.beginPath();
+            ctx.moveTo(2 + i, 14);
+            ctx.lineTo(2 + i, 30);
+            ctx.stroke();
+        }
+        for (let i = -6; i <= 6; i += 2) {
+            ctx.beginPath();
+            ctx.moveTo(-3, 22 + i);
+            ctx.lineTo(7, 22 + i);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // Head
+        ctx.fillStyle = skinColor;
         ctx.beginPath();
-        ctx.roundRect(opponentX - paddleWidth/2, opponentY - paddleHeight/2, paddleWidth, paddleHeight, 4);
-        ctx.stroke();
+        ctx.arc(0, -14, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hair
+        ctx.fillStyle = hairColor;
+        if (facingDown) {
+            // Facing camera - show face
+            ctx.beginPath();
+            ctx.arc(0, -16, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            // Eyes
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(-3, -14, 1.5, 0, Math.PI * 2);
+            ctx.arc(3, -14, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            // Determined expression
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-5, -16);
+            ctx.lineTo(-1, -15);
+            ctx.moveTo(5, -16);
+            ctx.lineTo(1, -15);
+            ctx.stroke();
+        } else {
+            // Back of head
+            ctx.beginPath();
+            ctx.arc(0, -14, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // Cap/visor
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.ellipse(0, -18, 9, 3, 0, 0, Math.PI);
+            ctx.fill();
+        }
+
+        // Headband
+        ctx.fillStyle = isPlayer ? '#FFFFFF' : '#FFD700';
+        ctx.fillRect(-8, -20, 16, 3);
+
+        ctx.restore();
     }
 
     renderParticles(ctx) {
