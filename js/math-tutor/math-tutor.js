@@ -251,13 +251,48 @@ class MathTutor {
         this.sessionPhase = 'calibration';
         this.problemsInPhase = 0;
 
-        // Pick skill to calibrate
-        const recommendedSkill = MathSkills.getRecommendedSkill(this.progress, this.stats);
-        this.adaptive.setSkill(recommendedSkill); // Will start calibration
+        // Pick skill to calibrate - prefer a NEW skill over navigator
+        const nextSkill = this.getNextSkillToLearn();
+        this.adaptive.setSkill(nextSkill); // Will start calibration
 
-        this.setDialogue("Now let's find your level! I'll try a few different problems...");
+        const skillName = MathSkills.skills[nextSkill]?.name || nextSkill;
+        this.setDialogue(`Now let's try ${skillName}! I'll find the right level for you...`);
 
         this.nextProblem();
+    }
+
+    // Get the next skill the student should learn (prefer new unlocked skills)
+    getNextSkillToLearn() {
+        // Priority order for learning
+        const learningOrder = [
+            'addition_small',      // Start with addition
+            'subtraction_small',   // Then subtraction
+            'addition_jumping',    // Then bigger addition
+            'subtraction_jumping', // Then bigger subtraction
+            'multiplication_easy', // Then multiplication
+            'multiplication_medium',
+            'multiplication_hard',
+            'strategy_doubles',
+            'strategy_compensation',
+            'word_problems',
+            'navigator_patterns'
+        ];
+
+        // Find first skill that is unlocked but not yet practiced much
+        for (const skillId of learningOrder) {
+            if (!MathSkills.isUnlocked(skillId, this.progress)) continue;
+
+            const stats = this.stats[skillId] || { attempts: 0, correct: 0 };
+            const medal = MathSkills.getMedal(skillId, stats);
+
+            // If no medal yet and fewer than 20 attempts, work on this skill
+            if (!medal && stats.attempts < 20) {
+                return skillId;
+            }
+        }
+
+        // Fallback to recommended skill
+        return MathSkills.getRecommendedSkill(this.progress, this.stats);
     }
 
     async startPractice() {
@@ -579,6 +614,38 @@ class MathTutor {
         this.stats[skillId].attempts++;
         if (correct) this.stats[skillId].correct++;
         this.stats[skillId].totalTime += time;
+
+        // Update skill progress level based on adaptive engine
+        this.updateSkillProgress();
+    }
+
+    updateSkillProgress() {
+        const skillId = this.adaptive.currentSkill;
+        const currentLevel = this.adaptive.currentLevel;
+        const previousLevel = this.progress[skillId] || 0;
+
+        // Update progress if we've reached a higher level
+        if (currentLevel > previousLevel) {
+            this.progress[skillId] = currentLevel;
+            console.log(`Skill ${skillId} leveled up to ${currentLevel}!`);
+
+            // Check if new skills are now unlocked
+            const newlyUnlocked = [];
+            for (const [id, skill] of Object.entries(MathSkills.skills)) {
+                if (id !== skillId && MathSkills.isUnlocked(id, this.progress)) {
+                    const wasUnlockedBefore = MathSkills.isUnlocked(id, { ...this.progress, [skillId]: previousLevel });
+                    if (!wasUnlockedBefore) {
+                        newlyUnlocked.push(skill.name);
+                    }
+                }
+            }
+
+            if (newlyUnlocked.length > 0) {
+                setTimeout(() => {
+                    this.setDialogue(`New skill unlocked: ${newlyUnlocked.join(', ')}! Check the skill tree!`);
+                }, 2000);
+            }
+        }
     }
 
     checkMedals() {
