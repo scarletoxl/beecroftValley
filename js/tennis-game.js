@@ -92,7 +92,8 @@ class TennisGame {
 
         // Random serve direction with better angle
         const angle = (Math.random() - 0.5) * Math.PI / 4;
-        const speed = 0.12 + this.difficulty * 0.02;
+        // Slower ball at lower difficulties (difficulty 1-2 are much easier)
+        const speed = 0.06 + this.difficulty * 0.025;
         this.ball.vx = Math.sin(angle) * speed;
         this.ball.vy = (Math.random() > 0.5 ? 1 : -1) * speed;
 
@@ -312,23 +313,31 @@ class TennisGame {
     }
 
     updateOpponent(deltaTime) {
-        // Smarter AI that predicts ball trajectory
+        // AI behavior varies significantly by difficulty
         let targetX = this.ball.x;
 
-        // Predict where ball will be
-        if (this.ball.vy < 0) {
+        // Only predict trajectory at higher difficulties
+        if (this.difficulty >= 3 && this.ball.vy < 0) {
             const timeToReach = (this.opponent.y - this.ball.y) / Math.abs(this.ball.vy * 60);
-            targetX = this.ball.x + this.ball.vx * 60 * timeToReach * 0.7;
+            const predictionAccuracy = Math.min(0.8, (this.difficulty - 2) * 0.2); // 0 at diff 2, 0.8 at diff 6
+            targetX = this.ball.x + this.ball.vx * 60 * timeToReach * predictionAccuracy;
         }
 
         const diff = targetX - this.opponent.x;
-        const baseSpeed = 0.1 + this.difficulty * 0.03;
+
+        // Much slower AI at low difficulties
+        // Diff 1: 0.04, Diff 2: 0.065, Diff 3: 0.09, Diff 4: 0.115, Diff 5: 0.14
+        const baseSpeed = 0.015 + this.difficulty * 0.025;
         const speed = baseSpeed * deltaTime * 60;
 
-        // Add some imperfection to AI
-        const imperfection = Math.sin(Date.now() * 0.001) * 0.5;
+        // More imperfection at lower difficulties
+        const imperfectionAmount = Math.max(0.2, 1.5 - this.difficulty * 0.25);
+        const imperfection = Math.sin(Date.now() * 0.001) * imperfectionAmount;
 
-        if (Math.abs(diff) > 0.3) {
+        // At low difficulties, AI sometimes hesitates
+        const hesitation = this.difficulty < 3 ? Math.random() < 0.15 : false;
+
+        if (Math.abs(diff) > 0.3 && !hesitation) {
             this.opponent.x += Math.sign(diff + imperfection) * Math.min(Math.abs(diff), speed);
         }
 
@@ -377,19 +386,21 @@ class TennisGame {
         const baseAngle = offsetX * 0.4;
 
         // Speed increases with rally and difficulty
-        let speed = 0.12 + Math.min(this.rally * 0.008, 0.04) + this.difficulty * 0.015;
+        // Lower base speed, scales more with difficulty
+        let speed = 0.06 + Math.min(this.rally * 0.006, 0.03) + this.difficulty * 0.02;
 
         // Power hit increases speed significantly
         if (isPowerHit) {
-            speed *= 1.5;
+            speed *= 1.4;
         }
 
         this.ball.vx = Math.sin(baseAngle) * speed * 1.2;
         this.ball.vy = direction * speed;
 
-        // Ensure ball doesn't go too slow vertically
-        if (Math.abs(this.ball.vy) < 0.08) {
-            this.ball.vy = direction * 0.08;
+        // Ensure ball doesn't go too slow vertically (lower minimum at low difficulty)
+        const minSpeed = 0.05 + this.difficulty * 0.01;
+        if (Math.abs(this.ball.vy) < minSpeed) {
+            this.ball.vy = direction * minSpeed;
         }
     }
 

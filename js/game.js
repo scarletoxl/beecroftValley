@@ -2991,7 +2991,10 @@ class Game {
                             if (distance < talkDistance) {
                                 // Check if it's a tennis coach and we're on a tennis court
                                 if (npc.role === 'tennis coach' && this.currentMap.includes('Tennis Court')) {
-                                    this.tennisGame.start();
+                                    // Don't restart if game is already active
+                                    if (!this.tennisGame.active) {
+                                        this.tennisGame.start();
+                                    }
                                 } else {
                                     this.showNPCDialog(npc, this.currentMap);
                                 }
