@@ -514,14 +514,17 @@ footer {
     background: rgba(95, 158, 160, 0.8);
     border: 3px solid white;
     color: white;
-    font-size: 1.2em;
+    font-size: 1.5em;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s;
+    transition: all 0.15s ease;
+    position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .action-btn:active {
@@ -529,9 +532,72 @@ footer {
     background: rgba(95, 158, 160, 1);
 }
 
+/* Context-aware action button styling */
+.action-btn.has-context {
+    background: rgba(76, 175, 80, 0.9);
+    border-color: #4CAF50;
+    animation: pulse-context 1.5s infinite;
+}
+
+@keyframes pulse-context {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+}
+
+/* Action hint tooltip */
+.action-hint {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 101;
+    max-width: 150px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.action-hint::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.85);
+}
+
 .action-row {
     display: flex;
     gap: 10px;
+}
+
+/* Show mobile controls on touch devices and tablets */
+@media (max-width: 1024px) and (pointer: coarse) {
+    main {
+        flex-direction: column;
+    }
+
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #controls {
+        display: none;
+    }
+
+    #mobile-controls {
+        display: block;
+    }
 }
 
 @media (max-width: 768px) {
@@ -565,6 +631,23 @@ footer {
 
     .shop-items {
         grid-template-columns: 1fr;
+    }
+
+    /* Larger touch targets for smaller phones */
+    .action-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.4em;
+    }
+
+    .joystick-container {
+        width: 110px;
+        height: 110px;
+    }
+
+    .action-hint {
+        font-size: 10px;
+        padding: 4px 8px;
     }
 }
 
