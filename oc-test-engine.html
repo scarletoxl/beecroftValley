@@ -6,202 +6,50 @@
     <title>OC Practice Test</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f172a;
-            min-height: 100vh;
-            padding: 15px;
-        }
-        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; min-height: 100vh; padding: 15px; }
         .container { max-width: 850px; margin: 0 auto; }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .test-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .section-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-        
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .test-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .section-badge { display: flex; align-items: center; gap: 10px; }
+        .section-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
         .section-icon.reading { background: #fecaca; }
         .section-icon.maths { background: #bbf7d0; }
         .section-icon.thinking { background: #bfdbfe; }
-        
         .section-info h2 { font-size: 1.1em; color: #1e293b; }
         .section-info span { font-size: 0.85em; color: #64748b; }
-        
         .timer-box { text-align: right; }
-        
-        .timer {
-            font-family: 'Courier New', monospace;
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #1e293b;
-            background: #f1f5f9;
-            padding: 8px 16px;
-            border-radius: 8px;
-        }
-        
+        .timer { font-family: 'Courier New', monospace; font-size: 1.4em; font-weight: bold; color: #1e293b; background: #f1f5f9; padding: 8px 16px; border-radius: 8px; }
         .timer.warning { background: #fef3c7; color: #92400e; }
         .timer.danger { background: #fecaca; color: #dc2626; animation: pulse 1s infinite; }
-        
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        
         .timer-label { font-size: 0.75em; color: #64748b; margin-top: 4px; }
-        
-        .progress-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .progress-bar-bg {
-            flex: 1;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            transition: width 0.3s;
-            border-radius: 4px;
-        }
-        
+        .progress-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .progress-bar-bg { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-bar { height: 100%; transition: width 0.3s; border-radius: 4px; }
         .progress-bar.reading { background: #ef4444; }
         .progress-bar.maths { background: #22c55e; }
         .progress-bar.thinking { background: #3b82f6; }
-        
         .progress-text { font-size: 0.85em; color: #64748b; white-space: nowrap; }
-        
-        .passage-container {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-        
-        .passage-title {
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 12px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .passage-text {
-            font-size: 0.95em;
-            line-height: 1.8;
-            color: #334155;
-        }
-        
+        .passage-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px; max-height: 280px; overflow-y: auto; }
+        .passage-title { font-weight: 600; color: #475569; margin-bottom: 12px; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px; }
+        .passage-text { font-size: 0.95em; line-height: 1.8; color: #334155; }
         .passage-text p { margin-bottom: 12px; }
-        
         .question-box { margin-bottom: 20px; }
         .question-number { font-size: 0.8em; color: #64748b; margin-bottom: 8px; }
-        
-        .question-text {
-            font-size: 1.05em;
-            color: #1e293b;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-        
+        .question-text { font-size: 1.05em; color: #1e293b; line-height: 1.6; margin-bottom: 15px; }
         .options { display: flex; flex-direction: column; gap: 8px; }
-        
-        .option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s;
-            background: white;
-            text-align: left;
-            font-size: 0.95em;
-        }
-        
+        .option { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: white; text-align: left; font-size: 0.95em; }
         .option:hover:not(.disabled) { border-color: #94a3b8; background: #f8fafc; }
         .option.selected { border-color: #3b82f6; background: #eff6ff; }
         .option.correct { border-color: #22c55e; background: #dcfce7; }
         .option.incorrect { border-color: #ef4444; background: #fef2f2; }
-        .option.show-correct { border-color: #22c55e; background: #dcfce7; }
         .option.disabled { cursor: default; }
-        
-        .option-letter {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.85em;
-            flex-shrink: 0;
-        }
-        
+        .option-letter { width: 26px; height: 26px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85em; flex-shrink: 0; }
         .option.selected .option-letter { background: #3b82f6; color: white; }
         .option.correct .option-letter { background: #22c55e; color: white; }
         .option.incorrect .option-letter { background: #ef4444; color: white; }
-        .option.show-correct .option-letter { background: #22c55e; color: white; }
-        
-        .nav-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        
+        .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: all 0.15s; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-ghost { background: transparent; color: #64748b; }
         .btn-ghost:hover:not(:disabled) { background: #f1f5f9; }
@@ -211,349 +59,322 @@
         .btn-primary:hover:not(:disabled) { background: #2563eb; }
         .btn-success { background: #22c55e; color: white; }
         .btn-success:hover:not(:disabled) { background: #16a34a; }
-        
         .welcome { text-align: center; padding: 20px 0; }
         .welcome-icon { font-size: 3.5em; margin-bottom: 15px; }
         .welcome h1 { color: #1e293b; margin-bottom: 8px; font-size: 1.8em; }
         .welcome-sub { color: #64748b; margin-bottom: 25px; }
-        
-        .test-info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .test-info-card {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 20px 15px;
-            text-align: center;
-        }
-        
+        .test-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .test-info-card { background: #f8fafc; border-radius: 10px; padding: 20px 15px; text-align: center; }
         .test-info-card.reading { border-top: 4px solid #ef4444; }
         .test-info-card.maths { border-top: 4px solid #22c55e; }
         .test-info-card.thinking { border-top: 4px solid #3b82f6; }
-        
         .test-info-card .icon { font-size: 1.8em; margin-bottom: 8px; }
         .test-info-card h3 { font-size: 0.9em; color: #475569; margin-bottom: 5px; }
         .test-info-card .stat { font-size: 0.8em; color: #64748b; }
-        
-        .instructions-box {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: left;
-        }
-        
-        .instructions-box h4 {
-            color: #92400e;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
+        .instructions-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 20px; margin-bottom: 25px; text-align: left; }
+        .instructions-box h4 { color: #92400e; margin-bottom: 10px; }
         .instructions-box ul { color: #78350f; padding-left: 20px; font-size: 0.9em; }
         .instructions-box li { margin-bottom: 6px; line-height: 1.5; }
-        
-        .btn-start {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-size: 1.1em;
-            padding: 14px 40px;
-            border-radius: 10px;
-        }
-        
-        .btn-start:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-        }
-        
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #64748b;
-            text-decoration: none;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-        }
-        
+        .btn-start { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 1.1em; padding: 14px 40px; border-radius: 10px; }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; color: #64748b; text-decoration: none; font-size: 0.9em; margin-bottom: 20px; }
         .btn-back:hover { color: #1e293b; }
-        
         .section-intro { text-align: center; padding: 40px 20px; }
         .section-intro .big-icon { font-size: 4em; margin-bottom: 15px; }
         .section-intro h2 { color: #1e293b; margin-bottom: 8px; }
         .section-intro .meta { color: #64748b; margin-bottom: 25px; }
-        
-        .section-intro .info-pills {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .section-intro .pill {
-            background: #f1f5f9;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            color: #475569;
-        }
-        
-        .section-intro .tip {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: #166534;
-            font-size: 0.9em;
-            margin-bottom: 25px;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            max-width: 450px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
+        .section-intro .info-pills { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .section-intro .pill { background: #f1f5f9; padding: 10px 20px; border-radius: 20px; font-size: 0.9em; color: #475569; }
+        .section-intro .tip { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px 20px; border-radius: 8px; color: #166534; font-size: 0.9em; margin-bottom: 25px; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal { background: white; border-radius: 12px; padding: 25px; max-width: 450px; width: 100%; max-height: 80vh; overflow-y: auto; }
         .modal h3 { margin-bottom: 15px; color: #1e293b; }
-        
-        .q-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .q-cell {
-            aspect-ratio: 1;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-        
+        .q-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
+        .q-cell { aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 0.85em; cursor: pointer; transition: transform 0.15s; }
         .q-cell:hover { transform: scale(1.1); }
         .q-cell.answered { background: #dcfce7; color: #166534; }
         .q-cell.unanswered { background: #fef2f2; color: #dc2626; }
         .q-cell.current { outline: 3px solid #3b82f6; }
-        
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            font-size: 0.8em;
-            color: #64748b;
-        }
-        
+        .legend { display: flex; justify-content: center; gap: 20px; font-size: 0.8em; color: #64748b; }
         .legend span { display: flex; align-items: center; gap: 5px; }
         .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
         .legend-dot.answered { background: #dcfce7; border: 1px solid #166534; }
         .legend-dot.unanswered { background: #fef2f2; border: 1px solid #dc2626; }
-        
         .results { text-align: center; padding: 20px 0; }
         .results-icon { font-size: 4em; margin-bottom: 15px; }
         .results h1 { color: #1e293b; margin-bottom: 5px; }
         .final-score { font-size: 3.5em; font-weight: bold; color: #3b82f6; margin: 15px 0; }
         .final-percent { font-size: 1.3em; color: #64748b; margin-bottom: 10px; }
         .time-summary { font-size: 0.9em; color: #94a3b8; margin-bottom: 25px; }
-        
-        .score-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
+        .score-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .score-card { background: #f8fafc; border-radius: 10px; padding: 18px 15px; }
         .score-card.reading { border-top: 4px solid #ef4444; }
         .score-card.maths { border-top: 4px solid #22c55e; }
         .score-card.thinking { border-top: 4px solid #3b82f6; }
-        
         .score-card-label { font-size: 0.8em; color: #64748b; margin-bottom: 5px; }
         .score-card-value { font-size: 1.6em; font-weight: bold; color: #1e293b; }
         .score-card-pct { font-size: 0.85em; color: #64748b; }
-        
-        .feedback-box {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            color: #475569;
-            line-height: 1.6;
-        }
-        
-        .review-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .review-tab {
-            padding: 10px 18px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            background: white;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.15s;
-        }
-        
+        .feedback-box { background: #f8fafc; border-radius: 10px; padding: 20px; margin-bottom: 25px; color: #475569; line-height: 1.6; }
+        .review-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        .review-tab { padding: 10px 18px; border: 2px solid #e2e8f0; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; transition: all 0.15s; }
         .review-tab:hover { border-color: #cbd5e1; }
         .review-tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-        
         .review-list { text-align: left; max-height: 400px; overflow-y: auto; }
-        
-        .review-item {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border-left: 4px solid #e2e8f0;
-        }
-        
+        .review-item { background: #f8fafc; border-radius: 8px; padding: 15px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; }
         .review-item.correct { border-left-color: #22c55e; }
         .review-item.incorrect { border-left-color: #ef4444; }
-        
-        .review-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
+        .review-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .review-item-q { font-weight: 500; color: #64748b; font-size: 0.85em; }
-        
-        .review-item-status {
-            font-size: 0.8em;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        
+        .review-item-status { font-size: 0.8em; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
         .review-item-status.correct { background: #dcfce7; color: #166534; }
         .review-item-status.incorrect { background: #fef2f2; color: #dc2626; }
-        
         .review-item-text { color: #334155; margin-bottom: 8px; font-size: 0.95em; line-height: 1.5; }
         .review-item-answer { font-size: 0.85em; color: #64748b; }
         .review-item-answer strong { color: #22c55e; }
-        
-        .review-item-explanation {
-            background: #fffbeb;
-            border-left: 3px solid #f59e0b;
-            padding: 10px 12px;
-            margin-top: 10px;
-            border-radius: 0 6px 6px 0;
-            font-size: 0.85em;
-            color: #78350f;
-        }
-        
-        @media (max-width: 600px) {
-            .test-info-grid, .score-cards { grid-template-columns: 1fr; }
-            .q-grid { grid-template-columns: repeat(5, 1fr); }
-            .card { padding: 18px; }
-        }
+        .review-item-explanation { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 10px 12px; margin-top: 10px; border-radius: 0 6px 6px 0; font-size: 0.85em; color: #78350f; }
+        @media (max-width: 600px) { .test-info-grid, .score-cards { grid-template-columns: 1fr; } .q-grid { grid-template-columns: repeat(5, 1fr); } .card { padding: 18px; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card" id="app"></div>
-    </div>
-
+    <div class="container"><div class="card" id="app"></div></div>
     <script>
-        // ==================== SEEDED RANDOM ====================
-        function seededRandom(seed) {
-            return function() {
-                seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-                return seed / 0x7fffffff;
-            };
-        }
+// OC TEST QUESTION BANK
+// 25 Passages, 100+ Reading Questions, 150+ Maths Questions, 100+ Thinking Questions
 
-        function seededShuffle(array, rng) {
-            const arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(rng() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
+const passages = {
+    // ===== FICTION/FANTASY =====
+    dragon_keeper: {
+        title: "The Last Dragon Keeper",
+        text: `<p>Mira had always known she was different. While other children in the mountain village played with wooden swords, she spent her time watching the clouds, searching for shapes that might be more than clouds.</p>
+<p>On the morning of her twelfth birthday, she found the egg. It was nestled in the hollow of an ancient oak tree, no bigger than her fist, its shell swirling with colours like oil on water. When she touched it, warmth spread through her fingers.</p>
+<p>"You shouldn't have found that," said a voice behind her. Mira spun around to see an old woman she'd never noticed before. Her eyes were the same swirling colours as the egg.</p>
+<p>"The dragon keepers died out a hundred years ago," the woman continued. "Or so everyone believed. But the dragons knew better. They've been waiting."</p>
+<p>The old woman smiled, and for just a moment, Mira thought she saw scales shimmer beneath the wrinkled skin.</p>`
+    },
+    
+    time_garden: {
+        title: "The Garden That Remembered",
+        text: `<p>Nobody in Willowmere could explain the garden behind Mrs Chen's cottage. Flowers bloomed there that hadn't existed for centuries. Butterflies with wings like stained glass floated between plants that scientists said were extinct.</p>
+<p>Twelve-year-old Kai discovered the truth by accident. He'd climbed the wall to retrieve his football and landed in a patch of luminous blue roses. The moment his skin touched a petal, memories flooded his mind — not his memories, but the garden's.</p>
+<p>He saw the land before the town existed. He watched the first seed planted by a woman whose tears fell like rain. He felt centuries of growth, of seasons cycling, of roots reaching deep into earth that remembered everything.</p>
+<p>"The garden keeps the world's forgotten things," Mrs Chen said, appearing beside him. "Every plant here grew from something that was lost. The blue roses? They grow from lost lullabies. The silver ferns remember languages no one speaks anymore."</p>
+<p>Kai looked at his football. "What would grow from this?"</p>
+<p>"From a child's game? Something wonderful. Something that laughs."</p>`
+    },
+    
+    lighthouse_ghost: {
+        title: "The Lighthouse Keeper's Secret",
+        text: `<p>When Maya's family moved to the old lighthouse, everyone warned them about the ghost. "She appears on stormy nights," they whispered. "A girl in a blue dress, forever waiting."</p>
+<p>Maya didn't believe in ghosts until the first storm came. Lightning split the sky, and there she was — a translucent figure at the top of the spiral stairs, one hand reaching toward the light.</p>
+<p>"I'm not trying to haunt anyone," the ghost said. "I'm trying to keep the light working. I've been doing it for a hundred and twelve years."</p>
+<p>Her name was Eleanor. She'd been the lighthouse keeper's daughter in 1912. On the night of the great storm, she'd kept the light burning while her father was trapped in town. Seventeen ships made it to safety because of her.</p>
+<p>"I made a promise," Eleanor explained. "As long as ships sail these waters, the light will never go dark." She smiled sadly. "I just didn't realise I'd have to keep it forever."</p>
+<p>Maya reached for the light controls. "Maybe you don't have to do it alone anymore."</p>`
+    },
+    
+    paper_kingdom: {
+        title: "The Kingdom of Folded Paper",
+        text: `<p>The origami crane had been sitting on Li's windowsill for three years, a gift from her grandmother who had passed away. She never expected it to speak.</p>
+<p>"Your grandmother asked me to wait," the crane said, its paper wings rustling. "She said you'd be ready when you turned eleven."</p>
+<p>Ready for what? Li soon discovered. The crane led her to a world in the fold between dimensions — a kingdom made entirely of paper, where origami creatures lived and breathed.</p>
+<p>Here, her grandmother had been a hero. As a young woman, she'd defended the Paper Kingdom from the Rain, a terrible force that threatened to dissolve everything. The people still told stories of her courage.</p>
+<p>"She hoped you'd never need to know," the crane said. "But the Rain is returning. The kingdom needs a new champion."</p>
+<p>Li looked at her hands — ordinary hands that had never held anything more dangerous than a pencil. But her grandmother had been ordinary once too.</p>`
+    },
+    
+    clockwork_heart: {
+        title: "The Clockwork Heart",
+        text: `<p>In the city of Cogsworth, everything ran on clockwork — the trams, the streetlights, even the mechanical birds that sang at dawn. But eleven-year-old Finn had a secret: his own heart was clockwork too.</p>
+<p>He'd been born with a weak heart, and his inventor father had replaced it with gears and springs when Finn was just a baby. Every night, Finn had to wind the key in his chest, or his heart would stop.</p>
+<p>Nobody knew except his father. "People fear what they don't understand," his father had warned. "Keep your key hidden."</p>
+<p>But when a fire trapped his classmates in the school basement, Finn faced a choice. The only way to break down the door was to use the powerful mainspring in his chest — the same spring that kept him alive.</p>
+<p>As Finn felt his heart slowing, gears grinding, he smiled. His father had always said he had the biggest heart of anyone he knew. Today, Finn would prove him right.</p>
+<p>He threw himself against the door.</p>`
+    },
+    
+    mirror_twin: {
+        title: "The Girl in the Mirror",
+        text: `<p>Zoe had always avoided mirrors. When she was little, she'd convinced herself it was because she didn't like her reflection. But on her tenth birthday, she learned the truth.</p>
+<p>The girl staring back at her blinked — when Zoe hadn't blinked at all.</p>
+<p>"Finally," the reflection said. "I've been waiting years for you to notice."</p>
+<p>Her name was Ezi — Zoe backwards — and she lived in the Mirror World, a place where everything was reversed. Left was right, up was down, and yesterday came after tomorrow.</p>
+<p>"We used to be one person," Ezi explained. "But when you were born, our soul split in two. You got the real world. I got... this." She gestured at the backwards bedroom behind her.</p>
+<p>Zoe pressed her palm against the glass. Ezi did the same. Their hands were identical but opposite, like puzzle pieces that would fit if the mirror weren't between them.</p>
+<p>"I'm sorry," Zoe whispered.</p>
+<p>"Don't be sorry," Ezi said. "Be ready. Because the barrier is breaking, and soon we'll need to face what split us apart in the first place."</p>`
+    },
 
-        // ==================== GET TEST NUMBER ====================
-        const urlParams = new URLSearchParams(window.location.search);
-        const testNumber = parseInt(urlParams.get('test')) || 1;
-
-        // ==================== PASSAGES ====================
-        const passages = {
-            dragons: {
-                title: "The Last Dragon Keeper",
-                text: `<p>Mira had always known she was different. While other children in the mountain village played with wooden swords and rag dolls, she spent her time watching the clouds, searching for shapes that might be more than clouds.</p>
-<p>On the morning of her twelfth birthday, she found the egg. It was nestled in the hollow of an ancient oak tree, no bigger than her fist, its shell swirling with colours like oil on water. When she touched it, warmth spread through her fingers and up her arm.</p>
-<p>"You shouldn't have found that," said a voice behind her. Mira spun around to see an old woman she'd never noticed in the village before. Her eyes were the same swirling colours as the egg.</p>
-<p>"The dragon keepers died out a hundred years ago," the woman continued, her voice neither angry nor kind. "Or so everyone believed. But the dragons knew better. They've been waiting, hiding their eggs in places only a true keeper could find."</p>
-<p>Mira looked down at the egg in her hands. It pulsed gently, like a heartbeat. "What do I do?" she whispered.</p>
-<p>"You keep it warm. You keep it safe. And when it hatches, you'll discover what you were born to do." The old woman smiled, and for just a moment, Mira thought she saw scales shimmer beneath the wrinkled skin.</p>`
-            },
-            octopus: {
-                title: "Masters of Disguise: The Incredible Octopus",
-                text: `<p>If you could have any superpower, you might want to consider those of the octopus. These remarkable sea creatures can change their colour, texture, and even shape in less than a second — faster than you can blink.</p>
-<p>An octopus's skin contains thousands of special cells called chromatophores. Each cell is like a tiny bag of coloured pigment surrounded by muscles. When the muscles contract, the bag stretches out and the colour becomes visible. When they relax, the colour disappears.</p>
-<p>But colour is only part of the trick. Octopuses can also change their skin texture from smooth to bumpy or spiky, allowing them to mimic coral, seaweed, or rocky surfaces. Some species can even alter their body shape to impersonate other sea creatures.</p>
-<p>Scientists have discovered that octopuses are surprisingly intelligent. They can solve puzzles, open jars, and even recognise individual human faces. In laboratory experiments, octopuses have learned to navigate mazes and remember solutions for months.</p>
+    // ===== SCIENCE/NON-FICTION =====
+    octopus_masters: {
+        title: "Masters of Disguise: The Incredible Octopus",
+        text: `<p>If you could have any superpower, you might want to consider those of the octopus. These remarkable sea creatures can change their colour, texture, and even shape in less than a second.</p>
+<p>An octopus's skin contains thousands of special cells called chromatophores. Each cell is like a tiny bag of coloured pigment surrounded by muscles. When the muscles contract, the colour becomes visible. When they relax, it disappears.</p>
+<p>But colour is only part of the trick. Octopuses can also change their skin texture from smooth to bumpy or spiky, allowing them to mimic coral, seaweed, or rocky surfaces. The mimic octopus can even impersonate other sea creatures like lionfish and sea snakes.</p>
+<p>Scientists have discovered that octopuses are surprisingly intelligent. They can solve puzzles, open jars, and recognise individual human faces. In laboratory experiments, octopuses have learned to navigate mazes and remember solutions for months.</p>
 <p>Perhaps most remarkably, octopuses have three hearts and blue blood. Two hearts pump blood to the gills, while the third pumps it to the rest of the body.</p>`
-            },
-            letter: {
-                title: "A Letter Home",
-                text: `<p><em>14 Hillside Road, Queenstown, New Zealand<br>15th March</em></p>
+    },
+    
+    bee_world: {
+        title: "The Secret World of Bees",
+        text: `<p>Inside every beehive is a city of 50,000 workers, each with a specific job to do. From the moment a bee hatches, its role is determined by its age.</p>
+<p>Young bees spend their first days as cleaners, polishing cells where new eggs will be laid. As they grow older, they become nurses, feeding larvae with royal jelly. Only after about three weeks do bees graduate to foraging.</p>
+<p>When a forager finds good flowers, she returns and performs a "waggle dance." This figure-eight movement tells other bees exactly where to find the food — including direction and distance.</p>
+<p>A single bee produces only about one-twelfth of a teaspoon of honey in its entire lifetime. The jar of honey in your kitchen represents millions of flower visits and thousands of bee lifetimes.</p>
+<p>Bees are essential for our food supply. They pollinate about one-third of all the food we eat, including apples, almonds, and strawberries. Without bees, our supermarkets would look very different.</p>`
+    },
+    
+    arctic_survival: {
+        title: "Survival in the Arctic",
+        text: `<p>At the top of the world, where winter temperatures drop below minus 50 degrees Celsius, survival requires extraordinary adaptations.</p>
+<p>The Arctic fox has the warmest fur of any mammal. Its dense coat changes colour with seasons — white in winter to blend with snow, brown in summer to match rocky tundra.</p>
+<p>Polar bears have solved the problem differently. Beneath their white-looking fur, their skin is actually black, helping absorb heat from the sun. Each hollow hair provides extra insulation.</p>
+<p>Perhaps most impressive are Arctic ground squirrels. During hibernation, their body temperature drops to minus 3 degrees Celsius — the coldest of any mammal. Special proteins prevent ice crystals from forming in their blood.</p>
+<p>Even plants have adapted. Arctic willows grow only a few centimetres tall, staying close to the ground where it's warmer. Some flowers can generate their own heat to melt surrounding snow.</p>`
+    },
+    
+    volcano_power: {
+        title: "The Power Beneath: Understanding Volcanoes",
+        text: `<p>Deep beneath Earth's surface, temperatures reach over 6,000 degrees Celsius — hotter than the surface of the Sun. This heat melts rock into magma, and when it finds a way to the surface, volcanoes are born.</p>
+<p>Not all volcanoes are the same. Shield volcanoes, like those in Hawaii, produce rivers of flowing lava that create gentle slopes. Stratovolcanoes, like Mount Fuji in Japan, are steeper and more explosive.</p>
+<p>Scientists can often predict eruptions by watching for warning signs. Earthquakes beneath the volcano increase as magma pushes upward. The ground may swell like a balloon. Gases escaping through cracks change in composition.</p>
+<p>Despite their dangers, volcanoes provide benefits. Volcanic soil is incredibly fertile. Volcanic rocks are used in construction. Geothermal energy from volcanic regions provides clean electricity for millions.</p>
+<p>Iceland gets nearly 30% of its electricity from volcanic heat, using it to warm homes and generate power.</p>`
+    },
+    
+    brain_amazing: {
+        title: "Your Amazing Brain",
+        text: `<p>Your brain weighs only about 1.4 kilograms, but it's the most complex object in the known universe. It contains approximately 86 billion neurons, each connected to thousands of others.</p>
+<p>Every second, your brain processes about 11 million bits of information from your senses, though you're only consciously aware of about 50. The rest is handled automatically.</p>
+<p>When you learn something new, your brain physically changes. Connections between neurons strengthen or weaken. New pathways form. This ability to rewire itself is called neuroplasticity.</p>
+<p>Sleep is crucial for your brain. While you sleep, your brain consolidates memories, clears out waste products, and repairs itself. Students who sleep well consistently outperform those who don't.</p>
+<p>Your brain uses about 20% of your body's energy, despite being only 2% of your body weight. It's like a powerful computer that never turns off.</p>`
+    },
+    
+    plastics_ocean: {
+        title: "Plastic: The Ocean's Unwanted Guest",
+        text: `<p>Every minute, the equivalent of one garbage truck full of plastic enters our oceans. By 2050, scientists predict there could be more plastic in the ocean than fish, by weight.</p>
+<p>Plastic doesn't disappear — it breaks into smaller pieces called microplastics. These tiny fragments have been found everywhere, from the deepest ocean trenches to Arctic ice, and even inside human blood.</p>
+<p>Sea turtles mistake plastic bags for jellyfish, their favourite food. Seabirds feed plastic to their chicks. A whale found in the Philippines had 40 kilograms of plastic bags in its stomach.</p>
+<p>The Great Pacific Garbage Patch, a massive collection of floating plastic, is now three times the size of France. But because most plastic floats just below the surface, it's invisible from above.</p>
+<p>Solutions are emerging. Some countries have banned single-use plastics. Scientists are developing truly biodegradable alternatives. But the most effective solution is using less plastic in the first place.</p>`
+    },
+    
+    mars_colony: {
+        title: "Could We Live on Mars?",
+        text: `<p>Mars is the most Earth-like planet in our solar system, but "Earth-like" is relative. The average temperature is minus 60 degrees Celsius. The atmosphere is 95% carbon dioxide. A day on Mars is only 40 minutes longer than on Earth.</p>
+<p>Despite these challenges, scientists believe humans could eventually live on Mars. The first colonies would probably be underground or inside specially designed habitats.</p>
+<p>Growing food would be challenging but not impossible. Experiments on the International Space Station have successfully grown lettuce, radishes, and wheat.</p>
+<p>Water exists on Mars, frozen in polar ice caps and possibly underground. Future colonists could extract this water for drinking, farming, and even making rocket fuel.</p>
+<p>The journey itself would take about seven months with current technology. Astronauts would need to deal with isolation, radiation exposure, and muscle loss from months in low gravity.</p>`
+    },
+
+    // ===== LETTERS AND PERSONAL ACCOUNTS =====
+    nz_exchange: {
+        title: "A Letter Home from New Zealand",
+        text: `<p><em>14 Hillside Road, Queenstown, New Zealand<br>15th March</em></p>
 <p>Dear Grandma,</p>
-<p>I know you were worried about me coming so far away for the school exchange program, but I want you to know I'm having the most amazing time. New Zealand is nothing like home — the mountains here are so tall they have snow on top even though it's nearly autumn!</p>
-<p>My host family, the Ngatas, have been so welcoming. Mrs Ngata is teaching me to cook traditional Māori food, and yesterday we made something called hāngī, where the food is cooked underground using hot stones.</p>
-<p>The best part was last weekend when we visited a place called Milford Sound. A pod of dolphins swam alongside our boat, and I actually cried (don't tell Mum).</p>
-<p>I miss your Sunday roasts and our walks in the park. Only three more weeks until I'm back. Save me some of your lemon cake?</p>
+<p>I know you were worried about me coming so far for the school exchange, but I'm having the most amazing time! The mountains here have snow on top even in autumn!</p>
+<p>My host family, the Ngatas, have been wonderful. Yesterday we made hāngī — traditional Māori food cooked underground using hot stones. It took hours, but the lamb just fell apart!</p>
+<p>Last weekend we visited Milford Sound. A pod of dolphins swam alongside our boat, and I actually cried (don't tell Mum). The waterfalls crashing down the cliffs were incredible.</p>
+<p>I miss your Sunday roasts and our walks in the park. Sometimes at night I try to find the same stars, but they're completely different down here! Something called the Southern Cross.</p>
+<p>Only three weeks until I'm back. Save me some lemon cake?</p>
 <p>All my love,<br>Emma</p>`
-            },
-            library: {
-                title: "The Library of Alexandria",
-                text: `<p>Imagine a building that held all the knowledge in the ancient world — every scroll, every book, every discovery. The Library of Alexandria, built in Egypt over 2,300 years ago, aimed to be exactly that.</p>
-<p>The library was founded by Ptolemy I, who ordered that every ship arriving in the city's harbour must hand over any books on board. Scribes would make copies, returning the copies to the ships while keeping the originals.</p>
-<p>At its peak, the library may have held between 400,000 and 700,000 scrolls. The mathematician Euclid developed his theories of geometry there. The astronomer Eratosthenes used the library's resources to calculate the Earth's circumference.</p>
-<p>The library's fate remains one of history's great mysteries. There was no single moment of destruction. Instead, it likely declined over centuries through fires, wars, and neglect.</p>
-<p>The loss of the Library of Alexandria is often called one of history's greatest tragedies. Countless works of literature, science, and philosophy vanished forever.</p>`
-            },
-            poem: {
-                title: "The Road Not Taken (Excerpt) — Robert Frost",
-                text: `<p style="font-style: italic; line-height: 2;">Two roads diverged in a yellow wood,<br>
+    },
+    
+    grandpa_workshop: {
+        title: "Oliver's Letter",
+        text: `<p><em>12 Willowbrook Lane, Melbourne</em></p>
+<p>Dear Grandpa,</p>
+<p>I know you can't read this letter, but Mum says writing might help me feel better. It's been three months since you left, and I still listen for your whistle when I walk past the workshop.</p>
+<p>Remember the wooden boat we started last summer? I finished painting it yesterday — bright red, just like you wanted. Tomorrow I'm taking it to Wilson's Pond to see if it floats. I'm a bit scared it might sink, but you always said the only real failure is not trying at all.</p>
+<p>School has been strange. Everyone keeps asking if I'm okay, and I never know what to say. Sometimes I'm fine, and sometimes I miss you so much I have to pretend I have something in my eye.</p>
+<p>Mum found your old compass in the shed. She said I could keep it. It doesn't point north anymore, but it makes me feel like part of you is still with me.</p>
+<p>Love,<br>Oliver</p>
+<p>P.S. The sunflowers we planted are taller than me now.</p>`
+    },
+    
+    space_diary: {
+        title: "Astronaut's Diary: Day 47 on the ISS",
+        text: `<p><em>International Space Station, 400km above Earth</em></p>
+<p>Day 47. Still can't believe this is my job.</p>
+<p>Woke up at 0600 GMT to the most spectacular sunrise — my fifteenth of the day. We orbit Earth every 90 minutes, so we see 16 sunrises and sunsets every 24 hours. It never gets old.</p>
+<p>Today's main task was fixing the water recycling system. Up here, we recycle everything — even sweat and breath vapour get turned back into drinking water. Sounds gross, but it's actually purer than most tap water on Earth.</p>
+<p>The hardest part of space isn't the experiments or the maintenance. It's the small things. I haven't felt rain on my face in 47 days. I miss the smell of grass after it's been cut. I miss hugging my daughter without a video screen between us.</p>
+<p>But then I look out and see Australia sliding by below, and I remember why I'm here. We're learning how to make humanity a species that can live among the stars.</p>
+<p>Tomorrow: spacewalk to replace solar panel batteries. Terrifying and wonderful.</p>`
+    },
+    
+    refugee_story: {
+        title: "A New Beginning",
+        text: `<p>My name is Amara. I am twelve years old, and six months ago, I had never seen snow.</p>
+<p>In my home country, it was always warm. I used to complain about the heat, about the dust that got into everything. Now I dream about that dust sometimes.</p>
+<p>When we left, I could only bring one small bag. I packed my school certificate, a photo of our house, and the carved wooden bird my grandmother made. Everything else — my books, my drawings, my room with the blue curtains — I had to leave behind.</p>
+<p>The journey took three months. Some parts I don't want to remember. But I do remember arriving at the airport in Sydney. A woman from the refugee support center was holding a sign with our names on it. She was smiling.</p>
+<p>Australia is strange and wonderful. The trees look like they're from another planet. People say "no worries" about everything. My classmates are curious about where I come from, but mostly they just want to know if I like football.</p>
+<p>I am learning that home is not a place you leave behind. Home is something you carry with you, and something you build again.</p>`
+    },
+
+    // ===== HISTORICAL =====
+    alexandria_library: {
+        title: "The Library of Alexandria",
+        text: `<p>Imagine a building that held all the knowledge in the ancient world. The Library of Alexandria, built in Egypt over 2,300 years ago, aimed to be exactly that.</p>
+<p>Founded by Ptolemy I, the library had an unusual collection method. Every ship arriving in Alexandria's harbour had to hand over any books on board. Scribes made copies, returning copies to the ships while keeping originals for the library.</p>
+<p>At its peak, the library held between 400,000 and 700,000 scrolls. Scholars from across the Mediterranean came to study there. Euclid developed geometry within its walls. Eratosthenes calculated Earth's circumference.</p>
+<p>The library's fate remains mysterious. There was no single destruction — it declined over centuries through fires, wars, and neglect. Some historians blame Julius Caesar's fire in 48 BCE.</p>
+<p>The loss of the Library of Alexandria is called one of history's greatest tragedies. Countless works of literature, science, and philosophy vanished forever.</p>`
+    },
+    
+    pompeii: {
+        title: "The Last Day of Pompeii",
+        text: `<p>August 24, 79 AD started like any ordinary day in Pompeii. Merchants opened their shops. Children played in the streets. Nobody paid attention to the small earthquakes that had been happening for days.</p>
+<p>At about noon, Mount Vesuvius exploded with the force of a nuclear bomb. A column of ash and rock shot 33 kilometres into the sky. Within minutes, the sun disappeared.</p>
+<p>Pumice — lightweight volcanic rock — began raining down. Initially, many residents stayed indoors, thinking they could wait out the storm. But the pumice kept falling at 15 centimetres per hour. Roofs began to collapse.</p>
+<p>Those who fled early had the best chance of survival. Those who stayed faced pyroclastic surges — superheated clouds of gas and ash, reaching 300 degrees Celsius, sweeping down at 100 kilometres per hour.</p>
+<p>The city was buried under metres of volcanic material, preserving it like a time capsule. When archaeologists began excavating in 1748, they found bread still in ovens, food on tables, and the haunting outlines of people frozen in their final moments.</p>`
+    },
+    
+    titanic: {
+        title: "Titanic: The Ship of Dreams",
+        text: `<p>The RMS Titanic was the largest ship ever built when it set sail on April 10, 1912. At 269 metres long, it was a floating palace with a swimming pool, Turkish bath, and grand staircase.</p>
+<p>The ship's builders were so confident in its design that they famously called it "unsinkable." It had a double bottom and 16 watertight compartments. It could stay afloat with any four compartments flooded.</p>
+<p>At 11:40 PM on April 14, lookout Frederick Fleet spotted an iceberg directly ahead. The ship turned hard, but it was too late. The iceberg scraped along the side, opening five compartments to the sea — one more than the ship could handle.</p>
+<p>There weren't enough lifeboats. Regulations required only 20 boats — enough for about half the passengers. The Titanic actually carried more boats than required by law.</p>
+<p>Of the 2,224 people aboard, approximately 1,500 died in the freezing North Atlantic waters. The disaster led to new safety regulations requiring enough lifeboats for everyone.</p>`
+    },
+    
+    moon_landing: {
+        title: "One Giant Leap: The Moon Landing",
+        text: `<p>At 4:17 PM on July 20, 1969, the lunar module Eagle touched down on the Moon. "Houston, Tranquility Base here. The Eagle has landed," Commander Neil Armstrong reported.</p>
+<p>The landing almost didn't happen. As Eagle descended, its computer overloaded and began flashing warning alarms. Armstrong took manual control and piloted the craft over a boulder-strewn crater, landing with just 25 seconds of fuel remaining.</p>
+<p>Six hours later, Armstrong climbed down the ladder and stepped onto the lunar surface. His first words became among the most famous in history: "That's one small step for man, one giant leap for mankind."</p>
+<p>Armstrong and Buzz Aldrin spent about two hours on the surface, collecting samples, taking photographs, and planting an American flag. Michael Collins orbited alone in the command module.</p>
+<p>An estimated 600 million people — one-fifth of the world's population — watched the moonwalk on television. For that moment, humanity was united in wonder.</p>`
+    },
+
+    // ===== ADVENTURE/MYSTERY =====
+    treasure_island: {
+        title: "The Mystery of Oak Island",
+        text: `<p>For over 200 years, treasure hunters have been digging on a small island off Canada's coast, searching for what might be the world's most elaborate buried treasure.</p>
+<p>The story began in 1795 when three teenagers discovered a circular depression beneath an old oak tree. They dug and found layers of logs every three metres. Excited by the possibility of pirate treasure, they dug deeper, but the pit kept flooding with seawater.</p>
+<p>Later excavations revealed coconut fibres (strange, since coconuts don't grow in Canada), stone tablets with mysterious inscriptions, and elaborate drainage systems designed to protect something below.</p>
+<p>Theories about what lies beneath range from Captain Kidd's pirate gold to Shakespeare's original manuscripts to treasure from the Knights Templar. Six people have died in various excavation attempts.</p>
+<p>Modern treasure hunters continue searching with advanced technology. But the "Money Pit" has swallowed millions of dollars and given up almost nothing. Perhaps the real treasure was always the mystery itself.</p>`
+    },
+    
+    explorer_attic: {
+        title: "The Young Explorer",
+        text: `<p>Twelve-year-old Jake pressed his face against the dusty window of his grandfather's attic. Rain streaked the glass, turning the garden into a watery blur.</p>
+<p>"Looking for adventure?" His grandfather appeared beside him, holding a wooden chest Jake had never seen before. "Sometimes the greatest discoveries are right under our noses."</p>
+<p>The chest contained maps, photographs, and a worn leather journal. Jake recognised the handwriting — his grandfather's.</p>
+<p>"I was an explorer once," the old man said softly. "These are my field notes from expeditions to places most people have never heard of."</p>
+<p>Jake picked up a photograph of a young man at a cave entrance, grinning broadly. It took a moment to recognise his grandfather. "That was Peru," said the old man. "I was searching for a lost city. Never found it, but the journey was everything."</p>
+<p>He placed a hand on Jake's shoulder. "The world is full of mysteries waiting to be solved. You just have to be brave enough to look."</p>`
+    },
+
+    // ===== POETRY =====
+    frost_road: {
+        title: "The Road Not Taken (Excerpt) — Robert Frost",
+        text: `<p style="font-style: italic; line-height: 2;">Two roads diverged in a yellow wood,<br>
 And sorry I could not travel both<br>
 And be one traveler, long I stood<br>
 And looked down one as far as I could<br>
@@ -562,648 +383,455 @@ To where it bent in the undergrowth;</p>
 And having perhaps the better claim,<br>
 Because it was grassy and wanted wear;<br>
 Though as for that the passing there<br>
-Had worn them really about the same.</p>`
-            },
-            bees: {
-                title: "The Secret World of Bees",
-                text: `<p>Inside every beehive is a city of 50,000 workers, each with a specific job to do. From the moment a bee hatches, its role in the colony is determined by its age.</p>
-<p>Young bees spend their first days as cleaners, polishing the cells where new eggs will be laid. As they grow older, they become nurses, feeding the growing larvae with a special substance called royal jelly.</p>
-<p>Only after about three weeks do bees graduate to the most dangerous job: foraging. Flying up to five kilometres from the hive, forager bees collect nectar and pollen from thousands of flowers each day.</p>
-<p>When a forager finds a good source of food, she returns to the hive and performs a "waggle dance." This figure-eight movement tells other bees exactly where to find the flowers — including the direction and distance.</p>
-<p>A single bee produces only about one-twelfth of a teaspoon of honey in its entire lifetime. The honey we buy in shops represents the combined effort of thousands of bees working together.</p>`
-            },
-            arctic: {
-                title: "Survival in the Arctic",
-                text: `<p>At the top of the world, where winter temperatures can drop below minus 50 degrees Celsius, survival requires extraordinary adaptations. The animals that live here have evolved remarkable ways to cope with the extreme cold.</p>
-<p>The Arctic fox has the warmest fur of any mammal. Its dense coat changes colour with the seasons — white in winter to blend with snow, brown in summer to match the rocky tundra.</p>
-<p>Polar bears have solved the problem differently. Beneath their white-looking fur, their skin is actually black, helping absorb heat from the sun. Each hair is hollow, providing extra insulation.</p>
-<p>Perhaps most impressive are the Arctic ground squirrels. During hibernation, their body temperature drops to minus 3 degrees Celsius — the coldest of any mammal. Their blood contains special proteins that prevent ice crystals from forming.</p>
-<p>These adaptations remind us that life can thrive in even the harshest conditions, given enough time to evolve.</p>`
-            },
-            explorer: {
-                title: "The Young Explorer",
-                text: `<p>Twelve-year-old Jake pressed his face against the dusty window of his grandfather's attic. Rain streaked the glass, turning the garden below into a watery blur.</p>
-<p>"Looking for adventure?" His grandfather appeared beside him, holding a wooden chest Jake had never seen before. "Sometimes the greatest discoveries are right under our noses."</p>
-<p>The chest's lid creaked open to reveal maps, photographs, and a worn leather journal. Jake recognised the handwriting — it was his grandfather's.</p>
-<p>"I was an explorer once," the old man said softly. "Before I settled down. These are my field notes from expeditions to places most people have never heard of."</p>
-<p>Jake picked up a photograph of a young man standing at the entrance to a cave, grinning broadly. It took him a moment to recognise his grandfather. "That was taken in Peru," said the old man. "I was searching for a lost city. Never found it, but the journey... the journey was everything."</p>
-<p>He placed a hand on Jake's shoulder. "The world is full of mysteries waiting to be solved. You just have to be brave enough to look."</p>`
-            },
-            robots: {
-                title: "Robots of the Future",
-                text: `<p>Scientists in Japan have created a robot that can fold itself from a flat sheet into a working machine in just four minutes. The tiny robot, no bigger than a fifty-cent coin, demonstrates an exciting new technology called "programmable matter."</p>
-<p>The robot starts as a flat sheet of special material that remembers its shape. When heated, it folds itself into a small four-legged creature that can walk, carry objects, and even swim. When its task is complete, the robot can be dissolved in water, leaving no waste behind.</p>
-<p>Dr. Shuhei Miyashita, who leads the research team, explains: "These robots could revolutionise medicine. Imagine swallowing a tiny flat robot that unfolds inside your body, delivers medicine to exactly the right spot, then dissolves harmlessly."</p>
-<p>The technology works because the flat sheet contains layers of different materials. Some layers shrink when heated while others stay the same size, causing the sheet to fold in programmed ways.</p>
-<p>Critics point out that the robots are currently very slow and can only perform simple tasks. However, the research team believes that within ten years, these folding robots could be helping with everything from cleaning up oil spills to repairing tiny pipes.</p>`
-            },
-            treasure: {
-                title: "The Mystery of Oak Island",
-                text: `<p>For over 200 years, treasure hunters have been digging on a small island off the coast of Canada, searching for what might be the world's most elaborate buried treasure.</p>
-<p>The story began in 1795 when three teenagers discovered a circular depression in the ground beneath an old oak tree. They began to dig and found layers of logs every three metres. Excited by the possibility of pirate treasure, they dug deeper, but the pit kept flooding with seawater.</p>
-<p>Later excavations revealed coconut fibres (strange, since coconuts don't grow in Canada), stone tablets with mysterious inscriptions, and elaborate drainage systems that seemed designed to protect something buried below.</p>
-<p>Theories about what lies beneath range from Captain Kidd's pirate gold to Shakespeare's original manuscripts to treasure from the Knights Templar. Six people have died in various excavation attempts.</p>
-<p>Modern treasure hunters continue the search with advanced technology. But the "Money Pit," as it's called, has swallowed millions of dollars and given up almost nothing. Perhaps the real treasure was always the mystery itself.</p>`
-            }
-        };
+Had worn them really about the same.</p>
+<p style="font-style: italic; line-height: 2;">I shall be telling this with a sigh<br>
+Somewhere ages and ages hence:<br>
+Two roads diverged in a wood, and I—<br>
+I took the one less traveled by,<br>
+And that has made all the difference.</p>`
+    },
 
-        // ==================== READING QUESTIONS ====================
-        const readingQuestions = [
-            // Dragons
-            { passageId: "dragons", question: "At what age does Mira find the dragon egg?", options: ["10 years old", "11 years old", "12 years old", "13 years old"], correct: 2, explanation: "The passage states 'On the morning of her twelfth birthday, she found the egg.'" },
-            { passageId: "dragons", question: "What made Mira different from other children?", options: ["She could talk to dragons", "She spent time watching clouds instead of playing", "She lived alone", "She was the oldest child"], correct: 1, explanation: "The passage says 'While other children played with wooden swords and rag dolls, she spent her time watching the clouds.'" },
-            { passageId: "dragons", question: "The phrase 'colours like oil on water' is an example of:", options: ["Personification", "Alliteration", "A simile", "A metaphor"], correct: 2, explanation: "A simile compares two things using 'like' or 'as'." },
-            { passageId: "dragons", question: "What does the old woman imply about herself?", options: ["She is Mira's grandmother", "She may be a dragon", "She is a village elder", "She found an egg too"], correct: 1, explanation: "Mira 'thought she saw scales shimmer beneath the wrinkled skin.'" },
-            
-            // Octopus
-            { passageId: "octopus", question: "What are chromatophores?", options: ["Octopus tentacles", "Cells that allow colour change", "Types of coral", "Special eyes"], correct: 1, explanation: "Chromatophores are 'special cells' containing 'coloured pigment' that enable colour change." },
-            { passageId: "octopus", question: "How many hearts does an octopus have?", options: ["One", "Two", "Three", "Four"], correct: 2, explanation: "The passage states 'octopuses have three hearts.'" },
-            { passageId: "octopus", question: "Why is an octopus's blood blue?", options: ["Cold water", "Copper instead of iron", "Diet", "Camouflage"], correct: 1, explanation: "Their blood 'contains copper-based molecules instead of the iron-based haemoglobin.'" },
-            { passageId: "octopus", question: "The word 'impersonate' most likely means:", options: ["Swim like", "Eat", "Pretend to be", "Hide from"], correct: 2, explanation: "The octopus changes shape to look like other creatures — to impersonate means to copy or pretend to be." },
-            
-            // Letter
-            { passageId: "letter", question: "Where is Emma writing from?", options: ["Australia", "England", "New Zealand", "Scotland"], correct: 2, explanation: "The address shows 'Queenstown, New Zealand.'" },
-            { passageId: "letter", question: "What made Emma cry during her trip?", options: ["Missing her grandmother", "Seeing dolphins", "Cooking hāngī", "Looking at stars"], correct: 1, explanation: "Emma writes 'A pod of dolphins swam alongside our boat, and I actually cried.'" },
-            { passageId: "letter", question: "How does Emma feel about her exchange trip?", options: ["Homesick and wants to leave", "Enjoying it but missing home", "Wants to stay forever", "Bored and disappointed"], correct: 1, explanation: "She describes 'the most amazing time' but also says she misses her grandmother." },
-            { passageId: "letter", question: "What is hāngī?", options: ["A type of dance", "Food cooked underground", "A New Zealand bird", "A mountain"], correct: 1, explanation: "The passage explains hāngī is 'food cooked underground using hot stones.'" },
-            
-            // Library
-            { passageId: "library", question: "How did Ptolemy I acquire books?", options: ["Bought from merchants", "Took from ships, kept originals", "Scholars donated", "Wrote them himself"], correct: 1, explanation: "Ships 'must hand over any books on board. Scribes would make copies, returning the copies... keeping the originals.'" },
-            { passageId: "library", question: "What did Eratosthenes calculate?", options: ["Pi", "Earth's circumference", "Distance to moon", "Pyramid height"], correct: 1, explanation: "Eratosthenes 'used the library's resources to calculate the Earth's circumference.'" },
-            { passageId: "library", question: "What happened to the library?", options: ["Destroyed in one fire", "Moved to Rome", "Declined gradually", "Still exists"], correct: 2, explanation: "It 'declined over centuries through fires, wars, and neglect.'" },
-            
-            // Poem
-            { passageId: "poem", question: "What is the setting of this poem?", options: ["Beach in summer", "Forest in autumn", "Mountain in winter", "Garden in spring"], correct: 1, explanation: "The poem mentions 'a yellow wood' — yellow leaves indicate autumn." },
-            { passageId: "poem", question: "Why did the speaker choose the second road?", options: ["It was shorter", "Someone recommended it", "It seemed less worn", "It was safer"], correct: 2, explanation: "They took it 'Because it was grassy and wanted wear.'" },
-            
-            // Bees
-            { passageId: "bees", question: "What is the first job of a young bee?", options: ["Foraging", "Nursing", "Cleaning", "Dancing"], correct: 2, explanation: "Young bees 'spend their first days as cleaners, polishing the cells.'" },
-            { passageId: "bees", question: "What is the 'waggle dance' used for?", options: ["Attracting mates", "Communicating food location", "Scaring predators", "Cooling the hive"], correct: 1, explanation: "The dance 'tells other bees exactly where to find the flowers.'" },
-            { passageId: "bees", question: "How much honey does one bee make in its lifetime?", options: ["One cup", "One tablespoon", "About 1/12 teaspoon", "No honey"], correct: 2, explanation: "A single bee produces 'about one-twelfth of a teaspoon of honey.'" },
-            
-            // Arctic
-            { passageId: "arctic", question: "Which animal has the warmest fur?", options: ["Polar bear", "Arctic fox", "Ground squirrel", "Walrus"], correct: 1, explanation: "The Arctic fox has 'the warmest fur of any mammal.'" },
-            { passageId: "arctic", question: "What colour is a polar bear's skin?", options: ["White", "Pink", "Black", "Brown"], correct: 2, explanation: "Beneath their white-looking fur, 'their skin is actually black.'" },
-            { passageId: "arctic", question: "What's special about Arctic ground squirrel hibernation?", options: ["They don't hibernate", "Body temperature drops below freezing", "They sleep standing", "They hibernate in groups"], correct: 1, explanation: "Their body temperature 'drops to minus 3 degrees Celsius — the coldest of any mammal.'" },
-            
-            // Explorer
-            { passageId: "explorer", question: "What was Jake's grandfather searching for in Peru?", options: ["Gold", "A lost city", "Ancient artifacts", "Rare animals"], correct: 1, explanation: "He says 'I was searching for a lost city.'" },
-            { passageId: "explorer", question: "What message does the grandfather share?", options: ["Stay home where it's safe", "Only look for treasure", "The journey matters most", "Always find what you seek"], correct: 2, explanation: "The grandfather says 'the journey was everything' and encourages Jake to be brave enough to explore." },
-            
-            // Robots
-            { passageId: "robots", question: "How long does it take the robot to fold into shape?", options: ["4 seconds", "4 minutes", "40 minutes", "4 hours"], correct: 1, explanation: "It 'can fold itself from a flat sheet into a working machine in just four minutes.'" },
-            { passageId: "robots", question: "What happens to the robot after its task?", options: ["It unfolds", "Dissolves in water", "Needs recharging", "Must be collected"], correct: 1, explanation: "The robot 'can be dissolved in water, leaving no waste behind.'" },
-            { passageId: "robots", question: "What is 'programmable matter'?", options: ["Regular metal", "Material that can change shape", "Computer memory", "3D printing"], correct: 1, explanation: "The robot demonstrates 'programmable matter' — material that can fold and reshape itself." },
-            
-            // Treasure
-            { passageId: "treasure", question: "When was the Money Pit discovered?", options: ["1695", "1795", "1895", "1995"], correct: 1, explanation: "The story began in 1795 when three teenagers discovered the depression." },
-            { passageId: "treasure", question: "Why is finding coconut fibres strange on Oak Island?", options: ["Coconuts are valuable", "Coconuts don't grow in Canada", "Fibres are rare", "It means pirates"], correct: 1, explanation: "Coconut fibres were found, which is 'strange, since coconuts don't grow in Canada.'" },
-            { passageId: "treasure", question: "How many people have died searching for the treasure?", options: ["None", "Three", "Six", "Twelve"], correct: 2, explanation: "Six people have died in various excavation attempts." }
-        ];
+    // ===== TECHNOLOGY =====
+    robot_future: {
+        title: "Robots of Tomorrow",
+        text: `<p>Scientists in Japan have created a robot that can fold itself from a flat sheet into a working machine in just four minutes. The tiny robot, no bigger than a fifty-cent coin, demonstrates "programmable matter."</p>
+<p>The robot starts as a flat sheet of special material that remembers its shape. When heated, it folds into a small creature that can walk, carry objects, and even swim. When complete, it dissolves in water, leaving no waste.</p>
+<p>Dr. Shuhei Miyashita explains: "These robots could revolutionise medicine. Imagine swallowing a tiny flat robot that unfolds inside your body, delivers medicine to exactly the right spot, then dissolves harmlessly."</p>
+<p>The technology works because the sheet contains layers that shrink differently when heated, causing programmed folds to form.</p>
+<p>Currently these robots are slow and simple. But within ten years, they could be cleaning up oil spills, repairing tiny pipes, or delivering medicine with precision impossible for human surgeons.</p>`
+    },
+    
+    ai_future: {
+        title: "Artificial Intelligence: Friend or Foe?",
+        text: `<p>When you ask a virtual assistant for the weather or let a streaming service recommend what to watch next, you're using artificial intelligence. AI is already woven into our daily lives, often without us noticing.</p>
+<p>AI can process information far faster than humans. It can spot patterns in medical scans that doctors might miss. It can translate languages instantly. It can help scientists discover new medicines.</p>
+<p>But AI also raises concerns. What happens when robots can do most human jobs? How do we ensure AI treats everyone fairly? When an AI makes a mistake, who is responsible?</p>
+<p>Some experts warn about superintelligent AI — machines that surpass human intelligence entirely. Others believe this fear is exaggerated.</p>
+<p>What's certain is that AI will continue to transform our world. The students learning about AI today will be the ones who answer these questions.</p>`
+    },
+    
+    video_games: {
+        title: "The Science of Video Games",
+        text: `<p>Every time you play a video game, your brain is working harder than you might think. Researchers have found that gaming can improve attention, spatial reasoning, and decision-making speed.</p>
+<p>Action games are particularly good at training the brain to make quick, accurate decisions. Players must constantly track multiple objects, respond to threats, and adapt to changing situations.</p>
+<p>Not all effects are positive. Some studies link excessive gaming to attention problems and reduced social skills. The key, researchers say, is moderation.</p>
+<p>Game designers use psychology to keep players engaged. Variable rewards (never knowing when you'll get something good), social features, and escalating challenges all tap into how our brains are wired.</p>
+<p>The gaming industry is now larger than movies and music combined. Game development uses skills from art, music, programming, writing, and psychology. It's one of the most creative careers in the modern world.</p>`
+    }
+};
 
-        // ==================== MATHS QUESTIONS ====================
-        const mathsQuestions = [
-            // Basic operations
-            { question: "What is 456 + 378?", options: ["824", "834", "814", "844"], correct: 1, explanation: "456 + 378 = 834." },
-            { question: "What is 803 - 457?", options: ["346", "356", "446", "336"], correct: 0, explanation: "803 - 457 = 346." },
-            { question: "What is 37 × 8?", options: ["286", "296", "306", "276"], correct: 1, explanation: "37 × 8 = 296." },
-            { question: "What is 432 ÷ 6?", options: ["62", "72", "82", "52"], correct: 1, explanation: "432 ÷ 6 = 72." },
-            { question: "What is 567 + 894?", options: ["1461", "1451", "1361", "1471"], correct: 0, explanation: "567 + 894 = 1461." },
-            { question: "What is 1000 - 347?", options: ["753", "653", "657", "663"], correct: 1, explanation: "1000 - 347 = 653." },
-            { question: "What is 45 × 12?", options: ["520", "540", "530", "550"], correct: 1, explanation: "45 × 12 = 540." },
-            { question: "What is 625 ÷ 25?", options: ["20", "25", "30", "35"], correct: 1, explanation: "625 ÷ 25 = 25." },
-            
-            // Patterns
-            { question: "Pattern: 5, 10, 20, 40, ?", options: ["60", "70", "80", "100"], correct: 2, explanation: "Each number doubles. 40 × 2 = 80." },
-            { question: "Pattern: 1, 4, 9, 16, 25, ?", options: ["30", "36", "34", "49"], correct: 1, explanation: "Square numbers: 1², 2², 3²... 6² = 36." },
-            { question: "Pattern: 2, 5, 11, 23, ?", options: ["35", "47", "46", "34"], correct: 1, explanation: "×2 + 1 each time. 23×2+1 = 47." },
-            { question: "Pattern: 3, 6, 12, 24, 48, ?", options: ["72", "96", "84", "60"], correct: 1, explanation: "Doubles each time. 48 × 2 = 96." },
-            { question: "Pattern: 2, 6, 18, 54, ?", options: ["108", "162", "216", "180"], correct: 1, explanation: "×3 each time. 54 × 3 = 162." },
-            { question: "Pattern: 1, 1, 2, 3, 5, 8, ?", options: ["11", "12", "13", "15"], correct: 2, explanation: "Fibonacci: add previous two. 5+8 = 13." },
-            { question: "Pattern: 100, 95, 85, 70, ?", options: ["50", "55", "60", "45"], correct: 0, explanation: "Subtract 5, 10, 15, 20... 70-20 = 50." },
-            { question: "Pattern: A=1, C=3, E=5, G=?", options: ["6", "7", "8", "9"], correct: 1, explanation: "Odd positions in alphabet. G is 7th letter." },
-            
-            // Fractions
-            { question: "What fraction equals 4/6?", options: ["2/4", "8/10", "2/3", "3/4"], correct: 2, explanation: "4/6 = 2/3 (divide both by 2)." },
-            { question: "What is 3/4 + 1/2?", options: ["4/6", "1¼", "5/4", "1"], correct: 1, explanation: "3/4 + 2/4 = 5/4 = 1¼." },
-            { question: "What is 2/5 of 45?", options: ["9", "18", "22.5", "15"], correct: 1, explanation: "(45 ÷ 5) × 2 = 18." },
-            { question: "Which is smallest: 0.4, 3/8, 0.35, 2/5?", options: ["0.4", "3/8", "0.35", "2/5"], correct: 2, explanation: "0.35 is smallest (0.35 < 0.375 < 0.4)." },
-            { question: "What is 5/8 - 1/4?", options: ["4/8", "3/8", "4/4", "2/8"], correct: 1, explanation: "5/8 - 2/8 = 3/8." },
-            { question: "Convert 0.75 to a fraction:", options: ["7/10", "3/4", "75/10", "7/5"], correct: 1, explanation: "0.75 = 75/100 = 3/4." },
-            
-            // Word problems
-            { question: "A cinema has 24 rows with 18 seats each. Total seats?", options: ["432", "412", "422", "442"], correct: 0, explanation: "24 × 18 = 432 seats." },
-            { question: "Sam has $50, buys 3 books at $8.50 each. Change?", options: ["$24.50", "$25.50", "$23.50", "$26.50"], correct: 0, explanation: "3 × $8.50 = $25.50. $50 - $25.50 = $24.50." },
-            { question: "Recipe uses 250g flour. For 4 batches?", options: ["750g", "1kg", "1.25kg", "900g"], correct: 1, explanation: "250g × 4 = 1000g = 1kg." },
-            { question: "Train leaves 9:45 AM, arrives 1:20 PM. Journey time?", options: ["3h 35m", "3h 25m", "4h 35m", "3h 45m"], correct: 0, explanation: "9:45→12:45 = 3h, 12:45→1:20 = 35m. Total: 3h 35m." },
-            { question: "5 apples cost $3.75. Cost of 8 apples?", options: ["$6.00", "$5.50", "$6.25", "$5.75"], correct: 0, explanation: "One apple = $0.75. Eight = $6.00." },
-            { question: "Pool fills at 50L/min. Litres in 2.5 hours?", options: ["7500L", "125L", "750L", "3000L"], correct: 0, explanation: "2.5h = 150min. 50 × 150 = 7500L." },
-            
-            // Time
-            { question: "Today is Wednesday. What day in 30 days?", options: ["Thursday", "Friday", "Saturday", "Wednesday"], correct: 1, explanation: "30 ÷ 7 = 4r2. Wed + 2 = Friday." },
-            { question: "Movie starts 4:50 PM, runs 2h 15m. End time?", options: ["7:05 PM", "6:55 PM", "7:15 PM", "6:05 PM"], correct: 0, explanation: "4:50 + 2h = 6:50. + 15m = 7:05 PM." },
-            { question: "How many minutes in 3.5 hours?", options: ["180", "210", "200", "240"], correct: 1, explanation: "3.5 × 60 = 210 minutes." },
-            { question: "Clock shows 3:00. Angle between hands?", options: ["60°", "90°", "120°", "180°"], correct: 1, explanation: "1/4 of circle = 90°." },
-            
-            // Geometry
-            { question: "Rectangle: length 15cm, width 8cm. Perimeter?", options: ["46cm", "120cm", "23cm", "56cm"], correct: 0, explanation: "2 × (15+8) = 46cm." },
-            { question: "Square perimeter 36cm. Side length?", options: ["6cm", "9cm", "12cm", "18cm"], correct: 1, explanation: "36 ÷ 4 = 9cm." },
-            { question: "Triangle: base 12cm, height 8cm. Area?", options: ["96cm²", "48cm²", "20cm²", "40cm²"], correct: 1, explanation: "(12 × 8) ÷ 2 = 48cm²." },
-            { question: "Square with side 9cm. Area?", options: ["36cm²", "81cm²", "18cm²", "72cm²"], correct: 1, explanation: "9 × 9 = 81cm²." },
-            { question: "How many faces on a cube?", options: ["4", "6", "8", "12"], correct: 1, explanation: "A cube has 6 faces." },
-            { question: "How many edges on a cube?", options: ["6", "8", "10", "12"], correct: 3, explanation: "A cube has 12 edges." },
-            
-            // Money
-            { question: "35-cent stamps with $5. How many?", options: ["12", "13", "14", "15"], correct: 2, explanation: "500 ÷ 35 = 14 remainder 10." },
-            { question: "Jake earns $12.50/hour. Earnings for 6 hours?",  options: ["$72", "$75", "$65", "$78"], correct: 1, explanation: "$12.50 × 6 = $75." },
-            { question: "Item costs $45, reduced 20%. New price?", options: ["$40", "$36", "$38", "$35"], correct: 1, explanation: "20% of $45 = $9. $45-$9 = $36." },
-            { question: "What is 15% of 80?", options: ["12", "15", "8", "10"], correct: 0, explanation: "0.15 × 80 = 12." },
-            
-            // Statistics
-            { question: "Ages: 8, 10, 9, 12, 11. Mean?", options: ["9", "10", "11", "9.5"], correct: 1, explanation: "(8+10+9+12+11) ÷ 5 = 10." },
-            { question: "12 walk, 8 bus, 5 driven. Fraction walking?", options: ["12/25", "12/20", "12/24", "1/2"], correct: 0, explanation: "Total 25. Walking = 12/25." },
-            { question: "Scores: 72, 85, 78, 81. Average?", options: ["78", "79", "80", "81"], correct: 1, explanation: "316 ÷ 4 = 79." },
-            
-            // Place value
-            { question: "In 47,392, value of digit 7?", options: ["7", "70", "700", "7000"], correct: 3, explanation: "7 is in thousands place = 7000." },
-            { question: "Round 3,847 to nearest hundred:", options: ["3800", "3850", "3900", "4000"], correct: 0, explanation: "3847 → 3800 (47 < 50)." },
-            
-            // Order of operations
-            { question: "What is 6 + 4 × 3?", options: ["30", "18", "22", "42"], correct: 1, explanation: "Multiply first: 6 + 12 = 18." },
-            { question: "What is (8 + 4) × 5 - 10?", options: ["50", "60", "52", "42"], correct: 0, explanation: "12 × 5 - 10 = 60 - 10 = 50." },
-            
-            // More word problems
-            { question: "3/5 of 30 students are girls. How many boys?", options: ["18", "12", "15", "20"], correct: 1, explanation: "Girls = 18. Boys = 30-18 = 12." },
-            { question: "Pattern rule: 3→7, 5→11, 8→17. What does 10 become?", options: ["19", "21", "23", "20"], correct: 1, explanation: "×2 + 1. 10×2+1 = 21." },
-            { question: "First term 4, add 7 each time. 6th term?", options: ["39", "32", "35", "42"], correct: 0, explanation: "4, 11, 18, 25, 32, 39." },
-            { question: "Bus holds 45 passengers. 3 full buses total?", options: ["135", "145", "125", "155"], correct: 0, explanation: "45 × 3 = 135." },
-            { question: "Temperature: 8°C + 15°C - 7°C = ?", options: ["16°C", "30°C", "0°C", "14°C"], correct: 0, explanation: "8 + 15 = 23. 23 - 7 = 16°C." },
-            { question: "Which rounds to 700? 745, 752, 649, 758?", options: ["745", "752", "649", "758"], correct: 0, explanation: "745 rounds to 700. Others round to 800 or 600." },
-            { question: "24 apples for $6. Cost of one?", options: ["20c", "25c", "30c", "40c"], correct: 1, explanation: "$6 ÷ 24 = 25 cents." }
-        ];
+// ===== READING QUESTIONS (100+) =====
+const readingQuestions = [
+    // Dragon Keeper
+    { passageId: "dragon_keeper", question: "At what age does Mira find the dragon egg?", options: ["Ten", "Eleven", "Twelve", "Thirteen"], correct: 2, explanation: "The passage states 'On the morning of her twelfth birthday, she found the egg.'" },
+    { passageId: "dragon_keeper", question: "What made Mira different from other village children?", options: ["She could talk to animals", "She watched clouds instead of playing", "She lived alone", "She was the tallest"], correct: 1, explanation: "While other children played, 'she spent her time watching the clouds.'" },
+    { passageId: "dragon_keeper", question: "The phrase 'colours like oil on water' is an example of:", options: ["Metaphor", "Simile", "Personification", "Alliteration"], correct: 1, explanation: "A simile compares using 'like' or 'as'." },
+    { passageId: "dragon_keeper", question: "What does the old woman imply about herself?", options: ["She's Mira's grandmother", "She may be a dragon", "She's the village leader", "She found an egg too"], correct: 1, explanation: "Mira 'thought she saw scales shimmer beneath the wrinkled skin.'" },
+    { passageId: "dragon_keeper", question: "How long ago did the dragon keepers supposedly die out?", options: ["Fifty years", "One hundred years", "Two hundred years", "One thousand years"], correct: 1, explanation: "The woman says 'The dragon keepers died out a hundred years ago.'" },
+    
+    // Time Garden
+    { passageId: "time_garden", question: "What happened when Kai touched the blue roses?", options: ["They wilted", "He saw the garden's memories", "He fell asleep", "They changed colour"], correct: 1, explanation: "When his skin touched a petal, 'memories flooded his mind — not his memories, but the garden's.'" },
+    { passageId: "time_garden", question: "What do the blue roses grow from?", options: ["Lost tears", "Lost lullabies", "Lost dreams", "Lost photographs"], correct: 1, explanation: "'The blue roses? They grow from lost lullabies.'" },
+    { passageId: "time_garden", question: "What is special about Mrs Chen's garden?", options: ["It never needs water", "It keeps the world's forgotten things", "It only blooms at night", "It grows money"], correct: 1, explanation: "'The garden keeps the world's forgotten things,' Mrs Chen explains." },
+    { passageId: "time_garden", question: "What do the silver ferns remember?", options: ["Lost people", "Lost languages", "Lost cities", "Lost animals"], correct: 1, explanation: "'The silver ferns remember languages no one speaks anymore.'" },
+    { passageId: "time_garden", question: "How did Kai enter the garden?", options: ["Through a gate", "By climbing the wall to get his football", "Through a window", "By invitation"], correct: 1, explanation: "He'd climbed the wall to retrieve his football." },
+    
+    // Lighthouse Ghost
+    { passageId: "lighthouse_ghost", question: "How long has Eleanor been keeping the light working?", options: ["12 years", "50 years", "112 years", "200 years"], correct: 2, explanation: "Eleanor says 'I've been doing it for a hundred and twelve years.'" },
+    { passageId: "lighthouse_ghost", question: "What year did Eleanor become a ghost?", options: ["1812", "1912", "1892", "1922"], correct: 1, explanation: "She'd been the lighthouse keeper's daughter in 1912." },
+    { passageId: "lighthouse_ghost", question: "How many ships did Eleanor save during the storm?", options: ["Seven", "Twelve", "Seventeen", "Twenty"], correct: 2, explanation: "'Seventeen ships made it to safety because of her.'" },
+    { passageId: "lighthouse_ghost", question: "What colour dress does the ghost wear?", options: ["White", "Blue", "Red", "Green"], correct: 1, explanation: "The townspeople describe 'A girl in a blue dress, forever waiting.'" },
+    { passageId: "lighthouse_ghost", question: "Why has Eleanor stayed at the lighthouse?", options: ["She's trapped", "She made a promise", "She has nowhere else to go", "She enjoys haunting"], correct: 1, explanation: "'I made a promise,' Eleanor explained." },
+    
+    // Paper Kingdom
+    { passageId: "paper_kingdom", question: "How long had the origami crane been on Li's windowsill?", options: ["One year", "Two years", "Three years", "Five years"], correct: 2, explanation: "'The origami crane had been sitting on Li's windowsill for three years.'" },
+    { passageId: "paper_kingdom", question: "What threatens the Paper Kingdom?", options: ["Fire", "The Rain", "Wind", "Scissors"], correct: 1, explanation: "Li's grandmother 'defended the Paper Kingdom from the Rain, a terrible force.'" },
+    { passageId: "paper_kingdom", question: "At what age was Li ready to learn about the Paper Kingdom?", options: ["Nine", "Ten", "Eleven", "Twelve"], correct: 2, explanation: "The crane said 'She said you'd be ready when you turned eleven.'" },
+    { passageId: "paper_kingdom", question: "Who gave Li the origami crane?", options: ["Her mother", "Her grandmother", "Her teacher", "A stranger"], correct: 1, explanation: "It was 'a gift from her grandmother who had passed away.'" },
+    
+    // Clockwork Heart
+    { passageId: "clockwork_heart", question: "What does Finn have to do every night?", options: ["Take medicine", "Wind the key in his chest", "Sleep in a special bed", "Check his pulse"], correct: 1, explanation: "'Every night, Finn had to wind the key in his chest, or his heart would stop.'" },
+    { passageId: "clockwork_heart", question: "Who replaced Finn's heart with clockwork?", options: ["His mother", "His father", "A doctor", "A wizard"], correct: 1, explanation: "'His inventor father had replaced it with gears and springs.'" },
+    { passageId: "clockwork_heart", question: "Why did Finn throw himself against the door?", options: ["He was angry", "To save his classmates", "He was pushed", "To prove his strength"], correct: 1, explanation: "A fire trapped his classmates and 'The only way to break down the door was to use the powerful mainspring in his chest.'" },
+    { passageId: "clockwork_heart", question: "What runs on clockwork in Cogsworth?", options: ["Only hearts", "Trams, streetlights, and mechanical birds", "Nothing", "Only clocks"], correct: 1, explanation: "'In the city of Cogsworth, everything ran on clockwork — the trams, the streetlights, even the mechanical birds.'" },
+    
+    // Mirror Twin
+    { passageId: "mirror_twin", question: "What is the name of Zoe's reflection?", options: ["Zoey", "Ezi", "Izzy", "Echo"], correct: 1, explanation: "'Her name was Ezi — Zoe backwards.'" },
+    { passageId: "mirror_twin", question: "When did Zoe first notice something was wrong?", options: ["At age five", "On her tenth birthday", "When she was twelve", "As a baby"], correct: 1, explanation: "'But on her tenth birthday, she learned the truth.'" },
+    { passageId: "mirror_twin", question: "What is different about the Mirror World?", options: ["It's dark", "Everything is reversed", "It's underwater", "There are no people"], correct: 1, explanation: "'She lived in the Mirror World, a place where everything was reversed.'" },
+    { passageId: "mirror_twin", question: "What is happening to the barrier between worlds?", options: ["Getting stronger", "Breaking", "Moving", "Nothing"], correct: 1, explanation: "'The barrier is breaking,' Ezi warns." },
+    
+    // Octopus
+    { passageId: "octopus_masters", question: "What are chromatophores?", options: ["Tentacles", "Cells that change colour", "Types of coral", "Special eyes"], correct: 1, explanation: "Chromatophores are 'special cells' containing 'coloured pigment.'" },
+    { passageId: "octopus_masters", question: "How many hearts does an octopus have?", options: ["One", "Two", "Three", "Four"], correct: 2, explanation: "'Octopuses have three hearts.'" },
+    { passageId: "octopus_masters", question: "How quickly can an octopus change colour?", options: ["One minute", "Ten seconds", "Less than one second", "One hour"], correct: 2, explanation: "They can change 'in less than a second — faster than you can blink.'" },
+    { passageId: "octopus_masters", question: "What shows that octopuses are intelligent?", options: ["They're large", "They can solve puzzles", "They live long", "They swim fast"], correct: 1, explanation: "They 'can solve puzzles, open jars, and recognise individual human faces.'" },
+    
+    // Bee World
+    { passageId: "bee_world", question: "What is a young bee's first job?", options: ["Foraging", "Nursing", "Cleaning", "Dancing"], correct: 2, explanation: "'Young bees spend their first days as cleaners.'" },
+    { passageId: "bee_world", question: "What is the 'waggle dance' used for?", options: ["Finding mates", "Communicating food location", "Scaring predators", "Cooling the hive"], correct: 1, explanation: "The dance 'tells other bees exactly where to find the food.'" },
+    { passageId: "bee_world", question: "How much honey does one bee make in its lifetime?", options: ["One cup", "One tablespoon", "About 1/12 teaspoon", "One litre"], correct: 2, explanation: "'A single bee produces only about one-twelfth of a teaspoon.'" },
+    { passageId: "bee_world", question: "How many bees typically live in a hive?", options: ["500", "5,000", "50,000", "500,000"], correct: 2, explanation: "'Inside every beehive is a city of 50,000 workers.'" },
+    
+    // Arctic Survival
+    { passageId: "arctic_survival", question: "Which animal has the warmest fur?", options: ["Polar bear", "Arctic fox", "Ground squirrel", "Walrus"], correct: 1, explanation: "'The Arctic fox has the warmest fur of any mammal.'" },
+    { passageId: "arctic_survival", question: "What colour is a polar bear's skin?", options: ["White", "Pink", "Black", "Brown"], correct: 2, explanation: "'Beneath their white-looking fur, their skin is actually black.'" },
+    { passageId: "arctic_survival", question: "How cold can an Arctic ground squirrel's body get during hibernation?", options: ["0°C", "-3°C", "-10°C", "-20°C"], correct: 1, explanation: "Their body temperature 'drops to minus 3 degrees Celsius.'" },
+    
+    // Volcano Power
+    { passageId: "volcano_power", question: "How hot is it deep beneath Earth's surface?", options: ["1,000°C", "3,000°C", "Over 6,000°C", "100°C"], correct: 2, explanation: "'Temperatures reach over 6,000 degrees Celsius.'" },
+    { passageId: "volcano_power", question: "What percentage of Iceland's electricity comes from volcanic heat?", options: ["Nearly 10%", "Nearly 30%", "Nearly 50%", "Nearly 70%"], correct: 1, explanation: "'Iceland gets nearly 30% of its electricity from volcanic heat.'" },
+    { passageId: "volcano_power", question: "Which type of volcano has gentle slopes?", options: ["Shield volcanoes", "Stratovolcanoes", "Super volcanoes", "Cone volcanoes"], correct: 0, explanation: "'Shield volcanoes... produce rivers of flowing lava that create gentle slopes.'" },
+    
+    // Brain
+    { passageId: "brain_amazing", question: "How many neurons are in a human brain?", options: ["86 million", "86 billion", "8.6 billion", "860 billion"], correct: 1, explanation: "'It contains approximately 86 billion neurons.'" },
+    { passageId: "brain_amazing", question: "What percentage of body energy does the brain use?", options: ["5%", "10%", "20%", "50%"], correct: 2, explanation: "'Your brain uses about 20% of your body's energy.'" },
+    { passageId: "brain_amazing", question: "What is neuroplasticity?", options: ["Brain surgery", "The brain's ability to rewire itself", "A brain disease", "A type of cell"], correct: 1, explanation: "'This ability to rewire itself is called neuroplasticity.'" },
+    
+    // Plastics Ocean
+    { passageId: "plastics_ocean", question: "How much plastic enters the ocean every minute?", options: ["One bag", "One garbage truck", "One kilogram", "Ten kilograms"], correct: 1, explanation: "'Every minute, the equivalent of one garbage truck full of plastic enters our oceans.'" },
+    { passageId: "plastics_ocean", question: "How big is the Great Pacific Garbage Patch?", options: ["Size of a city", "Size of Australia", "Three times the size of France", "Size of the Pacific"], correct: 2, explanation: "'The Great Pacific Garbage Patch... is now three times the size of France.'" },
+    { passageId: "plastics_ocean", question: "What do sea turtles mistake plastic bags for?", options: ["Seaweed", "Fish", "Jellyfish", "Coral"], correct: 2, explanation: "'Sea turtles mistake plastic bags for jellyfish, their favourite food.'" },
+    
+    // Mars Colony
+    { passageId: "mars_colony", question: "What is the average temperature on Mars?", options: ["-20°C", "-40°C", "-60°C", "-100°C"], correct: 2, explanation: "'The average temperature is minus 60 degrees Celsius.'" },
+    { passageId: "mars_colony", question: "How long would a trip to Mars take?", options: ["One month", "Three months", "Seven months", "One year"], correct: 2, explanation: "'The journey itself would take about seven months.'" },
+    { passageId: "mars_colony", question: "How much longer is a day on Mars than on Earth?", options: ["10 minutes", "40 minutes", "2 hours", "6 hours"], correct: 1, explanation: "'A day on Mars is only 40 minutes longer than on Earth.'" },
+    
+    // NZ Exchange
+    { passageId: "nz_exchange", question: "Where is Emma writing from?", options: ["Australia", "England", "New Zealand", "Scotland"], correct: 2, explanation: "The letter is from 'Queenstown, New Zealand.'" },
+    { passageId: "nz_exchange", question: "What made Emma cry during her trip?", options: ["Missing home", "Seeing dolphins", "The cold weather", "The food"], correct: 1, explanation: "'A pod of dolphins swam alongside our boat, and I actually cried.'" },
+    { passageId: "nz_exchange", question: "What is hāngī?", options: ["A dance", "Food cooked underground", "A bird", "A mountain"], correct: 1, explanation: "Hāngī is 'traditional Māori food cooked underground using hot stones.'" },
+    { passageId: "nz_exchange", question: "What constellation can Emma see in New Zealand?", options: ["Orion", "Big Dipper", "Southern Cross", "North Star"], correct: 2, explanation: "'Something called the Southern Cross' that she can't see from home." },
+    
+    // Oliver's Letter
+    { passageId: "grandpa_workshop", question: "How long has it been since Oliver's grandfather passed away?", options: ["One month", "Three months", "Six months", "One year"], correct: 1, explanation: "'It's been three months since you left.'" },
+    { passageId: "grandpa_workshop", question: "What colour did Oliver paint the boat?", options: ["Blue", "Green", "Red", "Yellow"], correct: 2, explanation: "'I finished painting it yesterday — bright red, just like you wanted.'" },
+    { passageId: "grandpa_workshop", question: "What item did Oliver's mother find in the shed?", options: ["A map", "A compass", "A telescope", "A book"], correct: 1, explanation: "'Mum found your old compass in the shed.'" },
+    
+    // Space Diary
+    { passageId: "space_diary", question: "How many days has the astronaut been on the ISS?", options: ["17", "27", "47", "77"], correct: 2, explanation: "The diary entry is 'Day 47.'" },
+    { passageId: "space_diary", question: "How many sunrises does the astronaut see per day?", options: ["1", "8", "16", "24"], correct: 2, explanation: "'We see 16 sunrises and sunsets every 24 hours.'" },
+    { passageId: "space_diary", question: "How often does the ISS orbit Earth?", options: ["45 minutes", "90 minutes", "3 hours", "12 hours"], correct: 1, explanation: "'We orbit Earth every 90 minutes.'" },
+    { passageId: "space_diary", question: "How far above Earth is the ISS?", options: ["40 km", "100 km", "400 km", "4,000 km"], correct: 2, explanation: "'400km above Earth.'" },
+    
+    // Refugee Story
+    { passageId: "refugee_story", question: "How old is Amara?", options: ["Ten", "Eleven", "Twelve", "Thirteen"], correct: 2, explanation: "'I am twelve years old.'" },
+    { passageId: "refugee_story", question: "How long ago did Amara arrive in Australia?", options: ["One month", "Three months", "Six months", "One year"], correct: 2, explanation: "'Six months ago, I had never seen snow.'" },
+    { passageId: "refugee_story", question: "What did Amara's grandmother make that she brought?", options: ["A scarf", "A carved wooden bird", "A blanket", "A photo album"], correct: 1, explanation: "'The carved wooden bird my grandmother made.'" },
+    
+    // Alexandria Library
+    { passageId: "alexandria_library", question: "How did Ptolemy I acquire books?", options: ["Bought them", "Took from ships, kept originals", "Wrote them", "Borrowed them"], correct: 1, explanation: "Ships 'had to hand over any books' and scribes kept originals." },
+    { passageId: "alexandria_library", question: "Who calculated Earth's circumference at the library?", options: ["Ptolemy", "Euclid", "Eratosthenes", "Aristotle"], correct: 2, explanation: "'Eratosthenes calculated Earth's circumference.'" },
+    { passageId: "alexandria_library", question: "How many scrolls might the library have held?", options: ["40,000-70,000", "400,000-700,000", "4-7 million", "40-70 million"], correct: 1, explanation: "'The library held between 400,000 and 700,000 scrolls.'" },
+    
+    // Pompeii
+    { passageId: "pompeii", question: "When did Vesuvius erupt?", options: ["August 24, 79 AD", "June 24, 79 AD", "August 24, 179 AD", "March 24, 79 AD"], correct: 0, explanation: "'August 24, 79 AD started like any ordinary day in Pompeii.'" },
+    { passageId: "pompeii", question: "How high did the ash column shoot into the sky?", options: ["3 km", "13 km", "33 km", "63 km"], correct: 2, explanation: "'A column of ash and rock shot 33 kilometres into the sky.'" },
+    { passageId: "pompeii", question: "How hot were the pyroclastic surges?", options: ["100°C", "200°C", "300°C", "500°C"], correct: 2, explanation: "They reached '300 degrees Celsius.'" },
+    { passageId: "pompeii", question: "When did archaeologists begin excavating Pompeii?", options: ["1648", "1748", "1848", "1948"], correct: 1, explanation: "'When archaeologists began excavating in 1748.'" },
+    
+    // Titanic
+    { passageId: "titanic", question: "How long was the Titanic?", options: ["169 metres", "219 metres", "269 metres", "319 metres"], correct: 2, explanation: "'At 269 metres long, it was a floating palace.'" },
+    { passageId: "titanic", question: "When did the Titanic hit the iceberg?", options: ["10:40 PM", "11:40 PM", "12:40 AM", "1:40 AM"], correct: 1, explanation: "'At 11:40 PM on April 14.'" },
+    { passageId: "titanic", question: "How many people were aboard?", options: ["1,224", "2,224", "3,224", "4,224"], correct: 1, explanation: "'Of the 2,224 people aboard.'" },
+    { passageId: "titanic", question: "How many compartments could the Titanic survive flooding?", options: ["Two", "Three", "Four", "Five"], correct: 2, explanation: "'It could stay afloat with any four compartments flooded.'" },
+    
+    // Moon Landing
+    { passageId: "moon_landing", question: "What was the name of the lunar module?", options: ["Apollo", "Eagle", "Columbia", "Tranquility"], correct: 1, explanation: "'The lunar module Eagle touched down.'" },
+    { passageId: "moon_landing", question: "How many seconds of fuel remained when Eagle landed?", options: ["15", "25", "60", "120"], correct: 1, explanation: "'Landing with just 25 seconds of fuel remaining.'" },
+    { passageId: "moon_landing", question: "How many people watched the moonwalk on TV?", options: ["60 million", "200 million", "600 million", "2 billion"], correct: 2, explanation: "'An estimated 600 million people... watched.'" },
+    
+    // Oak Island
+    { passageId: "treasure_island", question: "When was the Money Pit discovered?", options: ["1695", "1795", "1895", "1995"], correct: 1, explanation: "'The story began in 1795.'" },
+    { passageId: "treasure_island", question: "Why is finding coconut fibres strange on Oak Island?", options: ["They're valuable", "Coconuts don't grow in Canada", "They indicate pirates", "They're rare"], correct: 1, explanation: "'Coconut fibres (strange, since coconuts don't grow in Canada).'" },
+    { passageId: "treasure_island", question: "How many people have died searching for treasure?", options: ["None", "Three", "Six", "Twelve"], correct: 2, explanation: "'Six people have died.'" },
+    
+    // Young Explorer
+    { passageId: "explorer_attic", question: "How old is Jake?", options: ["Ten", "Eleven", "Twelve", "Thirteen"], correct: 2, explanation: "'Twelve-year-old Jake.'" },
+    { passageId: "explorer_attic", question: "Where was the photograph taken?", options: ["Egypt", "Peru", "India", "China"], correct: 1, explanation: "'That was Peru,' said the old man." },
+    { passageId: "explorer_attic", question: "What was Jake's grandfather searching for?", options: ["Gold", "A lost city", "Ancient artifacts", "Rare animals"], correct: 1, explanation: "'I was searching for a lost city.'" },
+    
+    // Frost Road
+    { passageId: "frost_road", question: "What is the setting of this poem?", options: ["Beach in summer", "Forest in autumn", "Mountain in winter", "Garden in spring"], correct: 1, explanation: "'A yellow wood' indicates autumn." },
+    { passageId: "frost_road", question: "Why did the speaker choose the second road?", options: ["It was shorter", "It was recommended", "It seemed less worn", "It was safer"], correct: 2, explanation: "'Because it was grassy and wanted wear.'" },
+    
+    // Robot Future
+    { passageId: "robot_future", question: "How long does it take the robot to fold?", options: ["4 seconds", "4 minutes", "40 minutes", "4 hours"], correct: 1, explanation: "'Fold itself... in just four minutes.'" },
+    { passageId: "robot_future", question: "What happens to the robot after its task?", options: ["It unfolds", "It dissolves in water", "It's collected", "It stops"], correct: 1, explanation: "'When complete, it dissolves in water.'" },
+    { passageId: "robot_future", question: "How big is the folding robot?", options: ["Size of a coin", "Size of a hand", "Size of a shoe", "Size of a book"], correct: 0, explanation: "'No bigger than a fifty-cent coin.'" },
+    
+    // AI Future
+    { passageId: "ai_future", question: "What concern does the passage raise about AI?", options: ["It costs too much", "It might take jobs", "It's too slow", "It can't learn"], correct: 1, explanation: "'What happens when robots can do most human jobs?'" },
+    { passageId: "ai_future", question: "What is 'superintelligent AI'?", options: ["AI for schools", "Machines smarter than humans", "Fast computers", "Robot teachers"], correct: 1, explanation: "'Machines that surpass human intelligence entirely.'" },
+    
+    // Video Games
+    { passageId: "video_games", question: "What skills can action games improve?", options: ["Singing", "Quick decisions", "Handwriting", "Swimming"], correct: 1, explanation: "Action games train 'quick, accurate decisions.'" },
+    { passageId: "video_games", question: "How does gaming industry compare to movies and music?", options: ["Much smaller", "About the same", "Larger than both combined", "Only bigger than music"], correct: 2, explanation: "'The gaming industry is now larger than movies and music combined.'" }
+];
 
-        // ==================== THINKING QUESTIONS ====================
-        const thinkingQuestions = [
-            // Analogies
-            { question: "BIRD is to NEST as BEE is to:", options: ["Honey", "Hive", "Flower", "Wing"], correct: 1, explanation: "Bird lives in nest. Bee lives in hive." },
-            { question: "BOOK is to READ as SONG is to:", options: ["Dance", "Listen", "Sing", "Music"], correct: 1, explanation: "You read a book. You listen to a song." },
-            { question: "HAND is to GLOVE as FOOT is to:", options: ["Leg", "Toe", "Sock", "Walk"], correct: 2, explanation: "Glove covers hand. Sock covers foot." },
-            { question: "AUTHOR is to BOOK as COMPOSER is to:", options: ["Music", "Instrument", "Orchestra", "Song"], correct: 0, explanation: "Author creates books. Composer creates music." },
-            { question: "PAINTER is to BRUSH as WRITER is to:", options: ["Book", "Pen", "Paper", "Story"], correct: 1, explanation: "Painter uses brush. Writer uses pen." },
-            { question: "FISH is to SWIM as BIRD is to:", options: ["Nest", "Fly", "Feather", "Egg"], correct: 1, explanation: "Fish swims. Bird flies." },
-            { question: "DARK is to LIGHT as COLD is to:", options: ["Ice", "Hot", "Winter", "Snow"], correct: 1, explanation: "Dark opposite of light. Cold opposite of hot." },
-            { question: "CHAPTER is to BOOK as SCENE is to:", options: ["Play", "Actor", "Stage", "Theatre"], correct: 0, explanation: "Chapter is part of book. Scene is part of play." },
-            
-            // Logic
-            { question: "All cats have tails. Fluffy is a cat. Conclusion?", options: ["Fluffy likes fish", "Fluffy has four legs", "Fluffy has a tail", "Fluffy can climb"], correct: 2, explanation: "If all cats have tails and Fluffy is a cat, Fluffy has a tail." },
-            { question: "No reptiles have fur. A snake is a reptile. Therefore:", options: ["Snakes are cold", "Snakes have no legs", "Snakes have no fur", "Snakes lay eggs"], correct: 2, explanation: "No reptiles have fur → snakes have no fur." },
-            { question: "All Zings are Zangs. All Zangs are Zungs. So:", options: ["All Zungs are Zings", "All Zings are Zungs", "Some Zungs are Zangs", "No Zings are Zungs"], correct: 1, explanation: "Zings → Zangs → Zungs. All Zings are Zungs." },
-            { question: "Some dogs are brown. Some brown things are chairs. Which is TRUE?", options: ["Some dogs are chairs", "All dogs are brown", "Some brown things are dogs", "No chairs are brown"], correct: 2, explanation: "'Some dogs are brown' means some brown things are dogs." },
-            { question: "If it rains, the ground is wet. The ground is dry. So:", options: ["It will rain", "It is raining", "It is not raining", "Nothing"], correct: 2, explanation: "Dry ground means it's not raining (contrapositive)." },
-            { question: "All squares are rectangles. This shape is a rectangle. So:", options: ["It's a square", "It might be a square", "It's not a square", "It has 4 sides"], correct: 1, explanation: "It might be a square (but doesn't have to be)." },
-            
-            // Sequences
-            { question: "A, C, E, G, I, ?", options: ["J", "K", "L", "M"], correct: 1, explanation: "Skip one letter each time. Next is K." },
-            { question: "Z, X, V, T, R, ?", options: ["O", "P", "Q", "S"], correct: 1, explanation: "Backward, skip one. Z,X,V,T,R,P." },
-            { question: "2, 6, 12, 20, 30, ?", options: ["40", "42", "44", "46"], correct: 1, explanation: "Add 4, 6, 8, 10, 12. 30+12=42." },
-            { question: "1, 1, 2, 3, 5, 8, ?, 21", options: ["11", "12", "13", "15"], correct: 2, explanation: "Fibonacci: 5+8=13." },
-            { question: "🔴🔵🔴🔵🔵🔴🔵🔵🔵🔴 ?", options: ["🔴", "🔵🔵", "🔵🔵🔵🔵", "🔵"], correct: 2, explanation: "Pattern: 1 red, then 1,2,3,4... blue. Next: 4 blue." },
-            { question: "ABC, DEF, GHI, ?", options: ["IJK", "JKL", "KLM", "HIJ"], correct: 1, explanation: "Three consecutive letters. Next: JKL." },
-            
-            // Codes
-            { question: "A=1, B=2, C=3... Value of CAT?", options: ["24", "27", "22", "48"], correct: 0, explanation: "C=3, A=1, T=20. 3+1+20=24." },
-            { question: "CAME = DBNF in code. What is HELP?", options: ["IFMQ", "GDKO", "IFNQ", "HELP"], correct: 0, explanation: "Each letter +1. H→I, E→F, L→M, P→Q." },
-            { question: "If 🌟=3 and 🌙=5, what is 🌟 + 🌟 × 🌙?", options: ["18", "30", "16", "40"], correct: 0, explanation: "Order of operations: 3 + 3×5 = 3+15 = 18." },
-            { question: "A=1, B=2... What is BIG?", options: ["16", "18", "20", "22"], correct: 1, explanation: "B=2, I=9, G=7. 2+9+7=18." },
-            { question: "DOG in reverse alphabet (A=Z, B=Y...):", options: ["WLT", "SLT", "WHT", "SHT"], correct: 0, explanation: "D→W, O→L, G→T. WLT." },
-            
-            // Spatial
-            { question: "Fold square diagonally. Shape?", options: ["Rectangle", "Triangle", "Pentagon", "Rhombus"], correct: 1, explanation: "Diagonal fold creates a triangle." },
-            { question: "A cube has how many edges?", options: ["6", "8", "10", "12"], correct: 3, explanation: "A cube has 12 edges." },
-            { question: "Rectangular prism faces?", options: ["4", "5", "6", "8"], correct: 2, explanation: "6 faces: top, bottom, 4 sides." },
-            { question: "How many squares in 2×2 grid?", options: ["4", "5", "6", "8"], correct: 1, explanation: "4 small + 1 large = 5 squares." },
-            { question: "Corners of a triangle?", options: ["2", "3", "4", "5"], correct: 1, explanation: "A triangle has 3 corners (vertices)." },
-            
-            // Arrangements
-            { question: "5 in line. Ali 3rd. Ben right behind Ali. Ben's position?", options: ["2nd", "3rd", "4th", "5th"], correct: 2, explanation: "Ali is 3rd, Ben behind = 4th." },
-            { question: "W left of X. Y right of Z. X between W and Z. Order?", options: ["W,X,Z,Y", "W,Z,X,Y", "Y,Z,X,W", "Z,W,X,Y"], correct: 0, explanation: "W,X,Z (X between), Y right of Z = W,X,Z,Y." },
-            { question: "Tom older than Sam. Sam older than Lee. Oldest?", options: ["Tom", "Sam", "Lee", "Can't tell"], correct: 0, explanation: "Tom > Sam > Lee. Tom is oldest." },
-            { question: "A, B, C, D in circle. A opposite C. B left of A. Who opposite B?", options: ["A", "C", "D", "No one"], correct: 2, explanation: "In circle of 4, B opposite D." },
-            
-            // Venn diagrams
-            { question: "30 play sport. 18 soccer, 15 tennis, 8 both. Soccer only?", options: ["8", "10", "18", "7"], correct: 1, explanation: "Soccer only = 18 - 8 = 10." },
-            { question: "12 like pizza, 10 pasta, 5 both. How many like either?", options: ["17", "22", "27", "15"], correct: 0, explanation: "12 + 10 - 5 = 17." },
-            { question: "25 students: 15 own dogs, 10 own cats, 6 own both. Own neither?", options: ["6", "4", "5", "8"], correct: 0, explanation: "15+10-6=19 own pets. 25-19=6 own neither." },
-            
-            // Problem solving
-            { question: "Tom twice Lily's age. Lily 4 years older than Max. Max is 5. Tom's age?", options: ["14", "18", "9", "13"], correct: 1, explanation: "Max=5, Lily=9, Tom=18." },
-            { question: "Frog climbs 3m day, slides 2m night. 10m well. Days to escape?", options: ["10", "8", "7", "9"], correct: 1, explanation: "Net +1m/day. Day 8: reaches 10m before sliding." },
-            { question: "Clock at 6:00. Angle between hands?", options: ["90°", "120°", "180°", "150°"], correct: 2, explanation: "Hands point opposite = 180°." },
-            { question: "5 people shake hands with everyone once. Total handshakes?", options: ["10", "15", "20", "25"], correct: 0, explanation: "5×4÷2 = 10 handshakes." },
-            { question: "Cutting a pizza with 3 straight cuts. Maximum pieces?", options: ["6", "7", "8", "9"], correct: 1, explanation: "3 cuts can make maximum 7 pieces." },
-            
-            // More logic
-            { question: "Red, Blue, Green balls. Red not next to Blue. Blue in middle. Order?", options: ["R,B,G", "G,B,R", "R,G,B", "G,B,G"], correct: 2, explanation: "Blue middle, Red not next to Blue = R,G,B." },
-            { question: "Sara older than Tim. Tim not youngest. Who's youngest?", options: ["Sara", "Tim", "Someone else", "Can't tell"], correct: 2, explanation: "Sara>Tim, Tim not youngest = someone else is." }
-        ];
+// ===== MATHS QUESTIONS (150+) =====
+const mathsQuestions = [
+    // ADDITION
+    { question: "What is 456 + 378?", options: ["824", "834", "814", "844"], correct: 1, explanation: "456 + 378 = 834" },
+    { question: "What is 567 + 894?", options: ["1461", "1451", "1361", "1471"], correct: 0, explanation: "567 + 894 = 1461" },
+    { question: "What is 2,345 + 1,678?", options: ["4,013", "4,023", "3,923", "4,123"], correct: 1, explanation: "2,345 + 1,678 = 4,023" },
+    { question: "What is 999 + 888?", options: ["1,877", "1,887", "1,787", "1,897"], correct: 1, explanation: "999 + 888 = 1,887" },
+    { question: "What is 4,567 + 3,456?", options: ["8,023", "7,923", "8,123", "7,023"], correct: 0, explanation: "4,567 + 3,456 = 8,023" },
+    
+    // SUBTRACTION
+    { question: "What is 803 - 457?", options: ["346", "356", "446", "336"], correct: 0, explanation: "803 - 457 = 346" },
+    { question: "What is 1,000 - 347?", options: ["753", "653", "657", "663"], correct: 1, explanation: "1,000 - 347 = 653" },
+    { question: "What is 5,000 - 1,234?", options: ["3,766", "3,666", "3,876", "3,756"], correct: 0, explanation: "5,000 - 1,234 = 3,766" },
+    { question: "What is 2,500 - 875?", options: ["1,625", "1,525", "1,725", "1,635"], correct: 0, explanation: "2,500 - 875 = 1,625" },
+    { question: "What is 10,000 - 4,567?", options: ["5,433", "5,333", "5,443", "5,533"], correct: 0, explanation: "10,000 - 4,567 = 5,433" },
+    
+    // MULTIPLICATION
+    { question: "What is 37 × 8?", options: ["286", "296", "306", "276"], correct: 1, explanation: "37 × 8 = 296" },
+    { question: "What is 45 × 12?", options: ["520", "540", "530", "550"], correct: 1, explanation: "45 × 12 = 540" },
+    { question: "What is 24 × 25?", options: ["500", "600", "550", "650"], correct: 1, explanation: "24 × 25 = 600" },
+    { question: "What is 36 × 15?", options: ["540", "530", "550", "520"], correct: 0, explanation: "36 × 15 = 540" },
+    { question: "What is 125 × 8?", options: ["1,000", "900", "1,100", "800"], correct: 0, explanation: "125 × 8 = 1,000" },
+    { question: "What is 50 × 50?", options: ["2,000", "2,500", "3,000", "1,500"], correct: 1, explanation: "50 × 50 = 2,500" },
+    { question: "What is 99 × 9?", options: ["891", "881", "901", "899"], correct: 0, explanation: "99 × 9 = 891" },
+    
+    // DIVISION
+    { question: "What is 432 ÷ 6?", options: ["62", "72", "82", "52"], correct: 1, explanation: "432 ÷ 6 = 72" },
+    { question: "What is 625 ÷ 25?", options: ["20", "25", "30", "35"], correct: 1, explanation: "625 ÷ 25 = 25" },
+    { question: "What is 1,000 ÷ 8?", options: ["125", "115", "135", "120"], correct: 0, explanation: "1,000 ÷ 8 = 125" },
+    { question: "What is 729 ÷ 9?", options: ["71", "81", "91", "79"], correct: 1, explanation: "729 ÷ 9 = 81" },
+    { question: "What is 840 ÷ 12?", options: ["60", "70", "80", "65"], correct: 1, explanation: "840 ÷ 12 = 70" },
+    
+    // PATTERNS
+    { question: "Pattern: 5, 10, 20, 40, ?", options: ["60", "70", "80", "100"], correct: 2, explanation: "Each number doubles. 40 × 2 = 80" },
+    { question: "Pattern: 1, 4, 9, 16, 25, ?", options: ["30", "36", "34", "49"], correct: 1, explanation: "Square numbers: 6² = 36" },
+    { question: "Pattern: 2, 5, 11, 23, ?", options: ["35", "47", "46", "34"], correct: 1, explanation: "×2 + 1 each time. 23×2+1 = 47" },
+    { question: "Pattern: 3, 6, 12, 24, 48, ?", options: ["72", "96", "84", "60"], correct: 1, explanation: "Doubles each time. 48 × 2 = 96" },
+    { question: "Pattern: 2, 6, 18, 54, ?", options: ["108", "162", "216", "180"], correct: 1, explanation: "×3 each time. 54 × 3 = 162" },
+    { question: "Pattern: 1, 1, 2, 3, 5, 8, ?", options: ["11", "12", "13", "15"], correct: 2, explanation: "Fibonacci: 5+8 = 13" },
+    { question: "Pattern: 100, 95, 85, 70, ?", options: ["50", "55", "60", "45"], correct: 0, explanation: "Subtract 5, 10, 15, 20. 70-20 = 50" },
+    { question: "Pattern: 2, 3, 5, 7, 11, ?", options: ["12", "13", "14", "15"], correct: 1, explanation: "Prime numbers. Next prime is 13" },
+    { question: "Pattern: 1, 8, 27, 64, ?", options: ["100", "125", "81", "144"], correct: 1, explanation: "Cube numbers: 5³ = 125" },
+    { question: "Pattern: 3, 7, 15, 31, ?", options: ["47", "55", "63", "59"], correct: 2, explanation: "×2 + 1. 31×2+1 = 63" },
+    
+    // FRACTIONS
+    { question: "What fraction equals 4/6?", options: ["2/4", "8/10", "2/3", "3/4"], correct: 2, explanation: "4/6 = 2/3 (divide both by 2)" },
+    { question: "What is 3/4 + 1/2?", options: ["4/6", "1¼", "5/4", "1"], correct: 1, explanation: "3/4 + 2/4 = 5/4 = 1¼" },
+    { question: "What is 2/5 of 45?", options: ["9", "18", "22", "15"], correct: 1, explanation: "(45 ÷ 5) × 2 = 18" },
+    { question: "What is 5/8 - 1/4?", options: ["4/8", "3/8", "4/4", "2/8"], correct: 1, explanation: "5/8 - 2/8 = 3/8" },
+    { question: "What is 2/3 of 36?", options: ["18", "24", "12", "27"], correct: 1, explanation: "(36 ÷ 3) × 2 = 24" },
+    { question: "Which is greater: 3/4 or 5/8?", options: ["3/4", "5/8", "They're equal", "Can't tell"], correct: 0, explanation: "3/4 = 6/8, which is greater than 5/8" },
+    { question: "What is 1/4 of 1/2?", options: ["1/6", "1/8", "1/4", "1/2"], correct: 1, explanation: "1/4 × 1/2 = 1/8" },
+    
+    // DECIMALS
+    { question: "Which is smallest: 0.4, 0.35, 0.41, 0.305?", options: ["0.4", "0.35", "0.41", "0.305"], correct: 3, explanation: "0.305 is smallest" },
+    { question: "What is 0.75 as a fraction?", options: ["7/10", "3/4", "75/10", "7/5"], correct: 1, explanation: "0.75 = 75/100 = 3/4" },
+    { question: "What is 2.5 × 4?", options: ["8", "10", "8.5", "12"], correct: 1, explanation: "2.5 × 4 = 10" },
+    { question: "What is 0.6 + 0.45?", options: ["0.51", "1.05", "0.105", "1.5"], correct: 1, explanation: "0.6 + 0.45 = 1.05" },
+    { question: "What is 3.5 ÷ 0.5?", options: ["7", "1.5", "0.7", "17.5"], correct: 0, explanation: "3.5 ÷ 0.5 = 7" },
+    
+    // PERCENTAGES
+    { question: "What is 15% of 80?", options: ["12", "15", "8", "10"], correct: 0, explanation: "0.15 × 80 = 12" },
+    { question: "What is 25% of 120?", options: ["25", "30", "35", "40"], correct: 1, explanation: "120 ÷ 4 = 30" },
+    { question: "What is 50% of 246?", options: ["123", "124", "122", "125"], correct: 0, explanation: "246 ÷ 2 = 123" },
+    { question: "Item costs $80, reduced by 25%. New price?", options: ["$55", "$60", "$65", "$70"], correct: 1, explanation: "25% of 80 = 20. 80 - 20 = $60" },
+    { question: "What is 10% of 350?", options: ["3.5", "35", "350", "0.35"], correct: 1, explanation: "350 ÷ 10 = 35" },
+    { question: "30 out of 50 is what percent?", options: ["30%", "50%", "60%", "75%"], correct: 2, explanation: "30/50 = 0.6 = 60%" },
+    
+    // TIME
+    { question: "Today is Wednesday. What day in 30 days?", options: ["Thursday", "Friday", "Saturday", "Wednesday"], correct: 1, explanation: "30 ÷ 7 = 4r2. Wed + 2 = Friday" },
+    { question: "Movie starts 4:50 PM, runs 2h 15m. End time?", options: ["7:05 PM", "6:55 PM", "7:15 PM", "6:05 PM"], correct: 0, explanation: "4:50 + 2h = 6:50. + 15m = 7:05 PM" },
+    { question: "How many minutes in 3.5 hours?", options: ["180", "210", "200", "240"], correct: 1, explanation: "3.5 × 60 = 210" },
+    { question: "Train leaves 9:45 AM, arrives 1:20 PM. Journey time?", options: ["3h 35m", "3h 25m", "4h 35m", "3h 45m"], correct: 0, explanation: "9:45→12:45 = 3h, +35m = 3h 35m" },
+    { question: "How many seconds in 5 minutes?", options: ["50", "300", "500", "3000"], correct: 1, explanation: "5 × 60 = 300 seconds" },
+    { question: "Clock shows 3:00. Angle between hands?", options: ["60°", "90°", "120°", "180°"], correct: 1, explanation: "1/4 of circle = 90°" },
+    { question: "How many days in February 2024?", options: ["28", "29", "30", "31"], correct: 1, explanation: "2024 is a leap year, so 29 days" },
+    
+    // GEOMETRY
+    { question: "Rectangle: length 15cm, width 8cm. Perimeter?", options: ["46cm", "120cm", "23cm", "56cm"], correct: 0, explanation: "2 × (15+8) = 46cm" },
+    { question: "Square perimeter 36cm. Side length?", options: ["6cm", "9cm", "12cm", "18cm"], correct: 1, explanation: "36 ÷ 4 = 9cm" },
+    { question: "Triangle: base 12cm, height 8cm. Area?", options: ["96cm²", "48cm²", "20cm²", "40cm²"], correct: 1, explanation: "(12 × 8) ÷ 2 = 48cm²" },
+    { question: "Square with side 9cm. Area?", options: ["36cm²", "81cm²", "18cm²", "72cm²"], correct: 1, explanation: "9 × 9 = 81cm²" },
+    { question: "Rectangle: 12m by 5m. Area?", options: ["60m²", "34m²", "17m²", "120m²"], correct: 0, explanation: "12 × 5 = 60m²" },
+    { question: "Circle has radius 7cm. Diameter?", options: ["3.5cm", "7cm", "14cm", "21cm"], correct: 2, explanation: "Diameter = 2 × radius = 14cm" },
+    { question: "How many faces on a cube?", options: ["4", "6", "8", "12"], correct: 1, explanation: "A cube has 6 faces" },
+    { question: "How many edges on a cube?", options: ["6", "8", "10", "12"], correct: 3, explanation: "A cube has 12 edges" },
+    { question: "How many vertices on a cube?", options: ["4", "6", "8", "12"], correct: 2, explanation: "A cube has 8 vertices" },
+    
+    // MONEY
+    { question: "35-cent stamps with $5. How many?", options: ["12", "13", "14", "15"], correct: 2, explanation: "500 ÷ 35 = 14 remainder 10" },
+    { question: "Jake earns $12.50/hour for 6 hours?", options: ["$72", "$75", "$65", "$78"], correct: 1, explanation: "$12.50 × 6 = $75" },
+    { question: "Sam has $50, buys 3 books at $8.50. Change?", options: ["$24.50", "$25.50", "$23.50", "$26.50"], correct: 0, explanation: "3 × $8.50 = $25.50. $50 - $25.50 = $24.50" },
+    { question: "5 apples cost $3.75. Cost of 8 apples?", options: ["$6.00", "$5.50", "$6.25", "$5.75"], correct: 0, explanation: "One apple = $0.75. 8 × $0.75 = $6.00" },
+    { question: "Split $156 equally among 4 people:", options: ["$36", "$38", "$39", "$42"], correct: 2, explanation: "$156 ÷ 4 = $39" },
+    { question: "24 apples for $6. Cost of one?", options: ["20c", "25c", "30c", "40c"], correct: 1, explanation: "$6 ÷ 24 = $0.25" },
+    
+    // STATISTICS
+    { question: "Ages: 8, 10, 9, 12, 11. Mean?", options: ["9", "10", "11", "9.5"], correct: 1, explanation: "(8+10+9+12+11) ÷ 5 = 10" },
+    { question: "Scores: 72, 85, 78, 81. Average?", options: ["78", "79", "80", "81"], correct: 1, explanation: "316 ÷ 4 = 79" },
+    { question: "Data: 3, 5, 5, 6, 7, 9. Mode?", options: ["5", "6", "5.8", "7"], correct: 0, explanation: "5 appears most often" },
+    { question: "Data: 2, 5, 8, 11, 14. Median?", options: ["5", "8", "9", "11"], correct: 1, explanation: "Middle value is 8" },
+    { question: "Data: 4, 7, 9, 12. Range?", options: ["8", "9", "7", "12"], correct: 0, explanation: "Range = 12 - 4 = 8" },
+    
+    // PLACE VALUE
+    { question: "In 47,392, value of digit 7?", options: ["7", "70", "700", "7,000"], correct: 3, explanation: "7 in thousands place = 7,000" },
+    { question: "Round 3,847 to nearest hundred:", options: ["3,800", "3,850", "3,900", "4,000"], correct: 0, explanation: "3,847 → 3,800 (47 < 50)" },
+    { question: "What is 10,000 - 1?", options: ["9,999", "9,000", "9,099", "9,990"], correct: 0, explanation: "10,000 - 1 = 9,999" },
+    { question: "Round 6,750 to nearest thousand:", options: ["6,000", "7,000", "6,500", "6,800"], correct: 1, explanation: "6,750 → 7,000 (750 ≥ 500)" },
+    
+    // ORDER OF OPERATIONS
+    { question: "What is 6 + 4 × 3?", options: ["30", "18", "22", "42"], correct: 1, explanation: "Multiply first: 6 + 12 = 18" },
+    { question: "What is (8 + 4) × 5 - 10?", options: ["50", "60", "52", "42"], correct: 0, explanation: "12 × 5 - 10 = 60 - 10 = 50" },
+    { question: "What is 20 - 4 × 3?", options: ["48", "8", "16", "12"], correct: 1, explanation: "20 - 12 = 8" },
+    { question: "What is 100 ÷ 5 + 15?", options: ["35", "5", "40", "25"], correct: 0, explanation: "20 + 15 = 35" },
+    { question: "What is 3 × 4 + 2 × 5?", options: ["22", "70", "60", "24"], correct: 0, explanation: "12 + 10 = 22" },
+    { question: "What is 36 ÷ (3 + 3)?", options: ["6", "9", "15", "12"], correct: 0, explanation: "36 ÷ 6 = 6" },
+    
+    // WORD PROBLEMS
+    { question: "Cinema has 24 rows, 18 seats each. Total seats?", options: ["432", "412", "422", "442"], correct: 0, explanation: "24 × 18 = 432" },
+    { question: "Recipe uses 250g flour. For 4 batches?", options: ["750g", "1kg", "1.25kg", "900g"], correct: 1, explanation: "250g × 4 = 1000g = 1kg" },
+    { question: "3/5 of 30 students are girls. How many boys?", options: ["18", "12", "15", "20"], correct: 1, explanation: "Girls = 18. Boys = 30-18 = 12" },
+    { question: "Bus holds 45 passengers. 3 full buses total?", options: ["135", "145", "125", "155"], correct: 0, explanation: "45 × 3 = 135" },
+    { question: "Book has 256 pages. Read 3/4. Pages left?", options: ["64", "128", "192", "32"], correct: 0, explanation: "3/4 of 256 = 192 read. 256-192 = 64 left" },
+    { question: "Car travels 60km/h. Distance in 2.5 hours?", options: ["120km", "150km", "180km", "200km"], correct: 1, explanation: "60 × 2.5 = 150km" },
+    { question: "Tom twice Lily's age. Lily is 9. Tom's age?", options: ["11", "18", "27", "4.5"], correct: 1, explanation: "2 × 9 = 18" },
+    { question: "First term 4, add 7 each time. 6th term?", options: ["39", "32", "35", "42"], correct: 0, explanation: "4, 11, 18, 25, 32, 39" },
+    { question: "Share $240 in ratio 2:3. Larger share?", options: ["$96", "$144", "$120", "$160"], correct: 1, explanation: "5 parts = $240. 3 parts = $144" },
+    { question: "Square has area 64cm². Side length?", options: ["8cm", "16cm", "32cm", "4cm"], correct: 0, explanation: "√64 = 8cm" },
+    { question: "What is 1/4 + 1/3?", options: ["2/7", "7/12", "1/7", "5/12"], correct: 1, explanation: "3/12 + 4/12 = 7/12" },
+    { question: "A number × 6 = 42. The number?", options: ["6", "7", "8", "9"], correct: 1, explanation: "42 ÷ 6 = 7" },
+    { question: "If n + 15 = 32, what is n?", options: ["17", "47", "15", "22"], correct: 0, explanation: "32 - 15 = 17" },
+    { question: "What is 2³ + 3²?", options: ["17", "13", "14", "15"], correct: 0, explanation: "8 + 9 = 17" },
+    { question: "Temperature: 8°C + 15°C - 7°C = ?", options: ["16°C", "30°C", "0°C", "14°C"], correct: 0, explanation: "8 + 15 - 7 = 16°C" },
+    { question: "How many 15-minute intervals in 3 hours?", options: ["10", "12", "15", "20"], correct: 1, explanation: "180 ÷ 15 = 12" },
+    { question: "6 pencils cost $4.20. Cost of 10 pencils?", options: ["$7.00", "$6.50", "$8.00", "$7.50"], correct: 0, explanation: "One = $0.70. Ten = $7.00" }
+];
 
-        // ==================== STATE ====================
-        let state = {
-            screen: 'welcome',
-            section: 0,
-            question: 0,
-            answers: { reading: [], maths: [], thinking: [] },
-            times: { reading: 0, maths: 0, thinking: 0 },
-            startTime: null,
-            questions: { reading: [], maths: [], thinking: [] },
-            reviewTab: 'incorrect'
-        };
-
-        const sections = [
-            { id: 'reading', name: 'Reading', icon: '📖', time: 40, count: 17 },
-            { id: 'maths', name: 'Mathematical Reasoning', icon: '🔢', time: 40, count: 35 },
-            { id: 'thinking', name: 'Thinking Skills', icon: '🧩', time: 30, count: 30 }
-        ];
-
-        // ==================== TIMER ====================
-        let timerInterval = null;
-        let remainingTime = 0;
-
-        function startTimer(minutes) {
-            remainingTime = minutes * 60;
-            state.startTime = Date.now();
-            updateTimer();
-            timerInterval = setInterval(() => {
-                remainingTime--;
-                updateTimer();
-                if (remainingTime <= 0) {
-                    clearInterval(timerInterval);
-                    finishSection();
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-            if (state.startTime) {
-                state.times[sections[state.section].id] += Math.floor((Date.now() - state.startTime) / 1000);
-                state.startTime = null;
-            }
-        }
-
-        function updateTimer() {
-            const el = document.querySelector('.timer');
-            if (el) {
-                const m = Math.floor(remainingTime / 60);
-                const s = remainingTime % 60;
-                el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-                el.classList.remove('warning', 'danger');
-                if (remainingTime <= 60) el.classList.add('danger');
-                else if (remainingTime <= 180) el.classList.add('warning');
-            }
-        }
-
-        // ==================== RENDER ====================
-        function render() {
-            const app = document.getElementById('app');
-            switch (state.screen) {
-                case 'welcome': renderWelcome(app); break;
-                case 'intro': renderIntro(app); break;
-                case 'question': renderQuestion(app); break;
-                case 'results': renderResults(app); break;
-            }
-        }
-
-        function renderWelcome(app) {
-            app.innerHTML = `
-                <a href="oc.html" class="btn-back">← Back to Test List</a>
-                <div class="welcome">
-                    <div class="welcome-icon">📝</div>
-                    <h1>Practice Test ${testNumber}</h1>
-                    <p class="welcome-sub">OC Placement Test Practice</p>
-                    
-                    <div class="test-info-grid">
-                        <div class="test-info-card reading">
-                            <div class="icon">📖</div>
-                            <h3>Reading</h3>
-                            <div class="stat">17 questions • 40 min</div>
-                        </div>
-                        <div class="test-info-card maths">
-                            <div class="icon">🔢</div>
-                            <h3>Maths</h3>
-                            <div class="stat">35 questions • 40 min</div>
-                        </div>
-                        <div class="test-info-card thinking">
-                            <div class="icon">🧩</div>
-                            <h3>Thinking</h3>
-                            <div class="stat">30 questions • 30 min</div>
-                        </div>
-                    </div>
-                    
-                    <div class="instructions-box">
-                        <h4>📋 Instructions</h4>
-                        <ul>
-                            <li>This test has <strong>82 questions</strong> across 3 timed sections</li>
-                            <li>Each section is timed — manage your time carefully</li>
-                            <li>You can skip questions and return to them</li>
-                            <li><strong>No penalty for guessing</strong> — always answer!</li>
-                        </ul>
-                    </div>
-                    
-                    <button class="btn btn-start" onclick="startTest()">Begin Test</button>
-                </div>
-            `;
-        }
-
-        function renderIntro(app) {
-            const sec = sections[state.section];
-            const tips = {
-                reading: "Read each passage carefully. Look back at the text for evidence.",
-                maths: "Show working on paper if needed. Check calculations.",
-                thinking: "Look for patterns. Try eliminating wrong answers."
-            };
-            
-            app.innerHTML = `
-                <div class="section-intro">
-                    <div class="big-icon">${sec.icon}</div>
-                    <h2>${sec.name}</h2>
-                    <p class="meta">Section ${state.section + 1} of 3</p>
-                    <div class="info-pills">
-                        <span class="pill">${state.questions[sec.id].length} questions</span>
-                        <span class="pill">${sec.time} minutes</span>
-                    </div>
-                    <div class="tip">💡 ${tips[sec.id]}</div>
-                    <button class="btn btn-success" onclick="startSection()">Start Section</button>
-                </div>
-            `;
-        }
-
-        function renderQuestion(app) {
-            const sec = sections[state.section];
-            const qs = state.questions[sec.id];
-            const q = qs[state.question];
-            const ans = state.answers[sec.id][state.question];
-            const progress = ((state.question + 1) / qs.length) * 100;
-            
-            let passageHtml = '';
-            if (sec.id === 'reading' && q.passageId && passages[q.passageId]) {
-                const p = passages[q.passageId];
-                passageHtml = `
-                    <div class="passage-container">
-                        <div class="passage-title">📄 ${p.title}</div>
-                        <div class="passage-text">${p.text}</div>
-                    </div>
-                `;
-            }
-            
-            app.innerHTML = `
-                <div class="test-header">
-                    <div class="section-badge">
-                        <div class="section-icon ${sec.id}">${sec.icon}</div>
-                        <div class="section-info">
-                            <h2>${sec.name}</h2>
-                            <span>Section ${state.section + 1} of 3</span>
-                        </div>
-                    </div>
-                    <div class="timer-box">
-                        <div class="timer">--:--</div>
-                        <div class="timer-label">Time Remaining</div>
-                    </div>
-                </div>
-                
-                <div class="progress-row">
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar ${sec.id}" style="width:${progress}%"></div>
-                    </div>
-                    <span class="progress-text">${state.question + 1}/${qs.length}</span>
-                </div>
-                
-                ${passageHtml}
-                
-                <div class="question-box">
-                    <div class="question-number">Question ${state.question + 1}</div>
-                    <div class="question-text">${q.question.replace(/\n/g, '<br>')}</div>
-                </div>
-                
-                <div class="options">
-                    ${q.options.map((opt, i) => `
-                        <button class="option ${ans === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
-                            <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                            <span>${opt}</span>
-                        </button>
-                    `).join('')}
-                </div>
-                
-                <div class="nav-row">
-                    <button class="btn btn-ghost" onclick="prevQ()" ${state.question === 0 ? 'disabled' : ''}>← Previous</button>
-                    <button class="btn btn-outline" onclick="showNav()">Questions</button>
-                    ${state.question === qs.length - 1 ?
-                        `<button class="btn btn-success" onclick="finishSection()">Finish Section</button>` :
-                        `<button class="btn btn-primary" onclick="nextQ()">Next →</button>`
-                    }
-                </div>
-            `;
-            
-            updateTimer();
-        }
-
-        function renderResults(app) {
-            const total = state.questions.reading.length + state.questions.maths.length + state.questions.thinking.length;
-            
-            let scores = { reading: 0, maths: 0, thinking: 0 };
-            ['reading', 'maths', 'thinking'].forEach(id => {
-                state.questions[id].forEach((q, i) => {
-                    if (state.answers[id][i] === q.correct) scores[id]++;
-                });
-            });
-            
-            const totalCorrect = scores.reading + scores.maths + scores.thinking;
-            const pct = Math.round((totalCorrect / total) * 100);
-            const mins = Math.floor((state.times.reading + state.times.maths + state.times.thinking) / 60);
-            
-            let emoji, msg;
-            if (pct >= 85) { emoji = "🏆"; msg = "Outstanding! Excellent performance!"; }
-            else if (pct >= 70) { emoji = "🌟"; msg = "Great job! Review missed questions to improve further."; }
-            else if (pct >= 55) { emoji = "💪"; msg = "Good effort! Focus on weak areas and keep practising."; }
-            else { emoji = "📚"; msg = "Keep practising! Review explanations carefully."; }
-            
-            const allQs = [
-                ...state.questions.reading.map((q,i) => ({...q, sec:'reading', idx:i, ans:state.answers.reading[i]})),
-                ...state.questions.maths.map((q,i) => ({...q, sec:'maths', idx:i, ans:state.answers.maths[i]})),
-                ...state.questions.thinking.map((q,i) => ({...q, sec:'thinking', idx:i, ans:state.answers.thinking[i]}))
-            ];
-            
-            const incorrect = allQs.filter(q => q.ans !== q.correct);
-            const correct = allQs.filter(q => q.ans === q.correct);
-            const display = state.reviewTab === 'incorrect' ? incorrect : correct;
-            const icons = { reading: '📖', maths: '🔢', thinking: '🧩' };
-            
-            app.innerHTML = `
-                <div class="results">
-                    <div class="results-icon">${emoji}</div>
-                    <h1>Test ${testNumber} Complete!</h1>
-                    <div class="final-score">${totalCorrect}/${total}</div>
-                    <div class="final-percent">${pct}%</div>
-                    <div class="time-summary">Completed in ${mins} minutes</div>
-                    
-                    <div class="score-cards">
-                        <div class="score-card reading">
-                            <div class="score-card-label">📖 Reading</div>
-                            <div class="score-card-value">${scores.reading}/${state.questions.reading.length}</div>
-                            <div class="score-card-pct">${Math.round(scores.reading/state.questions.reading.length*100)}%</div>
-                        </div>
-                        <div class="score-card maths">
-                            <div class="score-card-label">🔢 Maths</div>
-                            <div class="score-card-value">${scores.maths}/${state.questions.maths.length}</div>
-                            <div class="score-card-pct">${Math.round(scores.maths/state.questions.maths.length*100)}%</div>
-                        </div>
-                        <div class="score-card thinking">
-                            <div class="score-card-label">🧩 Thinking</div>
-                            <div class="score-card-value">${scores.thinking}/${state.questions.thinking.length}</div>
-                            <div class="score-card-pct">${Math.round(scores.thinking/state.questions.thinking.length*100)}%</div>
-                        </div>
-                    </div>
-                    
-                    <div class="feedback-box">${msg}</div>
-                    
-                    <h3 style="margin-bottom:15px;">Review Answers</h3>
-                    
-                    <div class="review-tabs">
-                        <button class="review-tab ${state.reviewTab==='incorrect'?'active':''}" onclick="setTab('incorrect')">❌ Incorrect (${incorrect.length})</button>
-                        <button class="review-tab ${state.reviewTab==='correct'?'active':''}" onclick="setTab('correct')">✅ Correct (${correct.length})</button>
-                    </div>
-                    
-                    <div class="review-list">
-                        ${display.length === 0 ? '<p style="text-align:center;color:#94a3b8;padding:20px;">No questions in this category.</p>' :
-                            display.map(q => `
-                                <div class="review-item ${q.ans === q.correct ? 'correct' : 'incorrect'}">
-                                    <div class="review-item-header">
-                                        <span class="review-item-q">${icons[q.sec]} Q${q.idx + 1}</span>
-                                        <span class="review-item-status ${q.ans === q.correct ? 'correct' : 'incorrect'}">${q.ans === q.correct ? '✓' : '✗'}</span>
-                                    </div>
-                                    <div class="review-item-text">${q.question.replace(/\n/g, ' ')}</div>
-                                    <div class="review-item-answer">
-                                        ${q.ans !== q.correct ? `Your answer: <span style="color:#dc2626;">${q.ans !== undefined ? q.options[q.ans] : 'Not answered'}</span><br>` : ''}
-                                        <strong>Correct: ${q.options[q.correct]}</strong>
-                                    </div>
-                                    <div class="review-item-explanation">💡 ${q.explanation}</div>
-                                </div>
-                            `).join('')
-                        }
-                    </div>
-                    
-                    <div style="margin-top:25px;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
-                        <a href="oc.html" class="btn btn-outline" style="text-decoration:none;">← Back to Tests</a>
-                        <button class="btn btn-start" onclick="restart()">Try Again</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ==================== ACTIONS ====================
-        function startTest() {
-            const rng = seededRandom(testNumber * 12345);
-            
-            state.questions.reading = seededShuffle(readingQuestions, rng).slice(0, 17);
-            state.questions.maths = seededShuffle(mathsQuestions, rng).slice(0, 35);
-            state.questions.thinking = seededShuffle(thinkingQuestions, rng).slice(0, 30);
-            
-            state.answers.reading = new Array(17).fill(undefined);
-            state.answers.maths = new Array(35).fill(undefined);
-            state.answers.thinking = new Array(30).fill(undefined);
-            
-            state.times = { reading: 0, maths: 0, thinking: 0 };
-            state.section = 0;
-            state.question = 0;
-            state.screen = 'intro';
-            render();
-        }
-
-        function startSection() {
-            state.question = 0;
-            state.screen = 'question';
-            startTimer(sections[state.section].time);
-            render();
-        }
-
-        function selectAnswer(i) {
-            state.answers[sections[state.section].id][state.question] = i;
-            render();
-        }
-
-        function nextQ() {
-            if (state.question < state.questions[sections[state.section].id].length - 1) {
-                state.question++;
-                render();
-            }
-        }
-
-        function prevQ() {
-            if (state.question > 0) {
-                state.question--;
-                render();
-            }
-        }
-
-        function goToQ(i) {
-            state.question = i;
-            document.querySelector('.modal-overlay')?.remove();
-            render();
-        }
-
-        function finishSection() {
-            stopTimer();
-            if (state.section < 2) {
-                state.section++;
-                state.screen = 'intro';
-            } else {
-                state.screen = 'results';
-            }
-            render();
-        }
-
+// ===== THINKING QUESTIONS (100+) =====
+const thinkingQuestions = [
+    // ANALOGIES
+    { question: "BIRD is to NEST as BEE is to:", options: ["Honey", "Hive", "Flower", "Wing"], correct: 1, explanation: "Bird lives in nest. Bee lives in hive." },
+    { question: "BOOK is to READ as SONG is to:", options: ["Dance", "Listen", "Sing", "Music"], correct: 1, explanation: "You read a book. You listen to a song." },
+    { question: "HAND is to GLOVE as FOOT is to:", options: ["Leg", "Toe", "Sock", "Walk"], correct: 2, explanation: "Glove covers hand. Sock covers foot." },
+    { question: "AUTHOR is to BOOK as COMPOSER is to:", options: ["Music", "Instrument", "Orchestra", "Singer"], correct: 0, explanation: "Author creates books. Composer creates music." },
+    { question: "PAINTER is to BRUSH as WRITER is to:", options: ["Book", "Pen", "Paper", "Story"], correct: 1, explanation: "Painter uses brush. Writer uses pen." },
+    { question: "FISH is to SWIM as BIRD is to:", options: ["Nest", "Fly", "Feather", "Egg"], correct: 1, explanation: "Fish swims. Bird flies." },
+    { question: "DARK is to LIGHT as COLD is to:", options: ["Ice", "Hot", "Winter", "Snow"], correct: 1, explanation: "Dark opposite of light. Cold opposite of hot." },
+    { question: "CHAPTER is to BOOK as SCENE is to:", options: ["Play", "Actor", "Stage", "Theatre"], correct: 0, explanation: "Chapter is part of book. Scene is part of play." },
+    { question: "PUPPY is to DOG as KITTEN is to:", options: ["Pet", "Cat", "Fur", "Meow"], correct: 1, explanation: "Puppy becomes dog. Kitten becomes cat." },
+    { question: "TEACHER is to SCHOOL as DOCTOR is to:", options: ["Patient", "Medicine", "Hospital", "Health"], correct: 2, explanation: "Teacher works in school. Doctor works in hospital." },
+    { question: "FAST is to SLOW as NOISY is to:", options: ["Sound", "Loud", "Quiet", "Music"], correct: 2, explanation: "Fast opposite of slow. Noisy opposite of quiet." },
+    { question: "EYE is to SEE as EAR is to:", options: ["Sound", "Hear", "Listen", "Music"], correct: 1, explanation: "Eye is for seeing. Ear is for hearing." },
+    { question: "PAGE is to BOOK as KEY is to:", options: ["Lock", "Piano", "Door", "Type"], correct: 1, explanation: "Page is part of book. Key is part of piano." },
+    { question: "PETAL is to FLOWER as FEATHER is to:", options: ["Wing", "Bird", "Fly", "Nest"], correct: 1, explanation: "Petal is part of flower. Feather is part of bird." },
+    
+    // LOGIC
+    { question: "All cats have tails. Fluffy is a cat. Conclusion?", options: ["Fluffy likes fish", "Fluffy has legs", "Fluffy has a tail", "Fluffy can climb"], correct: 2, explanation: "All cats have tails + Fluffy is a cat = Fluffy has a tail" },
+    { question: "No reptiles have fur. A snake is a reptile. Therefore:", options: ["Snakes are cold", "Snakes have no legs", "Snakes have no fur", "Snakes lay eggs"], correct: 2, explanation: "No reptiles have fur → snakes have no fur" },
+    { question: "All Zings are Zangs. All Zangs are Zungs. So:", options: ["All Zungs are Zings", "All Zings are Zungs", "Some Zungs are Zangs", "No Zings are Zungs"], correct: 1, explanation: "Zings → Zangs → Zungs. All Zings are Zungs." },
+    { question: "If it rains, the ground is wet. The ground is dry. So:", options: ["It will rain", "It is raining", "It is not raining", "Nothing"], correct: 2, explanation: "Dry ground means it's not raining." },
+    { question: "All squares are rectangles. This is a rectangle. So:", options: ["It's a square", "It might be a square", "It's not a square", "It has 4 sides"], correct: 1, explanation: "It might be a square (but doesn't have to be)." },
+    { question: "No fish can fly. Tuna is a fish. Therefore:", options: ["Tuna swims", "Tuna cannot fly", "Tuna lives in water", "Tuna has scales"], correct: 1, explanation: "No fish can fly + Tuna is fish = Tuna cannot fly." },
+    { question: "If A > B and B > C, then:", options: ["C > A", "A > C", "A = C", "Can't tell"], correct: 1, explanation: "If A > B > C, then A > C." },
+    
+    // SEQUENCES - LETTERS
+    { question: "A, C, E, G, I, ?", options: ["J", "K", "L", "M"], correct: 1, explanation: "Skip one letter. Next is K." },
+    { question: "Z, X, V, T, R, ?", options: ["O", "P", "Q", "S"], correct: 1, explanation: "Backward, skip one. Z,X,V,T,R,P" },
+    { question: "ABC, DEF, GHI, ?", options: ["IJK", "JKL", "KLM", "HIJ"], correct: 1, explanation: "Three consecutive letters. Next: JKL" },
+    { question: "AZ, BY, CX, ?", options: ["DV", "DW", "EW", "DU"], correct: 1, explanation: "First +1, second -1. DW" },
+    { question: "A, B, D, G, K, ?", options: ["N", "O", "P", "Q"], correct: 2, explanation: "Add 1, 2, 3, 4, 5. K + 5 = P" },
+    
+    // CODES
+    { question: "A=1, B=2, C=3... Value of CAT?", options: ["24", "27", "22", "48"], correct: 0, explanation: "C=3, A=1, T=20. 3+1+20 = 24" },
+    { question: "CAME = DBNF in code. What is HELP?", options: ["IFMQ", "GDKO", "IFNQ", "HELP"], correct: 0, explanation: "Each letter +1. H→I, E→F, L→M, P→Q = IFMQ" },
+    { question: "If 🌟=3 and 🌙=5, what is 🌟 + 🌟 × 🌙?", options: ["18", "30", "16", "40"], correct: 0, explanation: "Order of operations: 3 + 3×5 = 3+15 = 18" },
+    { question: "A=1, B=2... What is BIG?", options: ["16", "18", "20", "22"], correct: 1, explanation: "B=2, I=9, G=7. 2+9+7 = 18" },
+    { question: "Code: A=Z, B=Y, C=X... What is DOG?", options: ["WLT", "SLT", "WHT", "WLG"], correct: 0, explanation: "D→W, O→L, G→T. WLT" },
+    { question: "If CAB = 6 (3+1+2), what is ACE?", options: ["9", "11", "8", "10"], correct: 0, explanation: "A=1, C=3, E=5. 1+3+5 = 9" },
+    
+    // SPATIAL
+    { question: "Fold square diagonally. Shape?", options: ["Rectangle", "Triangle", "Pentagon", "Rhombus"], correct: 1, explanation: "Diagonal fold creates a triangle." },
+    { question: "A cube has how many edges?", options: ["6", "8", "10", "12"], correct: 3, explanation: "A cube has 12 edges." },
+    { question: "Rectangular prism faces?", options: ["4", "5", "6", "8"], correct: 2, explanation: "6 faces: top, bottom, 4 sides." },
+    { question: "How many squares in 2×2 grid?", options: ["4", "5", "6", "8"], correct: 1, explanation: "4 small + 1 large = 5 squares" },
+    { question: "A pyramid with square base has how many faces?", options: ["4", "5", "6", "8"], correct: 1, explanation: "1 square base + 4 triangular sides = 5 faces" },
+    { question: "Fold paper in half 3 times. How many sections?", options: ["6", "8", "9", "12"], correct: 1, explanation: "Each fold doubles: 1→2→4→8 sections" },
+    { question: "Mirror image of 'b' is:", options: ["b", "d", "p", "q"], correct: 1, explanation: "Mirror horizontally: b becomes d" },
+    
+    // ARRANGEMENTS
+    { question: "5 in line. Ali 3rd. Ben right behind Ali. Ben's position?", options: ["2nd", "3rd", "4th", "5th"], correct: 2, explanation: "Ali is 3rd, Ben behind = 4th" },
+    { question: "Tom older than Sam. Sam older than Lee. Oldest?", options: ["Tom", "Sam", "Lee", "Can't tell"], correct: 0, explanation: "Tom > Sam > Lee. Tom is oldest." },
+    { question: "A, B, C, D in circle. A opposite C. B left of A. Who opposite B?", options: ["A", "C", "D", "No one"], correct: 2, explanation: "In circle of 4, B opposite D." },
+    
+    // VENN DIAGRAMS
+    { question: "30 play sport. 18 soccer, 15 tennis, 8 both. Soccer only?", options: ["8", "10", "18", "7"], correct: 1, explanation: "Soccer only = 18 - 8 = 10" },
+    { question: "12 like pizza, 10 pasta, 5 both. How many like either?", options: ["17", "22", "27", "15"], correct: 0, explanation: "12 + 10 - 5 = 17" },
+    { question: "25 students: 15 dogs, 10 cats, 6 both. Own neither?", options: ["6", "4", "5", "8"], correct: 0, explanation: "15+10-6=19 own pets. 25-19=6 own neither" },
+    { question: "20 like chocolate, 15 vanilla, 8 both. Only vanilla?", options: ["7", "8", "12", "15"], correct: 0, explanation: "Only vanilla = 15 - 8 = 7" },
+    
+    // PROBLEM SOLVING
+    { question: "Tom twice Lily's age. Lily 4 older than Max. Max is 5. Tom's age?", options: ["14", "18", "9", "13"], correct: 1, explanation: "Max=5, Lily=9, Tom=18" },
+    { question: "Frog climbs 3m day, slides 2m night. 10m well. Days to escape?", options: ["10", "8", "7", "9"], correct: 1, explanation: "Net +1m/day. Day 8: reaches 10m." },
+    { question: "Clock at 6:00. Angle between hands?", options: ["90°", "120°", "180°", "150°"], correct: 2, explanation: "Hands point opposite = 180°" },
+    { question: "5 people shake hands once each. Total handshakes?", options: ["10", "15", "20", "25"], correct: 0, explanation: "5×4÷2 = 10 handshakes" },
+    { question: "3 cuts on a pizza. Maximum pieces?", options: ["6", "7", "8", "9"], correct: 1, explanation: "3 cuts can make maximum 7 pieces" },
+    { question: "3 friends share 8 cookies equally. How many left over?", options: ["0", "1", "2", "3"], correct: 2, explanation: "8 ÷ 3 = 2 remainder 2" },
+    { question: "Square numbers: 1,4,9,16... What's the 10th?", options: ["81", "100", "121", "144"], correct: 1, explanation: "10² = 100" },
+    { question: "How many ways can 3 people line up?", options: ["3", "6", "9", "12"], correct: 1, explanation: "3! = 3×2×1 = 6 ways" },
+    
+    // ODD ONE OUT
+    { question: "Which doesn't belong: Apple, Banana, Carrot, Orange?", options: ["Apple", "Banana", "Carrot", "Orange"], correct: 2, explanation: "Carrot is a vegetable; others are fruits." },
+    { question: "Which doesn't belong: 2, 4, 6, 9, 10?", options: ["2", "4", "9", "10"], correct: 2, explanation: "9 is odd; others are even." },
+    { question: "Which doesn't belong: Triangle, Square, Circle, Rectangle?", options: ["Triangle", "Square", "Circle", "Rectangle"], correct: 2, explanation: "Circle has no straight sides." },
+    { question: "Which doesn't belong: Piano, Guitar, Drum, Violin?", options: ["Piano", "Guitar", "Drum", "Violin"], correct: 2, explanation: "Drum is percussion; others have strings." },
+    { question: "Which doesn't belong: 1, 4, 9, 12, 16?", options: ["1", "4", "12", "16"], correct: 2, explanation: "12 is not a perfect square." },
+    
+    // MORE LOGIC
+    { question: "Red, Blue, Green balls. Red not next to Blue. Blue in middle. Order?", options: ["R,B,G", "G,B,R", "R,G,B", "G,B,G"], correct: 2, explanation: "Blue middle, Red not next to Blue = R,G,B" },
+    { question: "Sara older than Tim. Tim not youngest. Who's youngest?", options: ["Sara", "Tim", "Someone else", "Can't tell"], correct: 2, explanation: "Sara>Tim, Tim not youngest = someone else is." },
+    { question: "Shop sells red and blue pens. You buy 2. Possible combinations?", options: ["2", "3", "4", "6"], correct: 1, explanation: "RR, RB, BB = 3 combinations" },
+    { question: "All A are B. All B are C. All C are D. What's TRUE?", options: ["All D are A", "All A are D", "No A are D", "Some D are A"], correct: 1, explanation: "Chain: A→B→C→D. All A are D." },
+    
+    // COMPLETE THE PATTERN
+    { question: "If AZ=27, BY=27, CX=27, then DW=?", options: ["27", "26", "28", "25"], correct: 0, explanation: "A(1)+Z(26)=27, B(2)+Y(25)=27, D(4)+W(23)=27" },
+    { question: "1=5, 2=25, 3=125, 4=?", options: ["250", "500", "625", "525"], correct: 2, explanation: "Pattern is 5^n. 5^4 = 625" },
+    { question: "If ROSE=4, DAISY=5, ORCHID=6, then SUNFLOWER=?", options: ["7", "8", "9", "10"], correct: 2, explanation: "Number of letters: SUNFLOWER = 9 letters" },
+    
+    // SEQUENCES - SYMBOLS
+    { question: "🔴🔵🔴🔵🔵🔴🔵🔵🔵🔴 ?", options: ["🔴", "🔵🔵", "🔵🔵🔵🔵", "🔵"], correct: 2, explanation: "Pattern: red, 1 blue, red, 2 blue, red, 3 blue... next: 4 blue" },
+    { question: "⭐⭐🌙⭐⭐⭐🌙⭐⭐⭐⭐🌙 ?", options: ["⭐⭐⭐⭐⭐", "🌙", "⭐", "⭐⭐"], correct: 0, explanation: "Stars increase: 2,3,4,5. Next: 5 stars." },
+    
+    // MORE NUMBER SEQUENCES
+    { question: "2, 6, 12, 20, 30, ?", options: ["40", "42", "44", "46"], correct: 1, explanation: "Add 4, 6, 8, 10, 12. 30+12=42" },
+    { question: "1000, 500, 250, 125, ?", options: ["62.5", "60", "65", "75"], correct: 0, explanation: "Halving each time. 125 ÷ 2 = 62.5" }
+];
+    </script>
+    <script>
+        function seededRandom(seed) { return function() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }; }
+        function seededShuffle(array, rng) { const arr = [...array]; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+        const urlParams = new URLSearchParams(window.location.search);
+        const testNumber = parseInt(urlParams.get('test')) || 1;
+        let state = { screen: 'welcome', section: 0, question: 0, answers: { reading: [], maths: [], thinking: [] }, times: { reading: 0, maths: 0, thinking: 0 }, startTime: null, questions: { reading: [], maths: [], thinking: [] }, reviewTab: 'incorrect' };
+        const sections = [ { id: 'reading', name: 'Reading', icon: '📖', time: 40, count: 17 }, { id: 'maths', name: 'Mathematical Reasoning', icon: '🔢', time: 40, count: 35 }, { id: 'thinking', name: 'Thinking Skills', icon: '🧩', time: 30, count: 30 } ];
+        let timerInterval = null, remainingTime = 0;
+        function startTimer(minutes) { remainingTime = minutes * 60; state.startTime = Date.now(); updateTimer(); timerInterval = setInterval(() => { remainingTime--; updateTimer(); if (remainingTime <= 0) { clearInterval(timerInterval); finishSection(); } }, 1000); }
+        function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } if (state.startTime) { state.times[sections[state.section].id] += Math.floor((Date.now() - state.startTime) / 1000); state.startTime = null; } }
+        function updateTimer() { const el = document.querySelector('.timer'); if (el) { const m = Math.floor(remainingTime / 60), s = remainingTime % 60; el.textContent = `${m}:${s.toString().padStart(2, '0')}`; el.classList.remove('warning', 'danger'); if (remainingTime <= 60) el.classList.add('danger'); else if (remainingTime <= 180) el.classList.add('warning'); } }
+        function render() { const app = document.getElementById('app'); switch (state.screen) { case 'welcome': renderWelcome(app); break; case 'intro': renderIntro(app); break; case 'question': renderQuestion(app); break; case 'results': renderResults(app); break; } }
+        function renderWelcome(app) { app.innerHTML = `<a href="oc.html" class="btn-back">← Back to Test List</a><div class="welcome"><div class="welcome-icon">📝</div><h1>Practice Test ${testNumber}</h1><p class="welcome-sub">OC Placement Test Practice</p><div class="test-info-grid"><div class="test-info-card reading"><div class="icon">📖</div><h3>Reading</h3><div class="stat">17 questions • 40 min</div></div><div class="test-info-card maths"><div class="icon">🔢</div><h3>Maths</h3><div class="stat">35 questions • 40 min</div></div><div class="test-info-card thinking"><div class="icon">🧩</div><h3>Thinking</h3><div class="stat">30 questions • 30 min</div></div></div><div class="instructions-box"><h4>📋 Instructions</h4><ul><li>This test has <strong>82 questions</strong> across 3 timed sections</li><li>Each section is timed — manage your time carefully</li><li>You can skip questions and return to them</li><li><strong>No penalty for guessing</strong> — always answer!</li></ul></div><button class="btn btn-start" onclick="startTest()">Begin Test</button></div>`; }
+        function renderIntro(app) { const sec = sections[state.section]; const tips = { reading: "Read each passage carefully. Look back at the text for evidence.", maths: "Show working on paper if needed. Check calculations.", thinking: "Look for patterns. Try eliminating wrong answers." }; app.innerHTML = `<div class="section-intro"><div class="big-icon">${sec.icon}</div><h2>${sec.name}</h2><p class="meta">Section ${state.section + 1} of 3</p><div class="info-pills"><span class="pill">${state.questions[sec.id].length} questions</span><span class="pill">${sec.time} minutes</span></div><div class="tip">💡 ${tips[sec.id]}</div><button class="btn btn-success" onclick="startSection()">Start Section</button></div>`; }
+        function renderQuestion(app) { const sec = sections[state.section]; const qs = state.questions[sec.id]; const q = qs[state.question]; const ans = state.answers[sec.id][state.question]; const progress = ((state.question + 1) / qs.length) * 100; let passageHtml = ''; if (sec.id === 'reading' && q.passageId && passages[q.passageId]) { const p = passages[q.passageId]; passageHtml = `<div class="passage-container"><div class="passage-title">📄 ${p.title}</div><div class="passage-text">${p.text}</div></div>`; } app.innerHTML = `<div class="test-header"><div class="section-badge"><div class="section-icon ${sec.id}">${sec.icon}</div><div class="section-info"><h2>${sec.name}</h2><span>Section ${state.section + 1} of 3</span></div></div><div class="timer-box"><div class="timer">--:--</div><div class="timer-label">Time Remaining</div></div></div><div class="progress-row"><div class="progress-bar-bg"><div class="progress-bar ${sec.id}" style="width:${progress}%"></div></div><span class="progress-text">${state.question + 1}/${qs.length}</span></div>${passageHtml}<div class="question-box"><div class="question-number">Question ${state.question + 1}</div><div class="question-text">${q.question.replace(/\n/g, '<br>')}</div></div><div class="options">${q.options.map((opt, i) => `<button class="option ${ans === i ? 'selected' : ''}" onclick="selectAnswer(${i})"><span class="option-letter">${String.fromCharCode(65 + i)}</span><span>${opt}</span></button>`).join('')}</div><div class="nav-row"><button class="btn btn-ghost" onclick="prevQ()" ${state.question === 0 ? 'disabled' : ''}>← Previous</button><button class="btn btn-outline" onclick="showNav()">Questions</button>${state.question === qs.length - 1 ? `<button class="btn btn-success" onclick="finishSection()">Finish Section</button>` : `<button class="btn btn-primary" onclick="nextQ()">Next →</button>`}</div>`; updateTimer(); }
+        function renderResults(app) { const total = state.questions.reading.length + state.questions.maths.length + state.questions.thinking.length; let scores = { reading: 0, maths: 0, thinking: 0 }; ['reading', 'maths', 'thinking'].forEach(id => { state.questions[id].forEach((q, i) => { if (state.answers[id][i] === q.correct) scores[id]++; }); }); const totalCorrect = scores.reading + scores.maths + scores.thinking; const pct = Math.round((totalCorrect / total) * 100); const mins = Math.floor((state.times.reading + state.times.maths + state.times.thinking) / 60); let emoji, msg; if (pct >= 85) { emoji = "🏆"; msg = "Outstanding! Excellent performance!"; } else if (pct >= 70) { emoji = "🌟"; msg = "Great job! Review missed questions to improve further."; } else if (pct >= 55) { emoji = "💪"; msg = "Good effort! Focus on weak areas and keep practising."; } else { emoji = "📚"; msg = "Keep practising! Review explanations carefully."; } const allQs = [...state.questions.reading.map((q,i) => ({...q, sec:'reading', idx:i, ans:state.answers.reading[i]})),...state.questions.maths.map((q,i) => ({...q, sec:'maths', idx:i, ans:state.answers.maths[i]})),...state.questions.thinking.map((q,i) => ({...q, sec:'thinking', idx:i, ans:state.answers.thinking[i]}))]; const incorrect = allQs.filter(q => q.ans !== q.correct); const correct = allQs.filter(q => q.ans === q.correct); const display = state.reviewTab === 'incorrect' ? incorrect : correct; const icons = { reading: '📖', maths: '🔢', thinking: '🧩' }; app.innerHTML = `<div class="results"><div class="results-icon">${emoji}</div><h1>Test ${testNumber} Complete!</h1><div class="final-score">${totalCorrect}/${total}</div><div class="final-percent">${pct}%</div><div class="time-summary">Completed in ${mins} minutes</div><div class="score-cards"><div class="score-card reading"><div class="score-card-label">📖 Reading</div><div class="score-card-value">${scores.reading}/${state.questions.reading.length}</div><div class="score-card-pct">${Math.round(scores.reading/state.questions.reading.length*100)}%</div></div><div class="score-card maths"><div class="score-card-label">🔢 Maths</div><div class="score-card-value">${scores.maths}/${state.questions.maths.length}</div><div class="score-card-pct">${Math.round(scores.maths/state.questions.maths.length*100)}%</div></div><div class="score-card thinking"><div class="score-card-label">🧩 Thinking</div><div class="score-card-value">${scores.thinking}/${state.questions.thinking.length}</div><div class="score-card-pct">${Math.round(scores.thinking/state.questions.thinking.length*100)}%</div></div></div><div class="feedback-box">${msg}</div><h3 style="margin-bottom:15px;">Review Answers</h3><div class="review-tabs"><button class="review-tab ${state.reviewTab==='incorrect'?'active':''}" onclick="setTab('incorrect')">❌ Incorrect (${incorrect.length})</button><button class="review-tab ${state.reviewTab==='correct'?'active':''}" onclick="setTab('correct')">✅ Correct (${correct.length})</button></div><div class="review-list">${display.length === 0 ? '<p style="text-align:center;color:#94a3b8;padding:20px;">No questions in this category.</p>' : display.map(q => `<div class="review-item ${q.ans === q.correct ? 'correct' : 'incorrect'}"><div class="review-item-header"><span class="review-item-q">${icons[q.sec]} Q${q.idx + 1}</span><span class="review-item-status ${q.ans === q.correct ? 'correct' : 'incorrect'}">${q.ans === q.correct ? '✓' : '✗'}</span></div><div class="review-item-text">${q.question.replace(/\n/g, ' ')}</div><div class="review-item-answer">${q.ans !== q.correct ? `Your answer: <span style="color:#dc2626;">${q.ans !== undefined ? q.options[q.ans] : 'Not answered'}</span><br>` : ''}<strong>Correct: ${q.options[q.correct]}</strong></div><div class="review-item-explanation">💡 ${q.explanation}</div></div>`).join('')}</div><div style="margin-top:25px;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;"><a href="oc.html" class="btn btn-outline" style="text-decoration:none;">← Back to Tests</a><button class="btn btn-start" onclick="restart()">Try Again</button></div></div>`; }
+        function startTest() { const rng = seededRandom(testNumber * 12345); state.questions.reading = seededShuffle(readingQuestions, rng).slice(0, 17); state.questions.maths = seededShuffle(mathsQuestions, rng).slice(0, 35); state.questions.thinking = seededShuffle(thinkingQuestions, rng).slice(0, 30); state.answers = { reading: new Array(17).fill(undefined), maths: new Array(35).fill(undefined), thinking: new Array(30).fill(undefined) }; state.times = { reading: 0, maths: 0, thinking: 0 }; state.section = 0; state.question = 0; state.screen = 'intro'; render(); }
+        function startSection() { state.question = 0; state.screen = 'question'; startTimer(sections[state.section].time); render(); }
+        function selectAnswer(i) { state.answers[sections[state.section].id][state.question] = i; render(); }
+        function nextQ() { if (state.question < state.questions[sections[state.section].id].length - 1) { state.question++; render(); } }
+        function prevQ() { if (state.question > 0) { state.question--; render(); } }
+        function goToQ(i) { state.question = i; document.querySelector('.modal-overlay')?.remove(); render(); }
+        function finishSection() { stopTimer(); if (state.section < 2) { state.section++; state.screen = 'intro'; } else { state.screen = 'results'; } render(); }
         function setTab(tab) { state.reviewTab = tab; render(); }
-
-        function restart() {
-            state = {
-                screen: 'welcome',
-                section: 0,
-                question: 0,
-                answers: { reading: [], maths: [], thinking: [] },
-                times: { reading: 0, maths: 0, thinking: 0 },
-                startTime: null,
-                questions: { reading: [], maths: [], thinking: [] },
-                reviewTab: 'incorrect'
-            };
-            render();
-        }
-
-        function showNav() {
-            const sec = sections[state.section];
-            const qs = state.questions[sec.id];
-            const ans = state.answers[sec.id];
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-            modal.innerHTML = `
-                <div class="modal">
-                    <h3>Question Navigator</h3>
-                    <div class="q-grid">
-                        ${qs.map((_, i) => `
-                            <div class="q-cell ${ans[i] !== undefined ? 'answered' : 'unanswered'} ${i === state.question ? 'current' : ''}" onclick="goToQ(${i})">${i + 1}</div>
-                        `).join('')}
-                    </div>
-                    <div class="legend">
-                        <span><div class="legend-dot answered"></div> Answered</span>
-                        <span><div class="legend-dot unanswered"></div> Unanswered</span>
-                    </div>
-                    <button class="btn btn-outline" style="width:100%;margin-top:15px;" onclick="this.closest('.modal-overlay').remove();">Close</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
+        function restart() { state = { screen: 'welcome', section: 0, question: 0, answers: { reading: [], maths: [], thinking: [] }, times: { reading: 0, maths: 0, thinking: 0 }, startTime: null, questions: { reading: [], maths: [], thinking: [] }, reviewTab: 'incorrect' }; render(); }
+        function showNav() { const sec = sections[state.section]; const qs = state.questions[sec.id]; const ans = state.answers[sec.id]; const modal = document.createElement('div'); modal.className = 'modal-overlay'; modal.onclick = (e) => { if (e.target === modal) modal.remove(); }; modal.innerHTML = `<div class="modal"><h3>Question Navigator</h3><div class="q-grid">${qs.map((_, i) => `<div class="q-cell ${ans[i] !== undefined ? 'answered' : 'unanswered'} ${i === state.question ? 'current' : ''}" onclick="goToQ(${i})">${i + 1}</div>`).join('')}</div><div class="legend"><span><div class="legend-dot answered"></div> Answered</span><span><div class="legend-dot unanswered"></div> Unanswered</span></div><button class="btn btn-outline" style="width:100%;margin-top:15px;" onclick="this.closest('.modal-overlay').remove();">Close</button></div>`; document.body.appendChild(modal); }
         render();
     </script>
 </body>
