@@ -14,13 +14,17 @@ class OCPracticeTest {
         this.timeRemaining = 0;
         this.timerInterval = null;
         this.timedMode = false;
-        
+
+        // Performance tracking
+        this.questionStartTime = null;
+        this.sessionDetails = []; // Detailed info for each question
+
         // Load saved progress
         this.loadProgress();
-        
+
         // Initialize question banks
         this.initQuestionBanks();
-        
+
         // Create UI
         this.createUI();
     }
@@ -493,6 +497,20 @@ Mars Base Alpha`,
                             <h4>📊 Overall Progress</h4>
                             <div id="total-stats">Loading...</div>
                         </div>
+
+                        <button class="oc-btn oc-btn-secondary" onclick="window.ocTest.showPerformanceDashboard()" style="margin-top: 15px;">
+                            📈 View Performance Dashboard
+                        </button>
+                    </div>
+
+                    <div id="oc-dashboard" class="oc-section" style="display:none;">
+                        <div class="oc-dashboard-header">
+                            <h3>📈 Performance Dashboard</h3>
+                            <button class="oc-btn oc-btn-small" onclick="window.ocTest.showMenu()">← Back</button>
+                        </div>
+                        <div id="oc-dashboard-content">
+                            <!-- Dashboard content loaded dynamically -->
+                        </div>
                     </div>
                     
                     <div id="oc-question" class="oc-section" style="display:none;">
@@ -596,6 +614,8 @@ Mars Base Alpha`,
         document.getElementById('oc-menu').style.display = 'block';
         document.getElementById('oc-question').style.display = 'none';
         document.getElementById('oc-results').style.display = 'none';
+        const dashboard = document.getElementById('oc-dashboard');
+        if (dashboard) dashboard.style.display = 'none';
         this.updateScoreDisplays();
         this.stopTimer();
     }
@@ -606,6 +626,7 @@ Mars Base Alpha`,
         this.currentQuestionIndex = 0;
         this.sessionQuestions = [];
         this.sessionAnswers = [];
+        this.sessionDetails = []; // Reset detailed tracking
         this.timedMode = document.getElementById('timed-mode')?.checked || false;
 
         // Generate questions for this session
@@ -682,6 +703,9 @@ Mars Base Alpha`,
         if (this.timedMode) {
             this.startTimer();
         }
+
+        // Start timing this question for performance tracking
+        this.questionStartTime = Date.now();
     }
 
     selectAnswer(index) {
@@ -690,6 +714,12 @@ Mars Base Alpha`,
         const question = this.sessionQuestions[this.currentQuestionIndex];
         const isCorrect = index === question.correct;
 
+        // Calculate time spent
+        const timeSpent = this.questionStartTime ? Math.round((Date.now() - this.questionStartTime) / 1000) : 0;
+
+        // Get question category
+        const category = question.category || 'general';
+
         // Update stats
         this.totalAttempted[this.currentSection]++;
         if (isCorrect) {
@@ -697,8 +727,20 @@ Mars Base Alpha`,
         }
         this.saveProgress();
 
+        // Record to performance tracker
+        if (window.ocPerformance) {
+            window.ocPerformance.recordAnswer(this.currentSection, category, isCorrect, timeSpent);
+        }
+
+        // Store detailed session info
+        this.sessionDetails.push({
+            category: category,
+            isCorrect: isCorrect,
+            timeSpent: timeSpent
+        });
+
         // Store answer
-        this.sessionAnswers.push({ questionIndex: this.currentQuestionIndex, selected: index, correct: question.correct, isCorrect });
+        this.sessionAnswers.push({ questionIndex: this.currentQuestionIndex, selected: index, correct: question.correct, isCorrect, category, timeSpent });
 
         // Show feedback
         const optionBtns = document.querySelectorAll('.oc-option-btn');
@@ -746,6 +788,16 @@ Mars Base Alpha`,
         const total = this.sessionAnswers.length;
         const percentage = Math.round((correct / total) * 100);
 
+        // Record session to performance tracker
+        if (window.ocPerformance) {
+            window.ocPerformance.recordSession({
+                section: this.currentSection,
+                questions: this.sessionDetails,
+                score: correct,
+                total: total
+            });
+        }
+
         let message = '';
         let emoji = '';
         if (percentage === 100) {
@@ -764,6 +816,25 @@ Mars Base Alpha`,
 
         const goldEarned = correct * 10;
 
+        // Get recommendations if available
+        let recommendationsHtml = '';
+        if (window.ocPerformance) {
+            const recommendations = window.ocPerformance.getRecommendations();
+            const relevantRecs = recommendations.filter(r => r.section === this.currentSection).slice(0, 2);
+            if (relevantRecs.length > 0) {
+                recommendationsHtml = `
+                    <div class="oc-recommendations">
+                        <h4>💡 Tips to Improve:</h4>
+                        ${relevantRecs.map(r => `
+                            <div class="oc-recommendation-item ${r.priority}">
+                                <strong>${r.categoryName}</strong>: ${r.tip}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
         document.getElementById('oc-results-content').innerHTML = `
             <div class="oc-results-score">
                 <span class="oc-results-emoji">${emoji}</span>
@@ -772,16 +843,19 @@ Mars Base Alpha`,
             </div>
             <p class="oc-results-message">${message}</p>
             <p class="oc-results-gold">💰 You earned ${goldEarned} gold!</p>
-            
+
             <div class="oc-results-breakdown">
                 <h4>Your Answers:</h4>
                 ${this.sessionAnswers.map((a, i) => `
                     <div class="oc-result-item ${a.isCorrect ? 'correct' : 'incorrect'}">
-                        <span>Q${i + 1}:</span>
+                        <span>Q${i + 1}${a.category ? ` (${a.category})` : ''}:</span>
                         <span>${a.isCorrect ? '✅' : '❌'}</span>
+                        <span class="oc-time">${a.timeSpent}s</span>
                     </div>
                 `).join('')}
             </div>
+
+            ${recommendationsHtml}
         `;
     }
 
@@ -816,6 +890,250 @@ Mars Base Alpha`,
         if (timerEl) {
             timerEl.style.display = 'none';
             timerEl.classList.remove('warning');
+        }
+    }
+
+    // ===== PERFORMANCE DASHBOARD =====
+    showPerformanceDashboard() {
+        document.getElementById('oc-menu').style.display = 'none';
+        document.getElementById('oc-question').style.display = 'none';
+        document.getElementById('oc-results').style.display = 'none';
+        document.getElementById('oc-dashboard').style.display = 'block';
+
+        this.renderDashboard();
+    }
+
+    renderDashboard() {
+        const container = document.getElementById('oc-dashboard-content');
+
+        if (!window.ocPerformance) {
+            container.innerHTML = '<p>Performance tracking not available.</p>';
+            return;
+        }
+
+        const summary = window.ocPerformance.getSummary();
+
+        // Section overview
+        const sectionHtml = `
+            <div class="oc-dashboard-sections">
+                <h4>Section Performance</h4>
+                <div class="oc-section-stats">
+                    ${this.renderSectionStat('📖 Reading', summary.sections.reading, 'reading')}
+                    ${this.renderSectionStat('🔢 Maths', summary.sections.maths, 'maths')}
+                    ${this.renderSectionStat('🧠 Thinking', summary.sections.thinking, 'thinking')}
+                </div>
+            </div>
+        `;
+
+        // Overall stats
+        const overallHtml = `
+            <div class="oc-dashboard-overall">
+                <div class="oc-stat-box">
+                    <span class="oc-stat-number">${summary.totalQuestions}</span>
+                    <span class="oc-stat-label">Questions Attempted</span>
+                </div>
+                <div class="oc-stat-box">
+                    <span class="oc-stat-number">${summary.overall !== null ? summary.overall + '%' : '-'}</span>
+                    <span class="oc-stat-label">Overall Accuracy</span>
+                </div>
+                <div class="oc-stat-box">
+                    <span class="oc-stat-number">${summary.recentSessions.length}</span>
+                    <span class="oc-stat-label">Sessions Completed</span>
+                </div>
+            </div>
+        `;
+
+        // Weaknesses
+        let weaknessHtml = '';
+        if (summary.weaknesses.length > 0) {
+            weaknessHtml = `
+                <div class="oc-dashboard-weaknesses">
+                    <h4>⚠️ Areas to Improve</h4>
+                    <div class="oc-weakness-list">
+                        ${summary.weaknesses.map(w => `
+                            <div class="oc-weakness-item">
+                                <span class="oc-weakness-name">${w.categoryName}</span>
+                                <span class="oc-weakness-accuracy" style="color: ${this.getAccuracyColor(w.accuracy)}">${w.accuracy}%</span>
+                                <span class="oc-weakness-attempts">(${w.attempts} attempts)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Strengths
+        let strengthHtml = '';
+        if (summary.strengths.length > 0) {
+            strengthHtml = `
+                <div class="oc-dashboard-strengths">
+                    <h4>⭐ Your Strengths</h4>
+                    <div class="oc-strength-list">
+                        ${summary.strengths.map(s => `
+                            <div class="oc-strength-item">
+                                <span class="oc-strength-name">${s.categoryName}</span>
+                                <span class="oc-strength-accuracy" style="color: ${this.getAccuracyColor(s.accuracy)}">${s.accuracy}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Recommendations
+        let recsHtml = '';
+        if (summary.recommendations.length > 0) {
+            recsHtml = `
+                <div class="oc-dashboard-recs">
+                    <h4>💡 Recommendations</h4>
+                    <div class="oc-rec-list">
+                        ${summary.recommendations.map(r => `
+                            <div class="oc-rec-item oc-rec-${r.priority}">
+                                <div class="oc-rec-header">
+                                    <span class="oc-rec-priority">${this.getPriorityBadge(r.priority)}</span>
+                                    <span class="oc-rec-category">${r.categoryName}</span>
+                                </div>
+                                <p class="oc-rec-message">${r.message}</p>
+                                ${r.tip ? `<p class="oc-rec-tip">💡 ${r.tip}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Category breakdown
+        const categoryHtml = this.renderCategoryBreakdown();
+
+        // Recent sessions
+        let sessionsHtml = '';
+        if (summary.recentSessions.length > 0) {
+            sessionsHtml = `
+                <div class="oc-dashboard-sessions">
+                    <h4>📅 Recent Sessions</h4>
+                    <div class="oc-session-list">
+                        ${summary.recentSessions.map(s => `
+                            <div class="oc-session-item">
+                                <span class="oc-session-section">${this.getSectionEmoji(s.section)} ${s.section}</span>
+                                <span class="oc-session-score">${s.score}/${s.total}</span>
+                                <span class="oc-session-date">${this.formatDate(s.date)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // No data message
+        let noDataHtml = '';
+        if (summary.totalQuestions === 0) {
+            noDataHtml = `
+                <div class="oc-no-data">
+                    <p>No performance data yet!</p>
+                    <p>Start practicing to see your progress here.</p>
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            ${noDataHtml || overallHtml + sectionHtml + weaknessHtml + strengthHtml + recsHtml + categoryHtml + sessionsHtml}
+            <div class="oc-dashboard-actions">
+                <button class="oc-btn oc-btn-danger" onclick="window.ocTest.confirmResetData()">Reset All Data</button>
+            </div>
+        `;
+    }
+
+    renderSectionStat(label, accuracy, section) {
+        const trend = window.ocPerformance ? window.ocPerformance.getTrend(section) : 'insufficient_data';
+        const trendIcon = trend === 'improving' ? '📈' : trend === 'declining' ? '📉' : trend === 'stable' ? '➡️' : '';
+
+        return `
+            <div class="oc-section-stat">
+                <span class="oc-section-label">${label}</span>
+                <span class="oc-section-accuracy" style="color: ${this.getAccuracyColor(accuracy)}">${accuracy !== null ? accuracy + '%' : '-'}</span>
+                <span class="oc-section-trend">${trendIcon}</span>
+            </div>
+        `;
+    }
+
+    renderCategoryBreakdown() {
+        if (!window.ocPerformance) return '';
+
+        const sections = ['maths', 'thinking', 'reading'];
+        let html = '<div class="oc-category-breakdown"><h4>📊 Detailed Breakdown</h4>';
+
+        for (const section of sections) {
+            const stats = window.ocPerformance.getSectionStats(section);
+            const categories = Object.entries(stats);
+
+            if (categories.length === 0) continue;
+
+            html += `<div class="oc-category-section">
+                <h5>${this.getSectionEmoji(section)} ${section.charAt(0).toUpperCase() + section.slice(1)}</h5>
+                <div class="oc-category-grid">`;
+
+            for (const [name, data] of categories) {
+                const displayName = window.ocPerformance.formatCategoryName(`${section}_${name}`);
+                html += `
+                    <div class="oc-category-item">
+                        <span class="oc-cat-name">${displayName}</span>
+                        <div class="oc-cat-bar">
+                            <div class="oc-cat-fill" style="width: ${data.accuracy}%; background: ${this.getAccuracyColor(data.accuracy)}"></div>
+                        </div>
+                        <span class="oc-cat-stats">${data.accuracy}% (${data.correct}/${data.total})</span>
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    getAccuracyColor(accuracy) {
+        if (accuracy === null) return '#888';
+        if (accuracy >= 80) return '#4CAF50';
+        if (accuracy >= 60) return '#FF9800';
+        return '#f44336';
+    }
+
+    getPriorityBadge(priority) {
+        switch (priority) {
+            case 'critical': return '🔴';
+            case 'moderate': return '🟡';
+            case 'explore': return '🔵';
+            default: return '⚪';
+        }
+    }
+
+    getSectionEmoji(section) {
+        const emojis = { maths: '🔢', thinking: '🧠', reading: '📖' };
+        return emojis[section] || '📝';
+    }
+
+    formatDate(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+    }
+
+    confirmResetData() {
+        if (confirm('Are you sure you want to reset all performance data? This cannot be undone.')) {
+            if (window.ocPerformance) {
+                window.ocPerformance.resetAllData();
+                this.renderDashboard();
+            }
         }
     }
 

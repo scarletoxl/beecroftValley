@@ -1165,3 +1165,382 @@ footer {
         width: 100%;
     }
 }
+
+/* ===== OC Performance Dashboard Styles ===== */
+.oc-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.oc-dashboard-header h3 {
+    margin: 0;
+    color: #5f9ea0;
+}
+
+.oc-btn-small {
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+.oc-btn-secondary {
+    background: rgba(95, 158, 160, 0.2);
+    border: 1px solid rgba(95, 158, 160, 0.5);
+}
+
+.oc-btn-secondary:hover {
+    background: rgba(95, 158, 160, 0.3);
+}
+
+.oc-btn-danger {
+    background: rgba(244, 67, 54, 0.2);
+    border: 1px solid rgba(244, 67, 54, 0.5);
+    color: #f44336;
+}
+
+.oc-btn-danger:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.oc-dashboard-overall {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.oc-stat-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.oc-stat-number {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #5f9ea0;
+}
+
+.oc-stat-label {
+    display: block;
+    font-size: 0.85em;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.oc-dashboard-sections {
+    margin-bottom: 25px;
+}
+
+.oc-dashboard-sections h4 {
+    color: #aaa;
+    margin: 0 0 15px 0;
+    font-size: 0.95em;
+}
+
+.oc-section-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.oc-section-stat {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.oc-section-label {
+    display: block;
+    font-size: 0.9em;
+    color: #ccc;
+    margin-bottom: 8px;
+}
+
+.oc-section-accuracy {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+.oc-section-trend {
+    display: block;
+    margin-top: 5px;
+}
+
+.oc-dashboard-weaknesses,
+.oc-dashboard-strengths,
+.oc-dashboard-recs,
+.oc-dashboard-sessions,
+.oc-category-breakdown {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.oc-dashboard-weaknesses h4,
+.oc-dashboard-strengths h4,
+.oc-dashboard-recs h4,
+.oc-dashboard-sessions h4,
+.oc-category-breakdown h4 {
+    margin: 0 0 15px 0;
+    font-size: 1em;
+    color: #ddd;
+}
+
+.oc-weakness-list,
+.oc-strength-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.oc-weakness-item,
+.oc-strength-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.oc-weakness-name,
+.oc-strength-name {
+    flex: 1;
+    color: #ccc;
+}
+
+.oc-weakness-accuracy,
+.oc-strength-accuracy {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.oc-weakness-attempts {
+    color: #888;
+    font-size: 0.85em;
+}
+
+.oc-rec-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.oc-rec-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 4px solid #888;
+}
+
+.oc-rec-critical {
+    border-left-color: #f44336;
+}
+
+.oc-rec-moderate {
+    border-left-color: #FF9800;
+}
+
+.oc-rec-explore {
+    border-left-color: #2196F3;
+}
+
+.oc-rec-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.oc-rec-priority {
+    font-size: 1.2em;
+}
+
+.oc-rec-category {
+    font-weight: bold;
+    color: #5f9ea0;
+}
+
+.oc-rec-message {
+    margin: 0 0 8px 0;
+    color: #ccc;
+    font-size: 0.95em;
+}
+
+.oc-rec-tip {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+.oc-category-section {
+    margin-bottom: 20px;
+}
+
+.oc-category-section h5 {
+    margin: 0 0 12px 0;
+    color: #5f9ea0;
+    font-size: 0.95em;
+}
+
+.oc-category-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.oc-category-item {
+    display: grid;
+    grid-template-columns: 150px 1fr 100px;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 0;
+}
+
+.oc-cat-name {
+    color: #ccc;
+    font-size: 0.9em;
+}
+
+.oc-cat-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.oc-cat-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.oc-cat-stats {
+    color: #aaa;
+    font-size: 0.85em;
+    text-align: right;
+}
+
+.oc-session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.oc-session-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 15px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    align-items: center;
+}
+
+.oc-session-section {
+    color: #ccc;
+    text-transform: capitalize;
+}
+
+.oc-session-score {
+    font-weight: bold;
+    color: #5f9ea0;
+}
+
+.oc-session-date {
+    color: #888;
+    font-size: 0.85em;
+}
+
+.oc-dashboard-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.oc-no-data {
+    text-align: center;
+    padding: 50px 20px;
+    color: #888;
+}
+
+.oc-no-data p {
+    margin: 10px 0;
+}
+
+.oc-time {
+    color: #888;
+    font-size: 0.85em;
+}
+
+.oc-recommendations {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.oc-recommendations h4 {
+    color: #aaa;
+    margin: 0 0 10px 0;
+    font-size: 0.95em;
+}
+
+.oc-recommendation-item {
+    padding: 10px 15px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 0.9em;
+    color: #ccc;
+    border-left: 3px solid #5f9ea0;
+}
+
+.oc-recommendation-item.critical {
+    border-left-color: #f44336;
+}
+
+.oc-recommendation-item.moderate {
+    border-left-color: #FF9800;
+}
+
+/* Mobile responsiveness for dashboard */
+@media (max-width: 600px) {
+    .oc-dashboard-overall {
+        grid-template-columns: 1fr;
+    }
+
+    .oc-section-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .oc-category-item {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .oc-cat-stats {
+        text-align: left;
+    }
+
+    .oc-session-item {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .oc-session-date {
+        grid-column: 1 / -1;
+        text-align: left;
+    }
+}
