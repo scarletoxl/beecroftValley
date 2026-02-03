@@ -3807,6 +3807,19 @@ class Game {
                         </span>
                     </button>
 
+                    <button id="school-guided-btn" style="
+                        background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e;
+                        border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer;
+                        font-size: 1em; display: flex; align-items: center; gap: 12px;
+                        transition: transform 0.15s, box-shadow 0.15s;
+                    ">
+                        <span style="font-size: 1.5em;">🎯</span>
+                        <span style="text-align: left;">
+                            <strong style="display: block;">Guided Practice</strong>
+                            <span style="font-size: 0.85em; opacity: 0.85;">Thinking Skills with hints (Learn mode)</span>
+                        </span>
+                    </button>
+
                     <button id="school-fulltest-btn" style="
                         background: linear-gradient(135deg, #22c55e, #16a34a); color: white;
                         border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer;
@@ -3852,6 +3865,19 @@ class Game {
             modal.remove();
             if (window.ocTest) {
                 window.ocTest.open();
+            } else {
+                this.showMessage('⏳ Loading practice questions...');
+            }
+        };
+
+        document.getElementById('school-guided-btn').onclick = () => {
+            modal.remove();
+            if (window.ocTest) {
+                window.ocTest.open();
+                // Delay to allow modal to open first
+                setTimeout(() => {
+                    window.ocTest.startGuidedPractice();
+                }, 100);
             } else {
                 this.showMessage('⏳ Loading practice questions...');
             }

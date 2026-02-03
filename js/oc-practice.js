@@ -484,6 +484,12 @@ Mars Base Alpha`,
                                 <span class="oc-card-desc">Logic, codes, puzzles</span>
                                 <span class="oc-card-score" id="thinking-score">Score: 0/0</span>
                             </div>
+                            <div class="oc-card guided-practice-card" onclick="window.ocTest.startGuidedPractice()">
+                                <span class="oc-card-emoji">🎯</span>
+                                <span class="oc-card-title">Guided Practice</span>
+                                <span class="oc-card-desc">Thinking Skills with hints</span>
+                                <span class="oc-card-badge">Learn Mode</span>
+                            </div>
                         </div>
                         
                         <div class="oc-options">
@@ -551,6 +557,57 @@ Mars Base Alpha`,
                             <button class="oc-btn oc-btn-primary" onclick="window.ocTest.startSection(window.ocTest.currentSection)">Try Again</button>
                         </div>
                     </div>
+
+                    <div id="oc-guided-question" class="oc-section" style="display:none;">
+                        <!-- Progress indicator -->
+                        <div class="guided-progress">
+                            <span class="guided-progress-text">Question <span id="guided-q-num">1</span> of <span id="guided-q-total">5</span></span>
+                            <div class="guided-progress-bar">
+                                <div class="guided-progress-fill" id="guided-progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <!-- The Rule Box -->
+                        <div class="guided-rule-box">
+                            <div class="guided-rule-label">📋 The Rule:</div>
+                            <div class="guided-rule-text" id="guided-rule-text"></div>
+                        </div>
+
+                        <!-- Person's Statement -->
+                        <div class="guided-person-section">
+                            <div class="guided-person-avatar" id="guided-person-avatar">👦</div>
+                            <div class="guided-person-bubble">
+                                <div class="guided-person-name" id="guided-person-name">Jack:</div>
+                                <div class="guided-person-statement" id="guided-person-statement"></div>
+                            </div>
+                        </div>
+
+                        <!-- Question -->
+                        <div class="guided-question-prompt">
+                            Which one of the following sentences shows the mistake <span id="guided-person-name-q">Jack</span> has made?
+                        </div>
+
+                        <!-- Hint Button (shows before answering) -->
+                        <div class="guided-hint-section" id="guided-hint-section">
+                            <button class="guided-hint-btn" id="guided-hint-btn" onclick="window.ocTest.showGuidedHint()">
+                                💡 Need a hint?
+                            </button>
+                            <div class="guided-hint-box" id="guided-hint-box" style="display:none;"></div>
+                        </div>
+
+                        <!-- Answer Options -->
+                        <div class="guided-options" id="guided-options"></div>
+
+                        <!-- Feedback (shows after answering) -->
+                        <div class="guided-feedback" id="guided-feedback" style="display:none;">
+                            <div class="guided-feedback-result" id="guided-feedback-result"></div>
+                            <div class="guided-feedback-explanation" id="guided-feedback-explanation"></div>
+                            <div class="guided-teaching-point" id="guided-teaching-point"></div>
+                            <button class="oc-btn oc-btn-primary" onclick="window.ocTest.nextGuidedQuestion()">
+                                Next Question →
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -616,6 +673,8 @@ Mars Base Alpha`,
         document.getElementById('oc-results').style.display = 'none';
         const dashboard = document.getElementById('oc-dashboard');
         if (dashboard) dashboard.style.display = 'none';
+        const guidedQuestion = document.getElementById('oc-guided-question');
+        if (guidedQuestion) guidedQuestion.style.display = 'none';
         this.updateScoreDisplays();
         this.stopTimer();
     }
@@ -1135,6 +1194,228 @@ Mars Base Alpha`,
                 this.renderDashboard();
             }
         }
+    }
+
+    // ===== GUIDED PRACTICE MODE =====
+
+    startGuidedPractice() {
+        // Check if question bank is loaded
+        if (!window.GUIDED_THINKING_QUESTIONS || window.GUIDED_THINKING_QUESTIONS.length === 0) {
+            console.error('Guided thinking questions not loaded!');
+            alert('Guided Practice questions are still loading. Please try again.');
+            return;
+        }
+
+        this.guidedMode = true;
+        this.guidedQuestionIndex = 0;
+        this.guidedScore = 0;
+        this.guidedHintUsed = false;
+        this.guidedAnswered = false;
+        this.guidedTotalHintsUsed = 0;
+
+        // Shuffle and pick 5 questions
+        this.guidedQuestions = this.shuffleArray([...window.GUIDED_THINKING_QUESTIONS]).slice(0, 5);
+
+        // Hide menu, show guided question UI
+        document.getElementById('oc-menu').style.display = 'none';
+        document.getElementById('oc-question').style.display = 'none';
+        document.getElementById('oc-results').style.display = 'none';
+        document.getElementById('oc-dashboard').style.display = 'none';
+        document.getElementById('oc-guided-question').style.display = 'block';
+
+        this.showGuidedQuestion();
+    }
+
+    showGuidedQuestion() {
+        const q = this.guidedQuestions[this.guidedQuestionIndex];
+        this.guidedHintUsed = false;
+        this.guidedAnswered = false;
+
+        // Update progress
+        document.getElementById('guided-q-num').textContent = this.guidedQuestionIndex + 1;
+        document.getElementById('guided-q-total').textContent = this.guidedQuestions.length;
+        const progressPercent = ((this.guidedQuestionIndex) / this.guidedQuestions.length) * 100;
+        document.getElementById('guided-progress-fill').style.width = progressPercent + '%';
+
+        // Fill in the content
+        document.getElementById('guided-rule-text').textContent = q.rule;
+        document.getElementById('guided-person-avatar').textContent = q.personAvatar;
+        document.getElementById('guided-person-name').textContent = q.person + ':';
+        document.getElementById('guided-person-statement').textContent = '"' + q.statement + '"';
+        document.getElementById('guided-person-name-q').textContent = q.person;
+
+        // Reset hint section
+        document.getElementById('guided-hint-btn').disabled = false;
+        document.getElementById('guided-hint-box').style.display = 'none';
+        document.getElementById('guided-hint-section').style.display = 'block';
+
+        // Build options
+        const optionsContainer = document.getElementById('guided-options');
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'guided-option';
+            btn.textContent = opt;
+            btn.onclick = () => this.selectGuidedAnswer(idx);
+            optionsContainer.appendChild(btn);
+        });
+
+        // Hide feedback
+        document.getElementById('guided-feedback').style.display = 'none';
+    }
+
+    showGuidedHint() {
+        const q = this.guidedQuestions[this.guidedQuestionIndex];
+
+        // Get appropriate hint based on flaw type
+        const hint = window.GUIDED_HINT_TEMPLATES && window.GUIDED_HINT_TEMPLATES[q.flawType]
+            ? window.GUIDED_HINT_TEMPLATES[q.flawType]
+            : "💡 Hint: Read the rule carefully and compare it to what the person said. What did they assume or miss?";
+
+        const hintBox = document.getElementById('guided-hint-box');
+        hintBox.textContent = hint;
+        hintBox.style.display = 'block';
+
+        document.getElementById('guided-hint-btn').disabled = true;
+        this.guidedHintUsed = true;
+        this.guidedTotalHintsUsed++;
+    }
+
+    selectGuidedAnswer(selectedIndex) {
+        if (this.guidedAnswered) return;
+        this.guidedAnswered = true;
+
+        const q = this.guidedQuestions[this.guidedQuestionIndex];
+        const isCorrect = selectedIndex === q.correctIndex;
+
+        // Update option styling
+        const options = document.querySelectorAll('.guided-option');
+        options.forEach((opt, idx) => {
+            opt.style.pointerEvents = 'none';
+            if (idx === q.correctIndex) {
+                opt.classList.add('correct');
+            } else if (idx === selectedIndex && !isCorrect) {
+                opt.classList.add('incorrect');
+            }
+        });
+
+        // Hide hint section
+        document.getElementById('guided-hint-section').style.display = 'none';
+
+        // Show feedback
+        const feedbackEl = document.getElementById('guided-feedback');
+        const resultEl = document.getElementById('guided-feedback-result');
+        const explanationEl = document.getElementById('guided-feedback-explanation');
+        const teachingEl = document.getElementById('guided-teaching-point');
+
+        if (isCorrect) {
+            this.guidedScore++;
+            resultEl.className = 'guided-feedback-result correct';
+            resultEl.textContent = '✓ Correct!' + (this.guidedHintUsed ? ' (with hint)' : ' Great job!');
+
+            // Award gold (less if hint was used)
+            const goldEarned = this.guidedHintUsed ? 5 : 10;
+            if (this.game && this.game.player) {
+                this.game.player.gold += goldEarned;
+                if (this.game.updateHUD) this.game.updateHUD();
+            }
+        } else {
+            resultEl.className = 'guided-feedback-result incorrect';
+            resultEl.textContent = "✗ Not quite - let's learn from this!";
+        }
+
+        explanationEl.textContent = q.explanation;
+        teachingEl.textContent = q.teachingPoint;
+        feedbackEl.style.display = 'block';
+
+        // Scroll feedback into view
+        feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    nextGuidedQuestion() {
+        this.guidedQuestionIndex++;
+
+        if (this.guidedQuestionIndex >= this.guidedQuestions.length) {
+            this.showGuidedResults();
+        } else {
+            this.showGuidedQuestion();
+            // Scroll to top of question
+            document.getElementById('oc-guided-question').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    showGuidedResults() {
+        document.getElementById('oc-guided-question').style.display = 'none';
+        document.getElementById('oc-results').style.display = 'block';
+
+        const total = this.guidedQuestions.length;
+        const score = this.guidedScore;
+        const percentage = Math.round((score / total) * 100);
+
+        let emoji, message;
+        if (percentage >= 80) {
+            emoji = '🌟';
+            message = 'Excellent thinking skills!';
+        } else if (percentage >= 60) {
+            emoji = '👍';
+            message = 'Good work! Keep practising!';
+        } else {
+            emoji = '💪';
+            message = "Keep learning - you'll get better!";
+        }
+
+        // Calculate gold earned (10 for correct without hint, 5 for correct with hint)
+        const goldWithoutHint = (score - this.guidedTotalHintsUsed) * 10;
+        const goldWithHint = this.guidedTotalHintsUsed * 5;
+        const totalGold = Math.max(0, goldWithoutHint) + Math.min(score, this.guidedTotalHintsUsed) * 5;
+
+        document.getElementById('oc-results-content').innerHTML = `
+            <div class="oc-results-score">
+                <span class="oc-results-emoji">${emoji}</span>
+                <span class="oc-results-number">${score}/${total}</span>
+                <span class="oc-results-percent">(${percentage}%)</span>
+            </div>
+            <p class="oc-results-message">${message}</p>
+            <p class="oc-results-gold">💰 Gold earned this session: ${score * (this.guidedTotalHintsUsed > 0 ? 7 : 10)}</p>
+            <div class="guided-results-tips">
+                <h4>🎯 Remember These Key Skills:</h4>
+                <ul>
+                    <li><strong>AND conditions:</strong> ALL parts must be met, not just some</li>
+                    <li><strong>Optional vs Required:</strong> "May" ≠ "Must not"</li>
+                    <li><strong>Chance vs Certainty:</strong> Entering doesn't mean winning</li>
+                    <li><strong>Match ALL characteristics:</strong> One mismatch = wrong conclusion</li>
+                </ul>
+            </div>
+        `;
+
+        // Update results buttons for guided mode
+        const resultsButtons = document.querySelector('.oc-results-buttons');
+        if (resultsButtons) {
+            resultsButtons.innerHTML = `
+                <button class="oc-btn" onclick="window.ocTest.showMenu()">Back to Menu</button>
+                <button class="oc-btn oc-btn-primary" onclick="window.ocTest.startGuidedPractice()">Try Again</button>
+            `;
+        }
+
+        // Save score to localStorage
+        this.saveGuidedScore(score, total);
+
+        // Reset guided mode flag
+        this.guidedMode = false;
+    }
+
+    saveGuidedScore(correct, total) {
+        const key = 'oc_guided_thinking_scores';
+        let scores = JSON.parse(localStorage.getItem(key) || '[]');
+        scores.push({
+            date: new Date().toISOString(),
+            correct,
+            total,
+            percentage: Math.round((correct / total) * 100)
+        });
+        // Keep last 20 attempts
+        if (scores.length > 20) scores = scores.slice(-20);
+        localStorage.setItem(key, JSON.stringify(scores));
     }
 
     // ===== HELPERS =====
