@@ -850,5 +850,7 @@ const thinkingQuestions = [
         function showNav() { const sec = sections[state.section]; const qs = state.questions[sec.id]; const ans = state.answers[sec.id]; const modal = document.createElement('div'); modal.className = 'modal-overlay'; modal.onclick = (e) => { if (e.target === modal) modal.remove(); }; modal.innerHTML = `<div class="modal"><h3>Question Navigator</h3><div class="q-grid">${qs.map((_, i) => `<div class="q-cell ${ans[i] !== undefined ? 'answered' : 'unanswered'} ${i === state.question ? 'current' : ''}" onclick="goToQ(${i})">${i + 1}</div>`).join('')}</div><div class="legend"><span><div class="legend-dot answered"></div> Answered</span><span><div class="legend-dot unanswered"></div> Unanswered</span></div><button class="btn btn-outline" style="width:100%;margin-top:15px;" onclick="this.closest('.modal-overlay').remove();">Close</button></div>`; document.body.appendChild(modal); }
         render();
     </script>
+    <script src="js/oc-score-history.js?v=20260207-score"></script>
+    <script src="js/oc-score-analysis.js?v=20260207-score"></script>
 </body>
 </html>
