@@ -378,11 +378,11 @@
             lines.push('');
         }
 
-        // Sample wrong questions
+        // Sample wrong questions (only those with actual question text, not migrated stubs)
         var allWrong = [];
         data.weakCategories.forEach(function(w) {
             w.questions.forEach(function(q) {
-                allWrong.push({ section: w.section, category: w.category, q: q });
+                if (q.question) allWrong.push({ section: w.section, category: w.category, q: q });
             });
         });
         var sampleWrong = allWrong.slice(0, 15);
