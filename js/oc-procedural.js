@@ -752,8 +752,427 @@ class ProceduralOCGenerator {
         return p;
     }
 
+    // ===== NEW THINKING SKILLS GENERATORS =====
+
+    generateFindTheFlawQuestion() {
+        const names = ['Mia', 'Jake', 'Lily', 'Noah', 'Ava', 'Liam', 'Zoe', 'Kai', 'Ruby', 'Oscar', 'Ella', 'Max', 'Chloe', 'Ryan', 'Sophie'];
+        const name = this.randChoice(names);
+
+        const templates = [
+            // Correlation != Causation
+            {
+                scenario: (n) => `${n} wore a green hat to the spelling test and got every word right. ${n} says: "My green hat made me spell better!"`,
+                correct: "Wearing a hat cannot affect spelling ability — it was just a coincidence",
+                wrong: ["The hat might actually be lucky", `${name} should wear it to every test`, "Green is a lucky colour"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} noticed it rained every time they walked to school. ${n} says: "My walking to school causes rain!"`,
+                correct: "Two things happening together does not mean one causes the other",
+                wrong: [`${name} should get a lift instead`, "Walking does affect weather patterns", `${name} should carry an umbrella`],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} ate a banana before the race and won. ${n} says: "Bananas make you run faster!"`,
+                correct: "Winning after eating a banana does not prove the banana caused the win",
+                wrong: ["Bananas do give you energy", `${name} should eat two bananas next time`, "All athletes eat bananas"],
+                category: "flaw"
+            },
+            // Hasty Generalisation
+            {
+                scenario: (n) => `${n} met two unfriendly cats and says: "All cats are unfriendly!"`,
+                correct: "Two cats is far too few to judge all cats — that is a hasty generalisation",
+                wrong: ["Cats are actually unfriendly", `${name} should meet more cats`, "Dogs are friendlier than cats"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} visited one beach that was dirty and says: "All beaches in Australia are dirty."`,
+                correct: "One dirty beach cannot represent all beaches — the sample is too small",
+                wrong: ["Australian beaches are actually clean", `${name} should visit more beaches`, "That beach needs to be cleaned"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} asked 2 friends their favourite colour and both said blue. ${n} says: "Blue is everyone's favourite colour!"`,
+                correct: "Two friends cannot represent everyone — the sample is far too small",
+                wrong: ["Blue is actually the most popular colour", `${name} should ask more people`, "Friends often like the same things"],
+                category: "flaw"
+            },
+            // False Dichotomy
+            {
+                scenario: (n) => `${n} says: "You are either good at maths or good at art. You cannot be good at both."`,
+                correct: "This is a false choice — many people are good at both maths and art",
+                wrong: ["Most people are better at one", "Maths and art use different parts of the brain", `${name} is right — you have to choose`],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} says: "Either we go to the park or we stay home. There is nothing else to do."`,
+                correct: "There are many other options besides just the park or home",
+                wrong: ["The park is the best option", "Staying home is boring", `${name} should ask a parent`],
+                category: "flaw"
+            },
+            // Circular Reasoning
+            {
+                scenario: (n) => `${n} says: "This is a great book because it is so well-written, and it is well-written because it is a great book."`,
+                correct: "This is circular reasoning — the conclusion is being used as its own proof",
+                wrong: ["The book really is great", `${name} has good taste in books`, "Well-written books are always great"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} says: "I am the best swimmer because nobody swims better than me."`,
+                correct: "Saying nobody is better is just restating the claim — it is not evidence",
+                wrong: [`${name} probably is the best`, "Confidence helps in swimming", `${name} should enter a competition to prove it`],
+                category: "flaw"
+            },
+            // Appeal to Popularity
+            {
+                scenario: (n) => `${n} says: "This TV show must be good because millions of people watch it."`,
+                correct: "Something being popular does not prove it is good",
+                wrong: ["Popular shows are always good", "Millions of people cannot be wrong", `${name} should watch it to find out`],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} says: "Everyone in my class wants pizza, so pizza must be the healthiest food."`,
+                correct: "Popularity does not equal healthiness — many people liking something does not make it healthy",
+                wrong: ["Pizza is actually quite healthy", "Children know what is good for them", `${name} should ask a dietitian`],
+                category: "flaw"
+            },
+            // Irrelevant Evidence
+            {
+                scenario: (n) => `${n} says: "Tall people must be better at science because my tall cousin got an A in science."`,
+                correct: "Height has nothing to do with science ability — the evidence is irrelevant",
+                wrong: ["Tall people can see the board better", `${name}'s cousin studied hard`, "One example is enough to prove it"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} says: "We should listen to the new student's idea because they have cool shoes."`,
+                correct: "Having cool shoes is irrelevant to whether an idea is good or bad",
+                wrong: ["People with good taste have good ideas", "New students try harder", `${name} should judge ideas by who suggests them`],
+                category: "flaw"
+            },
+            // Cherry-picking
+            {
+                scenario: (n) => `${n} says: "Our cricket team is great! We won 2 games!" But ${n} does not mention they lost 8 games.`,
+                correct: "Only mentioning the wins while hiding the losses is cherry-picking evidence",
+                wrong: ["2 wins is still good", "The losses were not important", `${name} is being a good team supporter`],
+                category: "flaw"
+            },
+            // Anecdotal vs Data
+            {
+                scenario: (n) => `${n} says: "My grandpa never exercised and lived to 90, so exercise is not important."`,
+                correct: "One person's story does not disprove what studies of thousands of people have shown",
+                wrong: ["Exercise is overrated", "Some people are naturally healthy", `${name}'s grandpa was special`],
+                category: "flaw"
+            },
+            // Confusing Necessary and Sufficient
+            {
+                scenario: (n) => `${n} says: "You need flour to make a cake. I have flour, so I can make a cake!"`,
+                correct: "Flour is necessary but not sufficient — you also need eggs, sugar, and other ingredients",
+                wrong: ["Flour is the most important ingredient", `${name} is a good baker`, "You can make a cake with just flour and water"],
+                category: "flaw"
+            },
+            {
+                scenario: (n) => `${n} says: "You need a ticket to enter the concert. I have a ticket, so they MUST let me in."`,
+                correct: "A ticket is necessary but other conditions might also apply (like arriving on time, correct date)",
+                wrong: ["A ticket guarantees entry", `${name} should arrive early`, "Tickets always work"],
+                category: "flaw"
+            },
+            // Appeal to Authority
+            {
+                scenario: (n) => `${n} says: "My uncle says this is the best car, and he is really smart, so it must be true."`,
+                correct: "Being smart does not make someone an expert on cars — an opinion is not a fact",
+                wrong: ["Smart people know about cars", `${name}'s uncle is probably right`, "Family members do not lie"],
+                category: "flaw"
+            },
+            // Post hoc
+            {
+                scenario: (n) => `${n} says: "I washed my hands and then it started raining. Hand washing must cause rain!"`,
+                correct: "Just because one thing happened before another does not mean it caused it",
+                wrong: ["Water attracts more water", `${name} should test this theory`, "Rain often follows hand washing"],
+                category: "flaw"
+            }
+        ];
+
+        const template = this.randChoice(templates);
+        const scenario = template.scenario(name);
+        const options = this.shuffle([template.correct, ...template.wrong]);
+
+        return {
+            q: `${scenario} What is wrong with this reasoning?`,
+            options: options,
+            correct: options.indexOf(template.correct),
+            explanation: template.correct,
+            category: "flaw"
+        };
+    }
+
+    generateTruthLiarQuestion() {
+        const names = this.shuffle(['Amy', 'Ben', 'Cara', 'Dan', 'Emma', 'Finn', 'Grace', 'Hugo', 'Ivy', 'Jack', 'Kate', 'Leo', 'Mia', 'Nate', 'Olive']);
+        const truthTeller = names[0];
+        const liar = names[1];
+
+        const scenarios = [
+            // "Who did it?" scenarios
+            () => {
+                const action = this.randChoice(['ate the last cookie', 'broke the vase', 'drew on the wall', 'took the toy', 'left the door open']);
+                // Liar says they did NOT do it
+                return {
+                    q: `${truthTeller} always tells the truth. ${liar} always lies. ${liar} says: "I did NOT ${action.replace('ate', 'eat').replace('broke', 'break').replace('drew', 'draw').replace('took', 'take').replace('left', 'leave')} ${action.includes('ate') || action.includes('broke') || action.includes('drew') || action.includes('took') || action.includes('left') ? '' : ''}." What really happened?`,
+                    options: [
+                        `${liar} did ${action}`,
+                        `${liar} did not ${action}`,
+                        `${truthTeller} did it`,
+                        `We cannot tell`
+                    ],
+                    correct: 0,
+                    explanation: `${liar} always lies. Saying "I did not do it" means ${liar} DID do it.`
+                };
+            },
+            // "What would they say?" scenarios
+            () => {
+                const item = this.randChoice(['treasure', 'prize', 'answer key', 'secret message']);
+                const placeA = this.randChoice(['Box A', 'Drawer 1', 'the red bag']);
+                return {
+                    q: `${truthTeller} always tells truth. ${liar} always lies. ${truthTeller} says: "${liar} would tell you the ${item} is in ${placeA}." Where is the ${item}?`,
+                    options: [
+                        `In ${placeA}`,
+                        `Not in ${placeA}`,
+                        `We need more clues`,
+                        `In both places`
+                    ],
+                    correct: 1,
+                    explanation: `${truthTeller} truthfully reports what ${liar} would say. ${liar} would lie. So the ${item} is NOT in ${placeA}.`
+                };
+            },
+            // "Statements about each other"
+            () => {
+                return {
+                    q: `${truthTeller} always tells truth. ${liar} always lies. ${liar} says: "${truthTeller} is a liar." Is this correct?`,
+                    options: [
+                        `Yes, ${truthTeller} is a liar`,
+                        `No — ${liar} is lying, so ${truthTeller} is actually truthful`,
+                        `Both are liars`,
+                        `We cannot tell`
+                    ],
+                    correct: 1,
+                    explanation: `${liar} always lies. Saying "${truthTeller} is a liar" is a lie. So ${truthTeller} is truthful (which we already knew).`
+                };
+            },
+            // Self-referential
+            () => {
+                return {
+                    q: `One of ${truthTeller} and ${liar} always tells truth, the other always lies. ${liar} says: "I always tell the truth." What do we know?`,
+                    options: [
+                        `${liar} is the truth-teller`,
+                        `${liar} is the liar`,
+                        `Both tell the truth`,
+                        `We cannot determine who is who from this alone`
+                    ],
+                    correct: 3,
+                    explanation: `Both a truth-teller AND a liar could say "I always tell the truth" — the truth-teller honestly and the liar dishonestly. This statement alone does not help us.`
+                };
+            }
+        ];
+
+        const gen = this.randChoice(scenarios);
+        const result = gen();
+        result.category = "truthliar";
+        return result;
+    }
+
+    generateConstraintPuzzle() {
+        const allNames = this.shuffle(['Ali', 'Bea', 'Cal', 'Dee', 'Eve', 'Fay', 'Gus', 'Hal', 'Ida', 'Jan', 'Kim', 'Lou', 'Mel', 'Nia', 'Oz']);
+        const names = allNames.slice(0, 3);
+
+        const categoryData = [
+            { label: 'pet', items: ['a cat', 'a dog', 'a fish'] },
+            { label: 'colour', items: ['red', 'blue', 'green'] },
+            { label: 'fruit', items: ['an apple', 'a banana', 'a mango'] },
+            { label: 'sport', items: ['tennis', 'soccer', 'swimming'] },
+            { label: 'instrument', items: ['piano', 'guitar', 'drums'] }
+        ];
+
+        const cat = this.randChoice(categoryData);
+        const items = this.shuffle([...cat.items]);
+
+        // Assign: names[0]→items[0], names[1]→items[1], names[2]→items[2]
+        // Clue 1: names[1] has items[1]
+        // Clue 2: names[0] does NOT have items[1] and does NOT have items[2]
+        // Question: What does names[0] have? → items[0]
+
+        const clue1 = `${names[1]} has ${items[1]}.`;
+        const clue2 = `${names[0]} does not have ${items[2]}.`;
+
+        const options = this.shuffle([items[0], items[1], items[2], 'Cannot tell']);
+        return {
+            q: `${names[0]}, ${names[1]}, and ${names[2]} each have a different ${cat.label}: ${items[0]}, ${items[1]}, and ${items[2]}. ${clue1} ${clue2} What does ${names[0]} have?`,
+            options: options,
+            correct: options.indexOf(items[0]),
+            explanation: `${names[1]} has ${items[1]}. ${names[0]} does not have ${items[2]}, and ${items[1]} is taken, so ${names[0]} has ${items[0]}.`,
+            category: "elimination"
+        };
+    }
+
+    generateOddOneOutQuestion() {
+        const problems = [
+            // Number-based: primes
+            () => {
+                const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
+                const selected = this.shuffle(primes).slice(0, 4);
+                const nonPrimes = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28];
+                const oddOne = this.randChoice(nonPrimes);
+                const all = this.shuffle([...selected, oddOne]);
+                const options = all.map(String);
+                return {
+                    q: `Which number does NOT belong: ${all.join(', ')}?`,
+                    options: [options[all.indexOf(oddOne)], options[(all.indexOf(oddOne) + 1) % 5], options[(all.indexOf(oddOne) + 2) % 5], options[(all.indexOf(oddOne) + 3) % 5]],
+                    correct: 0,
+                    explanation: `${selected.join(', ')} are prime numbers. ${oddOne} is not prime.`
+                };
+            },
+            // Number-based: perfect squares
+            () => {
+                const squares = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100];
+                const selected = this.shuffle(squares).slice(0, 4);
+                const nonSquare = this.randChoice([2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20].filter(n => !selected.includes(n)));
+                const all = this.shuffle([...selected, nonSquare]);
+                return {
+                    q: `Which number does NOT belong: ${all.join(', ')}?`,
+                    options: [String(nonSquare), String(selected[0]), String(selected[1]), String(selected[2])],
+                    correct: 0,
+                    explanation: `${selected.join(', ')} are perfect squares. ${nonSquare} is not a perfect square.`
+                };
+            },
+            // Number-based: even numbers
+            () => {
+                const evens = this.shuffle([2, 4, 6, 8, 10, 12, 14, 16, 18, 20]).slice(0, 4);
+                const oddNum = this.randChoice([3, 5, 7, 9, 11, 13, 15, 17, 19]);
+                const all = this.shuffle([...evens, oddNum]);
+                return {
+                    q: `Which number does NOT belong: ${all.join(', ')}?`,
+                    options: [String(oddNum), String(evens[0]), String(evens[1]), String(evens[2])],
+                    correct: 0,
+                    explanation: `${evens.join(', ')} are even numbers. ${oddNum} is odd.`
+                };
+            },
+            // Word-based
+            () => {
+                const groups = [
+                    { members: ['eagle', 'sparrow', 'robin', 'parrot'], oddOne: 'crocodile', rule: 'birds', oddRule: 'a reptile' },
+                    { members: ['apple', 'pear', 'peach', 'plum'], oddOne: 'potato', rule: 'fruits', oddRule: 'a vegetable' },
+                    { members: ['France', 'Japan', 'Brazil', 'Egypt'], oddOne: 'Sydney', rule: 'countries', oddRule: 'a city' },
+                    { members: ['addition', 'subtraction', 'multiplication', 'division'], oddOne: 'paragraph', rule: 'maths operations', oddRule: 'a writing term' },
+                    { members: ['hammer', 'screwdriver', 'wrench', 'pliers'], oddOne: 'pencil', rule: 'tools', oddRule: 'a writing instrument' }
+                ];
+                const g = this.randChoice(groups);
+                return {
+                    q: `Which does NOT belong: ${this.shuffle([...g.members, g.oddOne]).join(', ')}?`,
+                    options: [g.oddOne, g.members[0], g.members[1], g.members[2]],
+                    correct: 0,
+                    explanation: `${g.members.join(', ')} are ${g.rule}. ${g.oddOne} is ${g.oddRule}.`
+                };
+            }
+        ];
+
+        const result = this.randChoice(problems)();
+        result.category = "oddoneout";
+        return result;
+    }
+
+    generateConditionalLogicQuestion() {
+        const names = this.shuffle(['Alex', 'Beth', 'Chris', 'Dana', 'Ethan', 'Fiona', 'Gabe', 'Holly', 'Ian', 'Jess', 'Kyle', 'Luna', 'Miles', 'Nina', 'Owen']);
+        const name = names[0];
+
+        const scenarios = [
+            // Modus Ponens (valid: if P then Q, P is true → Q is true)
+            () => {
+                const pairs = [
+                    { cond: 'it rains', result: `${name} will bring an umbrella`, obs: 'It is raining today' },
+                    { cond: `${name} finishes homework`, result: `${name} can play outside`, obs: `${name} finished homework` },
+                    { cond: 'the bell rings', result: 'class is over', obs: 'The bell just rang' },
+                    { cond: `${name} eats breakfast`, result: `${name} will have energy`, obs: `${name} ate breakfast` }
+                ];
+                const p = this.randChoice(pairs);
+                return {
+                    q: `If ${p.cond}, then ${p.result}. ${p.obs}. What can we conclude?`,
+                    options: [
+                        p.result,
+                        `${p.result} might happen`,
+                        `We cannot conclude anything`,
+                        `The opposite of "${p.result}" is true`
+                    ],
+                    correct: 0,
+                    explanation: `The condition is met, so the result must follow. This is valid reasoning (modus ponens).`
+                };
+            },
+            // Modus Tollens (valid: if P then Q, Q is false → P is false)
+            () => {
+                const pairs = [
+                    { cond: 'the alarm sounds', result: 'everyone evacuates', obsNeg: 'Nobody evacuated' },
+                    { cond: `${name} studies`, result: `${name} passes the test`, obsNeg: `${name} did not pass the test` },
+                    { cond: 'there is a storm', result: 'the match is cancelled', obsNeg: 'The match was not cancelled' }
+                ];
+                const p = this.randChoice(pairs);
+                return {
+                    q: `If ${p.cond}, then ${p.result}. ${p.obsNeg}. What can we conclude?`,
+                    options: [
+                        `It is not true that ${p.cond}`,
+                        `${p.cond} is true`,
+                        `We cannot tell`,
+                        `${p.result} will happen later`
+                    ],
+                    correct: 0,
+                    explanation: `If the result did not happen, then the condition must not have been true either. This is valid reasoning (modus tollens).`
+                };
+            },
+            // Affirming the Consequent TRAP (invalid: if P then Q, Q is true → P might or might not be true)
+            () => {
+                const pairs = [
+                    { cond: 'it rains', result: 'the ground is wet', obs: 'The ground is wet' },
+                    { cond: `${name} practises piano`, result: `${name} plays well`, obs: `${name} plays well` },
+                    { cond: 'a dog barks', result: 'there is noise', obs: 'There is noise' }
+                ];
+                const p = this.randChoice(pairs);
+                return {
+                    q: `If ${p.cond}, then ${p.result}. ${p.obs}. What can we conclude?`,
+                    options: [
+                        `${p.cond} is definitely true`,
+                        `${p.cond} is definitely false`,
+                        `${p.cond} might be true, but there could be other explanations`,
+                        `The rule is wrong`
+                    ],
+                    correct: 2,
+                    explanation: `This is a common trap! The result is true, but it could have other causes. We cannot be sure the condition is what caused it.`
+                };
+            },
+            // Denying the Antecedent TRAP (invalid: if P then Q, P is false → we cannot be sure about Q)
+            () => {
+                const pairs = [
+                    { cond: `${name} eats vegetables`, result: `${name} is healthy`, obsNeg: `${name} did not eat vegetables` },
+                    { cond: 'it is Saturday', result: 'there is no school', obsNeg: 'It is not Saturday' },
+                    { cond: `${name} runs every day`, result: `${name} is fit`, obsNeg: `${name} does not run every day` }
+                ];
+                const p = this.randChoice(pairs);
+                return {
+                    q: `If ${p.cond}, then ${p.result}. ${p.obsNeg}. What can we conclude?`,
+                    options: [
+                        `${p.result} is definitely not true`,
+                        `${p.result} is definitely true`,
+                        `We cannot be sure — ${p.result} might still be true for other reasons`,
+                        `The rule does not apply anymore`
+                    ],
+                    correct: 2,
+                    explanation: `Another common trap! Just because the condition is false does not mean the result is false. There could be other ways to achieve the result.`
+                };
+            }
+        ];
+
+        const result = this.randChoice(scenarios)();
+        result.category = "conditional";
+        return result;
+    }
+
     // ===== MAIN GENERATORS =====
-    
+
     generateMathsQuestion() {
         const generators = [
             () => this.generatePatternQuestion(),
@@ -772,7 +1191,12 @@ class ProceduralOCGenerator {
             () => this.generateAnalogyQuestion(),
             () => this.generateCodeQuestion(),
             () => this.generateSequenceQuestion(),
-            () => this.generateSpatialQuestion()
+            () => this.generateSpatialQuestion(),
+            () => this.generateFindTheFlawQuestion(),
+            () => this.generateTruthLiarQuestion(),
+            () => this.generateConstraintPuzzle(),
+            () => this.generateOddOneOutQuestion(),
+            () => this.generateConditionalLogicQuestion()
         ];
         return this.randChoice(generators)();
     }
