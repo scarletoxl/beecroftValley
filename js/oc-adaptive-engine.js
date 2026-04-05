@@ -248,7 +248,7 @@ function renderDashboard() {
             const fillCls = w.pct < 40 ? 'red' : w.pct < 65 ? 'orange' : 'green';
             const color = w.pct < 40 ? '#ef4444' : w.pct < 65 ? '#f59e0b' : '#22c55e';
             html += `<div class="wp-row"><div class="wp-label">${CAT_NAMES[w.cat]||w.cat}</div>`;
-            html += `<div class="wp-track"><div class="wp-fill" style="width:${w.pct}%;background:${color}"></div></div>`;
+            html += `<div class="wp-track"><div class="wp-fill ${fillCls}" style="width:${w.pct}%;background:${color}"></div></div>`;
             html += `<div class="wp-pct" style="color:${color}">${w.pct}%</div></div>`;
         });
         html += '</div>';
@@ -451,6 +451,32 @@ function renderResults() {
         html += `<div class="sc ${sec}"><div class="sc-label">${SECTION_META[sec].icon} ${SECTION_META[sec].name}</div><div class="sc-value">${r.correct}/${r.total}</div><div class="sc-pct">${secPct}%</div></div>`;
     });
     html += '</div>';
+
+    // Category breakdown
+    const catBreakdown = {};
+    STATE.questions.forEach((q, i) => {
+        const cat = q.category;
+        if (!catBreakdown[cat]) catBreakdown[cat] = { correct: 0, total: 0 };
+        catBreakdown[cat].total++;
+        if (STATE.answers[i] === q.correct) catBreakdown[cat].correct++;
+    });
+    const catEntries = Object.entries(catBreakdown).sort((a,b) => {
+        const pA = a[1].total > 0 ? a[1].correct / a[1].total : 0;
+        const pB = b[1].total > 0 ? b[1].correct / b[1].total : 0;
+        return pA - pB;
+    });
+    if (catEntries.length > 0) {
+        html += '<div class="weakness-panel"><div class="wp-title">📊 Category Breakdown</div>';
+        catEntries.forEach(([cat, stats]) => {
+            const catPct = stats.total > 0 ? Math.round(stats.correct / stats.total * 100) : 0;
+            const fillCls = catPct < 40 ? 'red' : catPct < 65 ? 'orange' : 'green';
+            const color = catPct < 40 ? '#ef4444' : catPct < 65 ? '#f59e0b' : '#22c55e';
+            html += `<div class="wp-row"><div class="wp-label">${CAT_NAMES[cat]||cat}</div>`;
+            html += `<div class="wp-track"><div class="wp-fill ${fillCls}" style="width:${catPct}%;background:${color}"></div></div>`;
+            html += `<div class="wp-pct" style="color:${color}">${stats.correct}/${stats.total} (${catPct}%)</div></div>`;
+        });
+        html += '</div>';
+    }
 
     // Review tabs
     html += '<div class="review-tabs">';
